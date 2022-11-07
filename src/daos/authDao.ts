@@ -23,18 +23,23 @@ export const createAccount = async (
   return parseFirst(res, accountInfoValidator, 500);
 };
 
-export const verifyPassword = async (loginRequest: LoginRequest): Promise<Result<AccountInfo>> => {
+export const verifyPassword = async (
+  loginRequest: LoginRequest
+): Promise<Result<AccountInfo>> => {
   const res = await pool.query(
     "SELECT id, username, email, role, password FROM vennt.accounts WHERE username = $1",
     [loginRequest.username]
   );
   const row = parseFirst(res, dangerousAccountInfoValidator, 500);
   if (row.success) {
-    const comp = await bcrypt.compare(loginRequest.password, row.result.password);
+    const comp = await bcrypt.compare(
+      loginRequest.password,
+      row.result.password
+    );
     if (comp) {
       return { success: true, result: row.result };
     }
-    return { success: false, error: "Incorrect password entered", code: 403}
+    return { success: false, error: "Incorrect password entered", code: 403 };
   }
   return row;
-}
+};

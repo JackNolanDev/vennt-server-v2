@@ -23,7 +23,7 @@ export const signupRequestValidator = z.object({
 export const loginRequestValidator = z.object({
   username: usernameValidator,
   password: passwordValidator,
-})
+});
 
 export const accountInfoValidator = z.object({
   id: idValidator,
@@ -33,13 +33,15 @@ export const accountInfoValidator = z.object({
 });
 
 export const dangerousAccountInfoValidator = accountInfoValidator.extend({
-  password: passwordValidator
+  password: passwordValidator,
 });
 
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
 export type LoginRequest = z.infer<typeof loginRequestValidator>;
 export type AccountInfo = z.infer<typeof accountInfoValidator>;
-export type DangerousAccountInfo = z.infer<typeof dangerousAccountInfoValidator>;
+export type DangerousAccountInfo = z.infer<
+  typeof dangerousAccountInfoValidator
+>;
 
 // SERVER TYPES
 

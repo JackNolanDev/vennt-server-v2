@@ -1,6 +1,9 @@
 import express from "express";
 import type { Request, Response } from "express";
-import { dangerousAccountInfoValidator, signupRequestValidator } from "../utils/types";
+import {
+  dangerousAccountInfoValidator,
+  signupRequestValidator,
+} from "../utils/types";
 import { createAccount, verifyPassword } from "../daos/authDao";
 import { parseBody, pushResponse, resError } from "../utils/express";
 
@@ -29,20 +32,20 @@ const login = async (req: Request, res: Response) => {
     req.session.account = account.result;
   }
   pushResponse(res, account);
-}
+};
 
 const logout = async (req: Request, res: Response) => {
   req.session.destroy((err) => console.error(err));
   res.sendStatus(200);
-}
+};
 
 const me = async (req: Request, res: Response) => {
   if (!req.session.account) {
     resError(res, "Not Authorized", 403);
     return;
   }
-  pushResponse(res, {success: true, result: req.session.account});
-}
+  pushResponse(res, { success: true, result: req.session.account });
+};
 
 router.post("/signup", signup);
 router.post("/login", login);
