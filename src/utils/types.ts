@@ -25,7 +25,7 @@ export const accountInfoValidator = z.object({
   username: usernameValidator,
   email: emailValidator,
   role: roleValidator,
-})
+});
 
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
 export type AccountInfo = z.infer<typeof accountInfoValidator>;
@@ -33,14 +33,13 @@ export type AccountInfo = z.infer<typeof accountInfoValidator>;
 // SERVER TYPES
 
 export type SuccessResult<T> = {
-  success: true,
-  result: T
+  success: true;
+  result: T;
 };
 export type ErrorResult = {
-  success: false,
-  error: string,
-  code: number
-}
+  success: false;
+  error: string;
+  code: number;
+};
 
 export type Result<T> = SuccessResult<T> | ErrorResult;
-
