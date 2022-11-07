@@ -4,19 +4,20 @@ import { Result } from "./types";
 
 export const parseFirst = <T extends z.ZodTypeAny>(
   queryRes: QueryResult,
-  validator: T
+  validator: T,
+  errorCode = 404
 ): Result<z.infer<T>> => {
   const first = queryRes.rows[0];
-  const res = validator.safeParse(first);
-  if (res.success) {
+  const parsed = validator.safeParse(first);
+  if (parsed.success) {
     return {
       success: true,
-      result: res.data,
+      result: parsed.data,
     };
   }
   return {
     success: false,
-    error: res.error.message,
-    code: 500,
+    error: parsed.error.message,
+    code: errorCode,
   };
 };
