@@ -9,7 +9,7 @@ CREATE TABLE vennt.accounts (
     username text NOT NULL UNIQUE,
     email text NOT NULL UNIQUE,
     password text NOT NULL,
-    role text NOT NULL DEFAULT '"USER"'::text
+    role text NOT NULL DEFAULT 'USER'::text
 );
 CREATE UNIQUE INDEX accounts_pkey ON vennt.accounts(id uuid_ops);
 CREATE UNIQUE INDEX accounts_username_key ON vennt.accounts(username text_ops);

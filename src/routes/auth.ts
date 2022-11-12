@@ -1,7 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import {
-  dangerousAccountInfoValidator,
+  loginRequestValidator,
   signupRequestValidator,
 } from "../utils/types";
 import { createAccount, verifyPassword } from "../daos/authDao";
@@ -23,7 +23,7 @@ const signup = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, dangerousAccountInfoValidator);
+  const body = parseBody(req, res, loginRequestValidator);
   if (!body) {
     return;
   }
@@ -39,7 +39,7 @@ const logout = async (req: Request, res: Response) => {
   res.sendStatus(200);
 };
 
-const me = async (req: Request, res: Response) => {
+const account = async (req: Request, res: Response) => {
   if (!req.session.account) {
     resError(res, "Not Authorized", 403);
     return;
@@ -50,5 +50,5 @@ const me = async (req: Request, res: Response) => {
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/logout", logout);
-router.get("/me", me);
+router.get("/account", account);
 export default router;

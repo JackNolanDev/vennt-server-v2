@@ -4,8 +4,7 @@ import { Result } from "./types";
 
 export const pushResponse = <T>(res: Response, result: Result<T>): void => {
   if (result.success) {
-    res.json(result);
-    res.sendStatus(200);
+    res.status(200).json(result);
   } else {
     resError(res, result.error, result.code);
   }
@@ -24,6 +23,5 @@ export const parseBody = <T extends z.ZodTypeAny>(
 };
 
 export const resError = (res: Response, error: string, code: number): void => {
-  res.json({ success: false, error });
-  res.sendStatus(code);
+  res.status(code).json({ success: false, error });
 };

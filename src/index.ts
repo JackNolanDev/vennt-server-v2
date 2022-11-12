@@ -14,8 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CORS policy
-const origin = process.env.WEBSITE_URL ?? "http://localhost:8080";
-app.use(cors({ origin }));
+const origin = process.env.WEBSITE_URL ?? "http://localhost:5173";
+app.use(cors({ origin, credentials: true }));
 
 // INIT SESSION
 const secret = process.env.SESSION_SECRET ?? "development secret";

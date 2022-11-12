@@ -18,7 +18,7 @@ export const createAccount = async (
   const hashedPassword = await bcrypt.hash(signupRequest.password, SALT_ROUNDS);
   const res = await pool.query(
     "INSERT INTO vennt.accounts (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, role",
-    [signupRequest.email, signupRequest.username, hashedPassword]
+    [signupRequest.username, signupRequest.email, hashedPassword]
   );
   return parseFirst(res, accountInfoValidator, 500);
 };
@@ -37,7 +37,7 @@ export const verifyPassword = async (
       row.result.password
     );
     if (comp) {
-      return { success: true, result: row.result };
+      return { success: true, result: { id: row.result.id, username: row.result.username, email: row.result.email, role: row.result.role } };
     }
     return { success: false, error: "Incorrect password entered", code: 403 };
   }
