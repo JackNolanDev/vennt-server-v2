@@ -38,7 +38,9 @@ CREATE TABLE vennt.items (
     "desc" text,
     type text,
     custom_fields jsonb,
-    uses jsonb
+    uses jsonb,
+    comment text,
+    active boolean NOT NULL DEFAULT false
 );
 CREATE UNIQUE INDEX items_pkey ON vennt.items(id uuid_ops);
 
@@ -50,7 +52,9 @@ CREATE TABLE vennt.abilities (
     name text NOT NULL,
     effect text NOT NULL,
     custom_fields jsonb,
-    uses jsonb
+    uses jsonb,
+    comment text,
+    active boolean NOT NULL DEFAULT false
 );
 CREATE UNIQUE INDEX abilities_pkey ON vennt.abilities(id uuid_ops);
 

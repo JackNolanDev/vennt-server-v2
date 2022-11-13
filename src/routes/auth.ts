@@ -7,8 +7,6 @@ import {
 import { createAccount, verifyPassword } from "../daos/authDao";
 import { parseBody, pushResponse, resError } from "../utils/express";
 
-const router = express.Router();
-
 const signup = async (req: Request, res: Response) => {
   const body = parseBody(req, res, signupRequestValidator);
   if (!body) {
@@ -47,6 +45,7 @@ const account = async (req: Request, res: Response) => {
   pushResponse(res, { success: true, result: req.session.account });
 };
 
+const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", login);
 router.post("/logout", logout);

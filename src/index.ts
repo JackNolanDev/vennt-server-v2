@@ -4,7 +4,8 @@ import session from "express-session";
 import pgSession from "connect-pg-simple";
 
 import pool from "./utils/pool";
-import auth from "./routes/auth";
+import authRoute from "./routes/auth";
+import entityRoute from "./routes/entity";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -40,6 +41,7 @@ app.use(
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
-app.use("/auth", auth);
+app.use("/auth", authRoute);
+app.use("/entity", entityRoute);
 
 app.listen(process.env.PORT ?? 5000);
