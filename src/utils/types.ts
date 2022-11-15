@@ -12,8 +12,8 @@ export const ATTRIBUTE_MAX = 15;
 
 // GENERAL FIELDS
 
-const idValidator = z.string().uuid();
-const nameValidator = z.string().min(1).max(NAME_MAX);
+export const idValidator = z.string().uuid();
+export const nameValidator = z.string().min(1).max(NAME_MAX);
 
 // ACCOUNT FIELDS
 
@@ -45,9 +45,24 @@ export const dangerousAccountInfoValidator = accountInfoValidator.extend({
 
 // ENTITY FIELDS
 
-export const attributeValidator = z.number().int().gte(ATTRIBUTE_MIN).lte(ATTRIBUTE_MAX)
-export const combatStatValidator = z.number().int().min(0)
-export const giftValidator = z.enum(["Alertness", "Craft", "Alacrity", "Finesse", "Mind", "Magic", "Rage", "Science", "Charm", "None"])
+export const attributeValidator = z
+  .number()
+  .int()
+  .gte(ATTRIBUTE_MIN)
+  .lte(ATTRIBUTE_MAX);
+export const combatStatValidator = z.number().int().min(0);
+export const giftValidator = z.enum([
+  "Alertness",
+  "Craft",
+  "Alacrity",
+  "Finesse",
+  "Mind",
+  "Magic",
+  "Rage",
+  "Science",
+  "Charm",
+  "None",
+]);
 export const entityTypeValidator = z.enum(["CHARACTER"]);
 
 // NOTE: ALL FUTURE ATTRIBUTES SHOULD BE optional()
@@ -76,7 +91,7 @@ export const attributesValidator = z.object({
   sp: z.number().int().optional(),
   armor: z.number().int().optional(),
   gift: giftValidator.optional(),
-})
+});
 
 export const entityValidator = z.object({
   id: idValidator,
@@ -84,32 +99,35 @@ export const entityValidator = z.object({
   type: entityTypeValidator,
   attributes: attributesValidator,
   owner: idValidator,
-})
+});
 
 // USES
 
-export const useAttrMapValidator = z.record(z.string().min(1).max(NAME_MAX), z.union([z.number().int(), z.string().min(1).max(NAME_MAX)]))
+export const useAttrMapValidator = z.record(
+  z.string().min(1).max(NAME_MAX),
+  z.union([z.number().int(), z.string().min(1).max(NAME_MAX)])
+);
 export const useRollValidator = z.object({
   dice: z.string().max(NAME_MAX),
   attr: z.string().max(NAME_MAX),
-})
+});
 export const useHealValidator = z.object({
-  attr: useAttrMapValidator
-})
+  attr: useAttrMapValidator,
+});
 export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
-  attr: useAttrMapValidator
-})
+  attr: useAttrMapValidator,
+});
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
   attr: z.string().min(1).max(NAME_MAX),
-})
+});
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),
   heal: useHealValidator.optional(),
   adjust: useAdjustValidator.optional(),
-  check: useCheckValidator.optional()
-})
+  check: useCheckValidator.optional(),
+});
 
 // ABILITIES
 
@@ -139,17 +157,20 @@ export const abilityFieldsValidator = z.object({
   build_dc: z.string().max(NAME_MAX).optional(),
   build_time: z.string().max(NAME_MAX).optional(),
   range: z.string().max(NAME_MAX).optional(),
-})
+});
 
 export const abilityValidator = z.object({
-  id: idValidator,
-  entity_id: idValidator,
   name: nameValidator,
   effect: z.string().min(1).max(ABILITY_MAX),
   custom_fields: abilityFieldsValidator.optional(),
   uses: usesValidator.optional(),
   comment: z.string().max(COMMENT_MAX).optional(),
-  active: z.boolean()
+  active: z.boolean(),
+});
+
+export const fullAbilityValidator = abilityValidator.extend({
+  id: idValidator,
+  entity_id: idValidator,
 })
 
 // ITEMS
@@ -163,40 +184,53 @@ export const itemFieldsValidator = z.object({
   range: z.string().max(NAME_MAX).optional(),
   special: z.string().max(ITEM_MAX).optional(),
   weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
-})
+});
 
 export const itemValidator = z.object({
-  id: idValidator,
-  entity_id: idValidator,
   name: nameValidator,
   bulk: z.number().int(),
   desc: z.string().max(ITEM_MAX),
-  type: z.enum(["equipment", "consumable", "container", "armor", "shield", "weapon"]),
+  type: z.enum([
+    "equipment",
+    "consumable",
+    "container",
+    "armor",
+    "shield",
+    "weapon",
+  ]),
   custom_fields: itemFieldsValidator.optional(),
   uses: usesValidator.optional(),
   comment: z.string().max(COMMENT_MAX).optional(),
-  active: z.boolean()
+  active: z.boolean(),
+});
+
+export const fullItemValidator = itemValidator.extend({
+  id: idValidator,
+  entity_id: idValidator,
 })
 
 // CHANGELOG
 
 export const attributeChangelogValidator = z.object({
-  id: idValidator,
-  entity_id: idValidator,
   attr: z.string().max(NAME_MAX),
   msg: z.string().max(CHANGELOG_MAX),
   prev: z.union([z.number(), z.string().max(NAME_MAX)]),
   time: z.date(), // TODO: might technically actually just be a string or something like that
+});
+
+export const fullAttributeChangelogValidator = attributeChangelogValidator.extend({
+  id: idValidator,
+  entity_id: idValidator,
 })
 
 // FULL ENTITY
 
-export const fullEntityValidator = z.object({
+export const collectedEntityValidator = z.object({
   entity: entityValidator,
   abilities: abilityValidator.array(),
   items: itemValidator.array(),
-  changelog: attributeChangelogValidator.array()
-})
+  changelog: attributeChangelogValidator.array(),
+});
 
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
 export type LoginRequest = z.infer<typeof loginRequestValidator>;
@@ -205,7 +239,7 @@ export type DangerousAccountInfo = z.infer<
   typeof dangerousAccountInfoValidator
 >;
 export type Entity = z.infer<typeof entityValidator>;
-export type FullEntity = z.infer<typeof fullEntityValidator>;
+export type collectedEntity = z.infer<typeof collectedEntityValidator>;
 
 // SERVER TYPES
 
