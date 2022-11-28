@@ -248,9 +248,9 @@ export const fullItemValidator = itemValidator.extend({
 // CHANGELOG
 
 export const attributeChangelogValidator = z.object({
-  attr: z.string().max(NAME_MAX),
+  attr: attributesValidator.keyof(),
   msg: z.string().max(CHANGELOG_MAX),
-  prev: z.union([z.number(), z.string().max(NAME_MAX)]),
+  prev: z.string().max(NAME_MAX),
   time: z.date(), // TODO: might technically actually just be a string or something like that
 });
 

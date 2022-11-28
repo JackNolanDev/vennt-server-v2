@@ -1,11 +1,16 @@
+import { format } from "@scaleleap/pg-format";
 import { handleTransaction, parseFirst, parseList, wrapErrorResult, wrapSuccessResult } from "../utils/db"
 import pool from "../utils/pool";
 import { UncompleteCollectedEntity, FullCollectedEntity, fullEntityValidator, Result, FullEntity, fullAbilityValidator, FullEntityAbility, FullEntityChangelog, FullEntityItem, fullAttributeChangelogValidator, fullItemValidator } from "../utils/types"
 
-const ENTITY_COLUMNS = "id, owner, name, type, attributes, other_fields";
-const ABILTIY_COLUMNS = "id, entity_id, name, effect, custom_fields, uses, comment, active";
-const CHANGELOG_COLUMNS = "id, entity_id, attr, msg, prev, time";
-const ITEM_COLUMNS = `id, entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
+const INSERT_ENTITY_COLUMNS = "owner, name, type, attributes, other_fields";
+const INSERT_ABILITY_COLUMNS = "entity_id, name, effect, custom_fields, uses, comment, active"
+const INSERT_CHANGELOG_COLUMNS = "entity_id, attr, msg, prev"
+const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`
+const ENTITY_COLUMNS = `id, ${INSERT_ENTITY_COLUMNS}`;
+const ABILTIY_COLUMNS = `id, ${INSERT_ABILITY_COLUMNS}`;
+const CHANGELOG_COLUMNS = `id, ${INSERT_CHANGELOG_COLUMNS}`;
+const ITEM_COLUMNS = `id, ${INSERT_ITEM_COLUMNS}`;
 
 export const dbInsertCollectedEntity = async (collected: UncompleteCollectedEntity, owner: string): Promise<Result<FullCollectedEntity>> => {
   if (collected.abilities.length > 100 || collected.changelog.length > 100 || collected.items.length > 100) {
@@ -13,24 +18,44 @@ export const dbInsertCollectedEntity = async (collected: UncompleteCollectedEnti
   }
   return handleTransaction(async (tx) => {
     const entityRes = await tx.query(
-      `INSERT INTO vennt.entities (owner, name, type, attributes, other_fields)
+      `INSERT INTO vennt.entities (${INSERT_ENTITY_COLUMNS})
       VALUES ($1, $2, $3, $4, $5)
       RETURNING ${ENTITY_COLUMNS}`,
     [owner, collected.entity.name, collected.entity.type, collected.entity.attributes, collected.entity.other_fields]);
-    const completeEntity = parseFirst(entityRes, fullEntityValidator, 500);
-    if (!completeEntity.success) {
-      return completeEntity;
-    }
-    const entity = completeEntity.result;
 
-    // const abilitiesRes = await tx.query(
-    //   `INSERT INTO vennt.abilities (name, owner, type, attributes, other_fields) VALUES () RETURNING id, name, owner, type, attributes, other_fields`
-    // )
+    const entity = parseFirst(entityRes, fullEntityValidator, 500);
+    if (!entity.success) return entity;
+
+    const abilityRows = collected.abilities.map((ability) => [entity.result.id, ability.name, ability.effect, ability.custom_fields, ability.uses, ability.comment, ability.active])
+    const abilities = parseList(await tx.query(format(
+      `INSERT INTO vennt.abilities (${INSERT_ABILITY_COLUMNS})
+      VALUES %L
+      RETURNING ${ABILTIY_COLUMNS}`, abilityRows)
+    ), fullAbilityValidator);
+    if (!abilities.success) return abilities
+
+    const changelogRows = collected.changelog.map((row) => [entity.result.id, row.attr, row.msg, row.prev]);
+    const changelog = parseList(await tx.query(format(
+      `INSERT INTO vennt.attribute_changelog (${INSERT_CHANGELOG_COLUMNS})
+      VALUES %L
+      RETURNING ${CHANGELOG_COLUMNS}`, changelogRows)
+    ), fullAttributeChangelogValidator);
+    if (!changelog.success) return changelog
+
+    const itemRows = collected.items.map((item) => [entity.result.id, item.name, item.bulk, item.desc, item.type, item.custom_fields, item.uses, item.comment, item.active])
+    const items = parseList(await tx.query(format(
+      `INSERT INTO vennt.items (${INSERT_ITEM_COLUMNS})
+      VALUES %L
+      RETURNING ${ITEM_COLUMNS}`, itemRows
+    )),
+      fullItemValidator);
+    if (!items.success) return items;
+
     return wrapSuccessResult({
-      entity,
-      abilities: [],
-      items: [],
-      changelog: [],
+      entity: entity.result,
+      abilities: abilities.result,
+      changelog: changelog.result,
+      items: items.result,
     })
   })
 }

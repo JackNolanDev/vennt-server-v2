@@ -66,7 +66,7 @@ CREATE TABLE vennt.attribute_changelog (
     entity_id uuid NOT NULL REFERENCES vennt.entities(id) ON DELETE CASCADE,
     attr text NOT NULL,
     msg text,
-    prev jsonb NOT NULL,
+    prev text NOT NULL,
     time timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 CREATE UNIQUE INDEX attribute_changelog_pkey ON vennt.attribute_changelog(id uuid_ops);

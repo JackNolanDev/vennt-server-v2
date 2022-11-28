@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@scaleleap/pg-format': ^1.0.0
   '@types/bcrypt': ^5.0.0
   '@types/connect-pg-simple': ^7.0.0
   '@types/cors': ^2.8.12
@@ -25,6 +26,7 @@ specifiers:
   zod: ^3.19.1
 
 dependencies:
+  '@scaleleap/pg-format': 1.0.0
   bcrypt: 5.1.0
   connect-pg-simple: 7.0.0
   cors: 2.8.5
@@ -127,6 +129,10 @@ packages:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
     dev: true
+
+  /@scaleleap/pg-format/1.0.0:
+    resolution: {integrity: sha512-gFkcYMnpeylF2OJ30FsDBjwICB9JTiZ5i3guPwdiBDrJFwIKr+Zk6jwI8Mg22a4FwXn5ezd5cHEFMKqBqBz4RQ==}
+    dev: false
 
   /@types/bcrypt/5.0.0:
     resolution: {integrity: sha512-agtcFKaruL8TmcvqbndlqHPSJgsolhf/qPWchFlgnW1gECTN/nKbFcoFnvKAQRFfKbh+BO6A3SWdJu9t+xF3Lw==}
