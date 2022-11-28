@@ -1,9 +1,6 @@
 import express from "express";
 import type { Request, Response } from "express";
-import {
-  loginRequestValidator,
-  signupRequestValidator,
-} from "../utils/types";
+import { loginRequestValidator, signupRequestValidator } from "../utils/types";
 import { createAccount, verifyPassword } from "../daos/authDao";
 import { parseBody, pushResponse } from "../utils/express";
 import { requireLoggedIn } from "../utils/middleware";

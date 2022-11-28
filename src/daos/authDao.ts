@@ -37,9 +37,14 @@ export const verifyPassword = async (
       row.result.password
     );
     if (comp) {
-      return wrapSuccessResult({ id: row.result.id, username: row.result.username, email: row.result.email, role: row.result.role })
+      return wrapSuccessResult({
+        id: row.result.id,
+        username: row.result.username,
+        email: row.result.email,
+        role: row.result.role,
+      });
     }
-    return wrapErrorResult("Incorrect password entered", 403)
+    return wrapErrorResult("Incorrect password entered", 403);
   }
-  return wrapErrorResult("Incorrect password entered", 403)
+  return wrapErrorResult("Incorrect password entered", 403);
 };
