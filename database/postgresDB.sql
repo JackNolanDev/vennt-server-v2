@@ -21,10 +21,11 @@ CREATE UNIQUE INDEX accounts_email_key ON vennt.accounts(email text_ops);
 
 CREATE TABLE vennt.entities (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
     owner uuid NOT NULL REFERENCES vennt.accounts(id) ON DELETE CASCADE
+    name text NOT NULL,
     type text DEFAULT 'CHARACTER'::text,
-    attributes jsonb
+    attributes jsonb,
+    other_fields jsonb
 );
 CREATE UNIQUE INDEX entities_pkey ON vennt.entities(id uuid_ops);
 

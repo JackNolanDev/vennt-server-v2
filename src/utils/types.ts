@@ -9,6 +9,30 @@ const COMMENT_MAX = 2000;
 const CHANGELOG_MAX = 200;
 export const ATTRIBUTE_MIN = -15;
 export const ATTRIBUTE_MAX = 15;
+export const ATTRIBUTES = [
+  "per",
+  "tek",
+  "agi",
+  "dex",
+  "int",
+  "spi",
+  "str",
+  "wis",
+  "cha",
+] as const;
+export const CHARACTER_GIFTS = [
+  "Alertness",
+  "Craft",
+  "Alacrity",
+  "Finesse",
+  "Mind",
+  "Magic",
+  "Rage",
+  "Science",
+  "Charm",
+  "None",
+] as const;
+export const ATTRIBUTES_SET = new Set<EntityAttribute>(ATTRIBUTES);
 
 // GENERAL FIELDS
 
@@ -51,19 +75,9 @@ export const attributeValidator = z
   .gte(ATTRIBUTE_MIN)
   .lte(ATTRIBUTE_MAX);
 export const combatStatValidator = z.number().int().min(0);
-export const giftValidator = z.enum([
-  "Alertness",
-  "Craft",
-  "Alacrity",
-  "Finesse",
-  "Mind",
-  "Magic",
-  "Rage",
-  "Science",
-  "Charm",
-  "None",
-]);
+export const giftValidator = z.enum(CHARACTER_GIFTS);
 export const entityTypeValidator = z.enum(["CHARACTER"]);
+export const baseAttributeFieldValidator = z.enum(ATTRIBUTES);
 
 // NOTE: ALL FUTURE ATTRIBUTES SHOULD BE optional()
 
@@ -78,7 +92,7 @@ export const attributesValidator = z.object({
   tek: attributeValidator,
   wis: attributeValidator,
   hp: combatStatValidator,
-  hp_max: combatStatValidator,
+  max_hp: combatStatValidator,
   mp: combatStatValidator,
   max_mp: combatStatValidator,
   vim: combatStatValidator,
@@ -90,14 +104,28 @@ export const attributesValidator = z.object({
   xp: z.number().int().optional(),
   sp: z.number().int().optional(),
   armor: z.number().int().optional(),
+  burden: z.number().int().optional(),
+  casting: z.number().int().optional(),
+  level: z.number().int().optional(),
+  acc: z.number().int().optional(),
+  radius: z.number().optional(),
+  reach: z.number().optional(),
+});
+
+// non-number attributes go here
+export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
 });
 
 export const entityValidator = z.object({
-  id: idValidator,
   name: nameValidator,
   type: entityTypeValidator,
   attributes: attributesValidator,
+  other_fields: otherAttributesValidator,
+});
+
+export const fullEntityValidator = entityValidator.extend({
+  id: idValidator,
   owner: idValidator,
 });
 
@@ -170,13 +198,12 @@ export const abilityValidator = z.object({
 
 export const fullAbilityValidator = abilityValidator.extend({
   id: idValidator,
-  entity_id: idValidator,
-})
+  entoity_id: idValidator,
+});
 
 // ITEMS
 
 export const itemFieldsValidator = z.object({
-  equipped: z.boolean().optional(),
   attr: z.string().max(NAME_MAX).optional(),
   category: z.string().max(NAME_MAX).optional(),
   courses: z.string().max(NAME_MAX).optional(),
@@ -186,18 +213,27 @@ export const itemFieldsValidator = z.object({
   weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
 });
 
+export const ITEM_TYPE_EQUIPMENT = "equipment";
+export const ITEM_TYPE_CONSUMABLE = "consumable";
+export const ITEM_TYPE_CONTAINER = "container";
+export const ITEM_TYPE_ARMOR = "armor";
+export const ITEM_TYPE_SHIELD = "shield";
+export const ITEM_TYPE_WEAPON = "weapon";
+
+export const itemTypeValidator = z.enum([
+  ITEM_TYPE_EQUIPMENT,
+  ITEM_TYPE_CONSUMABLE,
+  ITEM_TYPE_CONTAINER,
+  ITEM_TYPE_ARMOR,
+  ITEM_TYPE_SHIELD,
+  ITEM_TYPE_WEAPON,
+]);
+
 export const itemValidator = z.object({
   name: nameValidator,
   bulk: z.number().int(),
   desc: z.string().max(ITEM_MAX),
-  type: z.enum([
-    "equipment",
-    "consumable",
-    "container",
-    "armor",
-    "shield",
-    "weapon",
-  ]),
+  type: itemTypeValidator,
   custom_fields: itemFieldsValidator.optional(),
   uses: usesValidator.optional(),
   comment: z.string().max(COMMENT_MAX).optional(),
@@ -207,7 +243,7 @@ export const itemValidator = z.object({
 export const fullItemValidator = itemValidator.extend({
   id: idValidator,
   entity_id: idValidator,
-})
+});
 
 // CHANGELOG
 
@@ -218,19 +254,29 @@ export const attributeChangelogValidator = z.object({
   time: z.date(), // TODO: might technically actually just be a string or something like that
 });
 
-export const fullAttributeChangelogValidator = attributeChangelogValidator.extend({
-  id: idValidator,
-  entity_id: idValidator,
-})
+export const fullAttributeChangelogValidator =
+  attributeChangelogValidator.extend({
+    id: idValidator,
+    entity_id: idValidator,
+  });
 
-// FULL ENTITY
+// COLLECTED ENTITY
 
 export const collectedEntityValidator = z.object({
   entity: entityValidator,
   abilities: abilityValidator.array(),
   items: itemValidator.array(),
+  changelog: fullAttributeChangelogValidator.array(),
+});
+
+export const fullCollectedEntityValidator = z.object({
+  entity: fullEntityValidator,
+  abilities: fullAbilityValidator.array(),
+  items: fullItemValidator.array(),
   changelog: attributeChangelogValidator.array(),
 });
+
+// Type definitions
 
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
 export type LoginRequest = z.infer<typeof loginRequestValidator>;
@@ -238,8 +284,41 @@ export type AccountInfo = z.infer<typeof accountInfoValidator>;
 export type DangerousAccountInfo = z.infer<
   typeof dangerousAccountInfoValidator
 >;
+export type CharacterGift = z.infer<typeof giftValidator>;
+export type EntityType = z.infer<typeof entityTypeValidator>;
+export type EntityAttributes = z.infer<typeof attributesValidator>;
+export type EntityAttribute = keyof EntityAttributes;
+export type BaseEntityAttribute = z.infer<typeof baseAttributeFieldValidator>;
 export type Entity = z.infer<typeof entityValidator>;
-export type collectedEntity = z.infer<typeof collectedEntityValidator>;
+export type FullEntity = z.infer<typeof fullEntityValidator>;
+export type UncompleteCollectedEntity = z.infer<
+  typeof collectedEntityValidator
+>;
+export type FullCollectedEntity = z.infer<typeof fullCollectedEntityValidator>;
+export type CollectedEntity = UncompleteCollectedEntity | FullCollectedEntity;
+export type UsesMap = z.infer<typeof usesValidator>;
+export type EntityItemType = z.infer<typeof itemTypeValidator>;
+export type UncompleteEntityItem = z.infer<typeof itemValidator>;
+export type FullEntityItem = z.infer<typeof fullItemValidator>;
+export type EntityItem = UncompleteEntityItem | FullEntityItem;
+export type UncompleteEntityAbility = z.infer<typeof abilityValidator>;
+export type FullEntityAbility = z.infer<typeof fullAbilityValidator>;
+export type EntityAbility = UncompleteEntityAbility | FullEntityAbility;
+export type UncompleteEntityChangelog = z.infer<
+  typeof attributeChangelogValidator
+>;
+export type FullEntityChangelog = z.infer<
+  typeof fullAttributeChangelogValidator
+>;
+export type EntityChangelog = UncompleteEntityChangelog | FullEntityChangelog;
+
+export type UpdatedEntityAttributes = {
+  [attr in EntityAttribute]?: {
+    // TODO: add reason for values shifting
+    base?: number;
+    val: number;
+  };
+};
 
 // SERVER TYPES
 
@@ -256,3 +335,64 @@ export type ErrorResult = {
 export type Result<T> = SuccessResult<T> | ErrorResult;
 
 // TODO: can probably add regex validators to a lot of string fields
+// TODO: VERY IMPORTANT: update database to match types here
+
+// FRONTEND TYPES
+export type HTMLString = string;
+
+export type DiceToggle = {
+  attr?: EntityAttribute;
+  end?: string;
+  diceNumberAdjust?: number;
+  default?: boolean; // currently not really supported
+};
+export type DiceToggles = {
+  [key: string]: DiceToggle;
+};
+export type DiceOtherToggles = {
+  [key: string]: {
+    toggled: boolean;
+  };
+};
+export type DiceSettings = {
+  explodes?: boolean;
+  rr1s?: boolean;
+  drop?: number;
+  fatigued?: boolean;
+  end?: string;
+  flow?: boolean;
+  ebb?: boolean;
+  otherToggles?: DiceOtherToggles;
+  adjust?: number | string;
+  count?: number;
+  sides?: number;
+};
+export type DiceCommands = {
+  discord: string;
+  roll20: string;
+  web: string;
+  settings: DiceSettings;
+};
+
+export type ShopItem = {
+  name?: string;
+  bulk: number;
+  desc: string;
+  type: EntityItemType;
+  section?: string;
+  courses?: string;
+  category?: string;
+  weaponType?: string;
+  range?: string;
+  attr?: string;
+  dmg?: string;
+  special?: string;
+  cost: string;
+  sp?: number;
+  examples?: string;
+  uses?: UsesMap;
+};
+
+export type ConsolidatedItem = FullEntityItem & {
+  ids: string[];
+};

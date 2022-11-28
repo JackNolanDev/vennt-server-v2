@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import { parseFirst } from "../utils/db";
+import { parseFirst, wrapErrorResult, wrapSuccessResult } from "../utils/db";
 import pool from "../utils/pool";
 import {
   AccountInfo,
@@ -37,9 +37,9 @@ export const verifyPassword = async (
       row.result.password
     );
     if (comp) {
-      return { success: true, result: { id: row.result.id, username: row.result.username, email: row.result.email, role: row.result.role } };
+      return wrapSuccessResult({ id: row.result.id, username: row.result.username, email: row.result.email, role: row.result.role })
     }
-    return { success: false, error: "Incorrect password entered", code: 403 };
+    return wrapErrorResult("Incorrect password entered", 403)
   }
-  return row;
+  return wrapErrorResult("Incorrect password entered", 403)
 };

@@ -5,7 +5,8 @@ import {
   signupRequestValidator,
 } from "../utils/types";
 import { createAccount, verifyPassword } from "../daos/authDao";
-import { parseBody, pushResponse, resError } from "../utils/express";
+import { parseBody, pushResponse } from "../utils/express";
+import { requireLoggedIn } from "../utils/middleware";
 
 const signup = async (req: Request, res: Response) => {
   const body = parseBody(req, res, signupRequestValidator);
@@ -38,16 +39,12 @@ const logout = async (req: Request, res: Response) => {
 };
 
 const account = async (req: Request, res: Response) => {
-  if (!req.session.account) {
-    resError(res, "Not Authorized", 403);
-    return;
-  }
   pushResponse(res, { success: true, result: req.session.account });
 };
 
 const router = express.Router();
 router.post("/signup", signup);
 router.post("/login", login);
-router.post("/logout", logout);
-router.get("/account", account);
+router.post("/logout", requireLoggedIn, logout);
+router.get("/account", requireLoggedIn, account);
 export default router;
