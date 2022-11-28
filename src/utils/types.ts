@@ -190,9 +190,9 @@ export const abilityFieldsValidator = z.object({
 export const abilityValidator = z.object({
   name: nameValidator,
   effect: z.string().min(1).max(ABILITY_MAX),
-  custom_fields: abilityFieldsValidator.optional(),
-  uses: usesValidator.optional(),
-  comment: z.string().max(COMMENT_MAX).optional(),
+  custom_fields: abilityFieldsValidator.optional().nullable(),
+  uses: usesValidator.optional().nullable(),
+  comment: z.string().max(COMMENT_MAX).optional().nullable(),
   active: z.boolean(),
 });
 
@@ -234,9 +234,9 @@ export const itemValidator = z.object({
   bulk: z.number().int(),
   desc: z.string().max(ITEM_MAX),
   type: itemTypeValidator,
-  custom_fields: itemFieldsValidator.optional(),
-  uses: usesValidator.optional(),
-  comment: z.string().max(COMMENT_MAX).optional(),
+  custom_fields: itemFieldsValidator.optional().nullable(),
+  uses: usesValidator.optional().nullable(),
+  comment: z.string().max(COMMENT_MAX).optional().nullable(),
   active: z.boolean(),
 });
 

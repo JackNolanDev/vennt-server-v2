@@ -59,76 +59,97 @@ export const dbInsertCollectedEntity = async (
     const entity = parseFirst(entityRes, fullEntityValidator, 500);
     if (!entity.success) return entity;
 
-    const abilityRows = collected.abilities.map((ability) => [
-      entity.result.id,
-      ability.name,
-      ability.effect,
-      ability.custom_fields,
-      ability.uses,
-      ability.comment,
-      ability.active,
-    ]);
-    const abilities = parseList(
-      await tx.query(
-        format(
-          `INSERT INTO vennt.abilities (${INSERT_ABILITY_COLUMNS})
-      VALUES %L
-      RETURNING ${ABILTIY_COLUMNS}`,
-          abilityRows
-        )
-      ),
-      fullAbilityValidator
-    );
-    if (!abilities.success) return abilities;
+    let abilities: FullEntityAbility[] = [];
+    if (collected.abilities.length > 0) {
+      const abilityRows = collected.abilities.map((ability) => [
+        entity.result.id,
+        ability.name,
+        ability.effect,
+        ability.custom_fields,
+        ability.uses,
+        ability.comment,
+        ability.active,
+      ]);
+      const abilitiesRes = parseList(
+        await tx.query(
+          format(
+            `INSERT INTO vennt.abilities (${INSERT_ABILITY_COLUMNS})
+            VALUES %L
+            RETURNING ${ABILTIY_COLUMNS}`,
+            abilityRows
+          )
+        ),
+        fullAbilityValidator
+      );
+      if (!abilitiesRes.success) {
+        return abilitiesRes;
+      } else {
+        abilities = abilitiesRes.result;
+      }
+    }
 
-    const changelogRows = collected.changelog.map((row) => [
-      entity.result.id,
-      row.attr,
-      row.msg,
-      row.prev,
-    ]);
-    const changelog = parseList(
-      await tx.query(
-        format(
-          `INSERT INTO vennt.attribute_changelog (${INSERT_CHANGELOG_COLUMNS})
-      VALUES %L
-      RETURNING ${CHANGELOG_COLUMNS}`,
-          changelogRows
-        )
-      ),
-      fullAttributeChangelogValidator
-    );
-    if (!changelog.success) return changelog;
+    let changelog: FullEntityChangelog[] = [];
+    if (collected.changelog.length > 0) {
+      const changelogRows = collected.changelog.map((row) => [
+        entity.result.id,
+        row.attr,
+        row.msg,
+        row.prev,
+      ]);
+      const changelogRes = parseList(
+        await tx.query(
+          format(
+            `INSERT INTO vennt.attribute_changelog (${INSERT_CHANGELOG_COLUMNS})
+            VALUES %L
+            RETURNING ${CHANGELOG_COLUMNS}`,
+            changelogRows
+          )
+        ),
+        fullAttributeChangelogValidator
+      );
+      if (!changelogRes.success) {
+        return changelogRes;
+      } else {
+        changelog = changelogRes.result;
+      }
+    }
 
-    const itemRows = collected.items.map((item) => [
-      entity.result.id,
-      item.name,
-      item.bulk,
-      item.desc,
-      item.type,
-      item.custom_fields,
-      item.uses,
-      item.comment,
-      item.active,
-    ]);
-    const items = parseList(
-      await tx.query(
-        format(
-          `INSERT INTO vennt.items (${INSERT_ITEM_COLUMNS})
-      VALUES %L
-      RETURNING ${ITEM_COLUMNS}`,
-          itemRows
-        )
-      ),
-      fullItemValidator
-    );
-    if (!items.success) return items;
+    let items: FullEntityItem[] = [];
+    if (collected.items.length > 0) {
+      const itemRows = collected.items.map((item) => [
+        entity.result.id,
+        item.name,
+        item.bulk,
+        item.desc,
+        item.type,
+        item.custom_fields,
+        item.uses,
+        item.comment,
+        item.active,
+      ]);
+      const itemsRes = parseList(
+        await tx.query(
+          format(
+            `INSERT INTO vennt.items (${INSERT_ITEM_COLUMNS})
+            VALUES %L
+            RETURNING ${ITEM_COLUMNS}`,
+            itemRows
+          )
+        ),
+        fullItemValidator
+      );
+      if (!itemsRes.success) {
+        return itemsRes;
+      } else {
+        items = itemsRes.result;
+      }
+    }
 
     return wrapSuccessResult({
       entity: entity.result,
-      abilities: abilities.result,
-      changelog: changelog.result,
-      items: items.result,
+      abilities,
+      changelog,
+      items,
     });
   });
 };
