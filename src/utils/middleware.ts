@@ -7,7 +7,7 @@ export const requireLoggedIn = (
   next: NextFunction
 ) => {
   if (!req.session.account) {
-    resError(res, "Not Authorized", 403);
+    resError(res, "Forbidden", 401);
   } else {
     next();
   }
