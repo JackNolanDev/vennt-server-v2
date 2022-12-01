@@ -33,9 +33,18 @@ export const parseList = <T extends z.ZodTypeAny>(
   return wrapSuccessResult(parsed);
 };
 
+export class ResultError extends Error {
+  result: ErrorResult;
+
+  constructor(err: ErrorResult) {
+    super(err.error);
+    this.result = err;
+  }
+}
+
 export const handleTransaction = async <T>(
-  sql: (tx: PoolClient) => Promise<T>
-): Promise<T> => {
+  sql: (tx: PoolClient) => Promise<Result<T>>
+): Promise<Result<T>> => {
   const client = await pool.connect();
   let res = undefined;
 
@@ -45,11 +54,23 @@ export const handleTransaction = async <T>(
     await client.query("COMMIT");
   } catch (e) {
     await client.query("ROLLBACK");
-    throw e;
+    if (e instanceof ResultError) {
+      // catch custom errors
+      res = e.result;
+    } else {
+      throw e;
+    }
   } finally {
     client.release();
   }
   return res;
+};
+
+export const unwrapResultOrError = <T>(result: Result<T>): T => {
+  if (result.success) {
+    return result.result;
+  }
+  throw new ResultError(result);
 };
 
 export const wrapSuccessResult = <T>(result: T): SuccessResult<T> => {
