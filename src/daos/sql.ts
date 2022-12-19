@@ -2,15 +2,12 @@ import { format } from "@scaleleap/pg-format";
 import { PoolClient, Pool } from "pg";
 import { parseFirst, parseList, wrapSuccessResult } from "../utils/db";
 import {
+  EntityAttribute,
   EntityAttributes,
-  fullAbilityValidator,
-  fullAttributeChangelogValidator,
   FullEntity,
   FullEntityAbility,
   FullEntityChangelog,
   FullEntityItem,
-  fullEntityValidator,
-  fullItemValidator,
   Result,
   UncompleteEntity,
   UncompleteEntityAbility,
@@ -47,7 +44,6 @@ export const sqlInsertEntity = async (
     RETURNING ${ENTITY_COLUMNS}`,
       [owner, entity.name, entity.type, entity.attributes, entity.other_fields]
     ),
-    fullEntityValidator,
     500
   );
 };
@@ -77,8 +73,7 @@ export const sqlInsertAbilities = async (
           RETURNING ${ABILTIY_COLUMNS}`,
         abilityRows
       )
-    ),
-    fullAbilityValidator
+    )
   );
 };
 
@@ -104,8 +99,7 @@ export const sqlInsertChangelog = async (
         RETURNING ${CHANGELOG_COLUMNS}`,
         changelogRows
       )
-    ),
-    fullAttributeChangelogValidator
+    )
   );
 };
 
@@ -136,8 +130,7 @@ export const sqlInsertItems = async (
         RETURNING ${ITEM_COLUMNS}`,
         itemRows
       )
-    ),
-    fullItemValidator
+    )
   );
 };
 
@@ -149,8 +142,7 @@ export const sqlListEntities = async (
     await tx.query(
       `SELECT ${ENTITY_COLUMNS} FROM ${ENTITIES_TABLE} WHERE owner = $1`,
       [owner]
-    ),
-    fullEntityValidator
+    )
   );
 };
 
@@ -162,8 +154,7 @@ export const sqlFetchEntityById = async (
     await tx.query(
       `SELECT ${ENTITY_COLUMNS} FROM ${ENTITIES_TABLE} WHERE id = $1`,
       [id]
-    ),
-    fullEntityValidator
+    )
   );
 };
 
@@ -175,8 +166,7 @@ export const sqlFetchAbilitiesByEntityId = async (
     await tx.query(
       `SELECT ${ABILTIY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1`,
       [id]
-    ),
-    fullAbilityValidator
+    )
   );
 };
 
@@ -188,8 +178,7 @@ export const sqlFetchChangelogByEntityId = async (
     await tx.query(
       `SELECT ${CHANGELOG_COLUMNS} FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1`,
       [id]
-    ),
-    fullAttributeChangelogValidator
+    )
   );
 };
 
@@ -201,8 +190,7 @@ export const sqlFetchItemsByEntityId = async (
     await tx.query(
       `SELECT ${ITEM_COLUMNS} FROM ${ITEMS_TABLE} WHERE entity_id = $1`,
       [id]
-    ),
-    fullItemValidator
+    )
   );
 };
 
@@ -216,7 +204,11 @@ export const sqlUpdateEntityAttributes = async (
       `UPDATE ${ENTITIES_TABLE} SET attributes = $1 WHERE id = $2 RETURNING ${ENTITY_COLUMNS}`,
       [attributes, id]
     ),
-    fullEntityValidator,
     500
   );
 };
+
+export const sqlFilterChangelog = async (tx: TX, entityId: string, attributes: EntityAttribute[]): Promise<Result<boolean>> => {
+  await tx.query(format(`DELETE FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE attr IN (%L)`, attributes));
+  return wrapSuccessResult(true);
+}

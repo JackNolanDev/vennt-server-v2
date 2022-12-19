@@ -112,6 +112,8 @@ export const attributesValidator = z.object({
   reach: z.number().optional(),
 });
 
+export const attributeNameValidator = attributesValidator.keyof();
+
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
@@ -257,7 +259,7 @@ export const fullAttributeChangelogValidator =
   attributeChangelogValidator.extend({
     id: idValidator,
     entity_id: idValidator,
-    time: z.date(), // TODO: might technically actually just be a string or something like that
+    time: z.string().datetime(),
   });
 
 // COLLECTED ENTITY
@@ -266,20 +268,26 @@ export const collectedEntityValidator = z.object({
   entity: entityValidator,
   abilities: abilityValidator.array(),
   items: itemValidator.array(),
-  changelog: fullAttributeChangelogValidator.array(),
+  changelog: attributeChangelogValidator.array(),
 });
 
 export const fullCollectedEntityValidator = z.object({
   entity: fullEntityValidator,
   abilities: fullAbilityValidator.array(),
   items: fullItemValidator.array(),
-  changelog: attributeChangelogValidator.array(),
+  changelog: fullAttributeChangelogValidator.array(),
 });
+
+// other endpoints
 
 export const partialAttributesValidator = attributesValidator.partial();
 export const adjustAttributesValidator = z.object({
   message: z.string().max(CHANGELOG_MAX).optional(),
   attributes: partialAttributesValidator,
+});
+
+export const filterChangelogValidator = z.object({
+  attributes: attributeNameValidator.array(),
 });
 
 // Type definitions
@@ -293,7 +301,7 @@ export type DangerousAccountInfo = z.infer<
 export type CharacterGift = z.infer<typeof giftValidator>;
 export type EntityType = z.infer<typeof entityTypeValidator>;
 export type EntityAttributes = z.infer<typeof attributesValidator>;
-export type EntityAttribute = keyof EntityAttributes;
+export type EntityAttribute = z.infer<typeof attributeNameValidator>;
 export type BaseEntityAttribute = z.infer<typeof baseAttributeFieldValidator>;
 export type UncompleteEntity = z.infer<typeof entityValidator>;
 export type FullEntity = z.infer<typeof fullEntityValidator>;
@@ -322,6 +330,7 @@ export type PartialEntityAttributes = z.infer<
   typeof partialAttributesValidator
 >;
 export type UpdateEntityAttributes = z.infer<typeof adjustAttributesValidator>;
+export type FilterChangelogBody = z.infer<typeof filterChangelogValidator>;
 
 export type UpdatedEntityAttributes = {
   [attr in EntityAttribute]?: {

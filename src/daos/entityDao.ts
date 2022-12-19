@@ -20,6 +20,7 @@ import {
   sqlFetchChangelogByEntityId,
   sqlFetchEntityById,
   sqlFetchItemsByEntityId,
+  sqlFilterChangelog,
   sqlInsertAbilities,
   sqlInsertChangelog,
   sqlInsertEntity,
@@ -92,12 +93,13 @@ export const dbFetchCollectedEntity = async (
 };
 
 export const dbUserOwnsEntity = async (
-  id: string
+  id: string,
+  owner: string,
 ): Promise<Result<boolean>> => {
   const entity = await sqlFetchEntityById(pool, id);
   if (!entity.success) return entity;
 
-  return wrapSuccessResult(entity.result.owner === id);
+  return wrapSuccessResult(entity.result.owner === owner);
 };
 
 // TODO: might want to make this return FullCollectedEntity and just do a full replace on frontend
@@ -133,3 +135,7 @@ export const dbUpdateEntityAttributes = async (
     return wrapSuccessResult(updatedEntity);
   });
 };
+
+export const dbFilterChangelog = async (entityId: string, attributes: EntityAttribute[]): Promise<Result<boolean>> => {
+  return sqlFilterChangelog(pool, entityId, attributes);
+}

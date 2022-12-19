@@ -3,8 +3,7 @@ import { parseFirst, wrapErrorResult, wrapSuccessResult } from "../utils/db";
 import pool from "../utils/pool";
 import {
   AccountInfo,
-  accountInfoValidator,
-  dangerousAccountInfoValidator,
+  DangerousAccountInfo,
   LoginRequest,
   Result,
   SignupRequest,
@@ -20,7 +19,7 @@ export const createAccount = async (
     "INSERT INTO vennt.accounts (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, role",
     [signupRequest.username, signupRequest.email, hashedPassword]
   );
-  return parseFirst(res, accountInfoValidator, 500);
+  return parseFirst(res, 500);
 };
 
 export const verifyPassword = async (
@@ -30,7 +29,7 @@ export const verifyPassword = async (
     "SELECT id, username, email, role, password FROM vennt.accounts WHERE username = $1",
     [loginRequest.username]
   );
-  const row = parseFirst(res, dangerousAccountInfoValidator, 500);
+  const row = parseFirst<DangerousAccountInfo>(res, 500);
   if (row.success) {
     const comp = await bcrypt.compare(
       loginRequest.password,

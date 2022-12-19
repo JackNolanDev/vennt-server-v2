@@ -1,36 +1,22 @@
 import { PoolClient, QueryResult } from "pg";
-import { z } from "zod";
 import pool from "./pool";
 import { ErrorResult, Result, SuccessResult } from "./types";
 
-export const parseFirst = <T extends z.ZodTypeAny>(
+export const parseFirst = <T>(
   queryRes: QueryResult,
-  validator: T,
   errorCode = 404
-): Result<z.infer<T>> => {
+): Result<T> => {
   const first = queryRes.rows[0];
-  const parsed = validator.safeParse(first);
-  if (parsed.success) {
-    return wrapSuccessResult(parsed.data);
+  if (first !== undefined) {
+    return wrapSuccessResult(first as T);
   }
-  return wrapErrorResult(parsed.error.message, errorCode);
+  return wrapErrorResult("Not found", errorCode);
 };
 
-export const parseList = <T extends z.ZodTypeAny>(
-  queryRes: QueryResult,
-  validator: T,
-  errorCode = 404
-): Result<z.infer<T>[]> => {
-  const parsed: z.infer<T>[] = [];
-  for (const row of queryRes.rows) {
-    const parsedRow = validator.safeParse(row);
-    if (parsedRow.success) {
-      parsed.push(parsedRow.data);
-    } else {
-      return wrapErrorResult(parsedRow.error.message, errorCode);
-    }
-  }
-  return wrapSuccessResult(parsed);
+export const parseList = <T>(
+  queryRes: QueryResult
+): Result<T[]> => {
+  return wrapSuccessResult(queryRes.rows as T[]);
 };
 
 export class ResultError extends Error {

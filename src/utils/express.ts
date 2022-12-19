@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { z } from "zod";
 import { Result } from "./types";
+import { dbUserOwnsEntity } from "../daos/entityDao";
 
 export const pushResponse = <T>(res: Response, result: Result<T>): void => {
   if (result.success) {
@@ -25,3 +26,12 @@ export const parseBody = <T extends z.ZodTypeAny>(
 export const resError = (res: Response, error: string, code: number): void => {
   res.status(code).json({ success: false, error });
 };
+
+export const entityEditPermission = async (res: Response, entityId: string, userId: string): Promise<boolean> => {
+  const check = await dbUserOwnsEntity(entityId, userId);
+  if (check.success && !check.result) {
+    resError(res, "Not allowed to edit this entity", 403)
+    return true;
+  }
+  return false;
+}
