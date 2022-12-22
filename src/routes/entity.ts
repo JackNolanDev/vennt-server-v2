@@ -6,7 +6,12 @@ import {
   filterChangelogValidator,
   idValidator,
 } from "../utils/types";
-import { entityEditPermission, parseBody, pushResponse, resError } from "../utils/express";
+import {
+  entityEditPermission,
+  parseBody,
+  pushResponse,
+  resError,
+} from "../utils/express";
 import {
   dbFetchCollectedEntity,
   dbFilterChangelog,
@@ -66,12 +71,12 @@ const filterChangelog = async (req: Request, res: Response) => {
   }
   if (await entityEditPermission(res, id, req.session.account.id)) return;
   pushResponse(res, await dbFilterChangelog(id, body.attributes));
-}
+};
 
 const router = express.Router();
 router.post("", requireLoggedIn, addFullEntity);
 router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
-router.patch("/:id/changelog", requireLoggedIn, filterChangelog)
+router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
 export default router;

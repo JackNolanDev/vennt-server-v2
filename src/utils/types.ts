@@ -134,12 +134,12 @@ export const fullEntityValidator = entityValidator.extend({
 // USES
 
 export const useAttrMapValidator = z.record(
-  z.string().min(1).max(NAME_MAX),
+  attributeNameValidator,
   z.union([z.number().int(), z.string().min(1).max(NAME_MAX)])
 );
 export const useRollValidator = z.object({
   dice: z.string().max(NAME_MAX),
-  attr: z.string().max(NAME_MAX),
+  attr: attributeNameValidator,
 });
 export const useHealValidator = z.object({
   attr: useAttrMapValidator,
@@ -150,7 +150,7 @@ export const useAdjustValidator = z.object({
 });
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
-  attr: z.string().min(1).max(NAME_MAX),
+  attr: attributeNameValidator,
 });
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),

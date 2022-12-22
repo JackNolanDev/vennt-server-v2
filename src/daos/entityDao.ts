@@ -94,7 +94,7 @@ export const dbFetchCollectedEntity = async (
 
 export const dbUserOwnsEntity = async (
   id: string,
-  owner: string,
+  owner: string
 ): Promise<Result<boolean>> => {
   const entity = await sqlFetchEntityById(pool, id);
   if (!entity.success) return entity;
@@ -136,6 +136,9 @@ export const dbUpdateEntityAttributes = async (
   });
 };
 
-export const dbFilterChangelog = async (entityId: string, attributes: EntityAttribute[]): Promise<Result<boolean>> => {
+export const dbFilterChangelog = async (
+  entityId: string,
+  attributes: EntityAttribute[]
+): Promise<Result<boolean>> => {
   return sqlFilterChangelog(pool, entityId, attributes);
-}
+};

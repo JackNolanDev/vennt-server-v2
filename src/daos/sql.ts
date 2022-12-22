@@ -208,7 +208,16 @@ export const sqlUpdateEntityAttributes = async (
   );
 };
 
-export const sqlFilterChangelog = async (tx: TX, entityId: string, attributes: EntityAttribute[]): Promise<Result<boolean>> => {
-  await tx.query(format(`DELETE FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE attr IN (%L)`, attributes));
+export const sqlFilterChangelog = async (
+  tx: TX,
+  entityId: string,
+  attributes: EntityAttribute[]
+): Promise<Result<boolean>> => {
+  await tx.query(
+    format(
+      `DELETE FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE attr IN (%L)`,
+      attributes
+    )
+  );
   return wrapSuccessResult(true);
-}
+};

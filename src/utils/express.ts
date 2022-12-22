@@ -27,11 +27,15 @@ export const resError = (res: Response, error: string, code: number): void => {
   res.status(code).json({ success: false, error });
 };
 
-export const entityEditPermission = async (res: Response, entityId: string, userId: string): Promise<boolean> => {
+export const entityEditPermission = async (
+  res: Response,
+  entityId: string,
+  userId: string
+): Promise<boolean> => {
   const check = await dbUserOwnsEntity(entityId, userId);
   if (check.success && !check.result) {
-    resError(res, "Not allowed to edit this entity", 403)
+    resError(res, "Not allowed to edit this entity", 403);
     return true;
   }
   return false;
-}
+};

@@ -13,9 +13,7 @@ export const parseFirst = <T>(
   return wrapErrorResult("Not found", errorCode);
 };
 
-export const parseList = <T>(
-  queryRes: QueryResult
-): Result<T[]> => {
+export const parseList = <T>(queryRes: QueryResult): Result<T[]> => {
   return wrapSuccessResult(queryRes.rows as T[]);
 };
 
