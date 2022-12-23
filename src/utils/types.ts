@@ -110,6 +110,7 @@ export const attributesValidator = z.object({
   acc: z.number().int().optional(),
   radius: z.number().optional(),
   reach: z.number().optional(),
+  shield: z.number().optional(),
 });
 
 export const attributeNameValidator = attributesValidator.keyof();
