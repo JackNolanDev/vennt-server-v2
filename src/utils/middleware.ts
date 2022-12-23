@@ -12,3 +12,15 @@ export const requireLoggedIn = (
     next();
   }
 };
+
+export const requireAdmin = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.session.account || req.session.account.role !== "ADMIN") {
+    resError(res, "Forbidden", 401);
+  } else {
+    next();
+  }
+};

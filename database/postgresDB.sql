@@ -118,3 +118,13 @@ CREATE TABLE vennt.campaign_entites (
     gm_only boolean NOT NULL DEFAULT false
 );
 CREATE UNIQUE INDEX campaign_entites_pkey ON vennt.campaign_entites(id uuid_ops);
+
+-- json_storage
+
+CREATE TABLE vennt.json_storage (
+    key character varying(50) PRIMARY KEY,
+    updated timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    json jsonb NOT NULL
+);
+
+CREATE UNIQUE INDEX json_storage_pkey ON vennt.json_storage(key text_ops);

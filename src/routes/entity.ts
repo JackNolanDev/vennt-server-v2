@@ -11,6 +11,7 @@ import {
   parseBody,
   pushResponse,
   resError,
+  validateParam,
 } from "../utils/express";
 import {
   dbFetchCollectedEntity,
@@ -36,22 +37,16 @@ const listEntities = async (req: Request, res: Response) => {
 };
 
 const fetchCollectedEntity = async (req: Request, res: Response) => {
-  const id = req.params.id;
-  if (!idValidator.safeParse(id).success) {
-    resError(res, "Invalid id", 400);
-    return;
-  }
+  const id = validateParam(req, res, "id", idValidator);
+  if (!id) return;
   pushResponse(res, await dbFetchCollectedEntity(id));
 };
 
 const updateEntityAttributes = async (req: Request, res: Response) => {
   const body = parseBody(req, res, adjustAttributesValidator);
   if (!body) return;
-  const id = req.params.id;
-  if (!idValidator.safeParse(id).success) {
-    resError(res, "Invalid id", 400);
-    return;
-  }
+  const id = validateParam(req, res, "id", idValidator);
+  if (!id) return;
   if (Object.keys(body.attributes).length === 0) {
     resError(res, "Attributes is empty", 400);
   }
@@ -64,11 +59,8 @@ const updateEntityAttributes = async (req: Request, res: Response) => {
 const filterChangelog = async (req: Request, res: Response) => {
   const body = parseBody(req, res, filterChangelogValidator);
   if (!body) return;
-  const id = req.params.id;
-  if (!idValidator.safeParse(id).success) {
-    resError(res, "Invalid id", 400);
-    return;
-  }
+  const id = validateParam(req, res, "id", idValidator);
+  if (!id) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
   pushResponse(res, await dbFilterChangelog(id, body.attributes));
 };

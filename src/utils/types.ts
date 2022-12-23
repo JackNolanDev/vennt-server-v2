@@ -291,6 +291,14 @@ export const filterChangelogValidator = z.object({
   attributes: attributeNameValidator.array(),
 });
 
+export const WEAPON_TYPES_KEY = "VENNT_WEAPON_TYPES";
+export const SHOP_ITEMS_KEY = "VENNT_SHOP_ITEMS";
+
+export const jsonStorageKeyValidator = z.enum([
+  WEAPON_TYPES_KEY,
+  SHOP_ITEMS_KEY,
+]);
+
 // Type definitions
 
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
@@ -332,13 +340,25 @@ export type PartialEntityAttributes = z.infer<
 >;
 export type UpdateEntityAttributes = z.infer<typeof adjustAttributesValidator>;
 export type FilterChangelogBody = z.infer<typeof filterChangelogValidator>;
+export type JsonStorageKey = z.infer<typeof jsonStorageKeyValidator>;
 
-export type UpdatedEntityAttributes = {
-  [attr in EntityAttribute]?: {
-    // TODO: add reason for values shifting
-    base?: number;
-    val: number;
-  };
+export type ShopItem = {
+  name?: string;
+  bulk: number;
+  desc: string;
+  type: EntityItemType;
+  section?: string;
+  courses?: string;
+  category?: string;
+  weaponType?: string;
+  range?: string;
+  attr?: string;
+  dmg?: string;
+  special?: string;
+  cost: string;
+  sp?: number;
+  examples?: string;
+  uses?: UsesMap;
 };
 
 // SERVER TYPES
@@ -360,6 +380,14 @@ export type Result<T> = SuccessResult<T> | ErrorResult;
 
 // FRONTEND TYPES
 export type HTMLString = string;
+
+export type UpdatedEntityAttributes = {
+  [attr in EntityAttribute]?: {
+    // TODO: add reason for values shifting
+    base?: number;
+    val: number;
+  };
+};
 
 export type DiceToggle = {
   attr?: EntityAttribute;
@@ -393,25 +421,6 @@ export type DiceCommands = {
   roll20: string;
   web: string;
   settings: DiceSettings;
-};
-
-export type ShopItem = {
-  name?: string;
-  bulk: number;
-  desc: string;
-  type: EntityItemType;
-  section?: string;
-  courses?: string;
-  category?: string;
-  weaponType?: string;
-  range?: string;
-  attr?: string;
-  dmg?: string;
-  special?: string;
-  cost: string;
-  sp?: number;
-  examples?: string;
-  uses?: UsesMap;
 };
 
 export type ConsolidatedItem = FullEntityItem & {

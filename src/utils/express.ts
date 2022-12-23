@@ -27,6 +27,19 @@ export const resError = (res: Response, error: string, code: number): void => {
   res.status(code).json({ success: false, error });
 };
 
+export const validateParam = <T extends z.ZodTypeAny>(
+  req: Request,
+  res: Response,
+  key: string,
+  validator: T
+): z.infer<T> | undefined => {
+  const parsed = validator.safeParse(req.params[key]);
+  if (parsed.success) {
+    return parsed.data;
+  }
+  resError(res, parsed.error.message, 400);
+};
+
 export const entityEditPermission = async (
   res: Response,
   entityId: string,

@@ -17,20 +17,22 @@ import {
 
 export type TX = PoolClient | Pool;
 
-const ENTITIES_TABLE = "vennt.entities";
-const ABILITIES_TABLE = "vennt.abilities";
-const ATTRIBUTE_CHANGELOG_TABLE = "vennt.attribute_changelog";
-const ITEMS_TABLE = "vennt.items";
+export const ENTITIES_TABLE = "vennt.entities";
+export const ABILITIES_TABLE = "vennt.abilities";
+export const ATTRIBUTE_CHANGELOG_TABLE = "vennt.attribute_changelog";
+export const ITEMS_TABLE = "vennt.items";
+export const JSON_STORAGE_TABLE = "vennt.json_storage";
 
-const INSERT_ENTITY_COLUMNS = "owner, name, type, attributes, other_fields";
-const INSERT_ABILITY_COLUMNS =
+export const INSERT_ENTITY_COLUMNS =
+  "owner, name, type, attributes, other_fields";
+export const INSERT_ABILITY_COLUMNS =
   "entity_id, name, effect, custom_fields, uses, comment, active";
-const INSERT_CHANGELOG_COLUMNS = "entity_id, attr, msg, prev";
-const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
-const ENTITY_COLUMNS = `id, ${INSERT_ENTITY_COLUMNS}`;
-const ABILTIY_COLUMNS = `id, ${INSERT_ABILITY_COLUMNS}`;
-const CHANGELOG_COLUMNS = `id, ${INSERT_CHANGELOG_COLUMNS}, time`;
-const ITEM_COLUMNS = `id, ${INSERT_ITEM_COLUMNS}`;
+export const INSERT_CHANGELOG_COLUMNS = "entity_id, attr, msg, prev";
+export const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
+export const ENTITY_COLUMNS = `id, ${INSERT_ENTITY_COLUMNS}`;
+export const ABILTIY_COLUMNS = `id, ${INSERT_ABILITY_COLUMNS}`;
+export const CHANGELOG_COLUMNS = `id, ${INSERT_CHANGELOG_COLUMNS}, time`;
+export const ITEM_COLUMNS = `id, ${INSERT_ITEM_COLUMNS}`;
 
 export const sqlInsertEntity = async (
   tx: TX,
@@ -40,8 +42,8 @@ export const sqlInsertEntity = async (
   return parseFirst(
     await tx.query(
       `INSERT INTO ${ENTITIES_TABLE} (${INSERT_ENTITY_COLUMNS})
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING ${ENTITY_COLUMNS}`,
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING ${ENTITY_COLUMNS}`,
       [owner, entity.name, entity.type, entity.attributes, entity.other_fields]
     ),
     500
@@ -69,8 +71,8 @@ export const sqlInsertAbilities = async (
     await tx.query(
       format(
         `INSERT INTO ${ABILITIES_TABLE} (${INSERT_ABILITY_COLUMNS})
-          VALUES %L
-          RETURNING ${ABILTIY_COLUMNS}`,
+        VALUES %L
+        RETURNING ${ABILTIY_COLUMNS}`,
         abilityRows
       )
     )
@@ -215,9 +217,10 @@ export const sqlFilterChangelog = async (
 ): Promise<Result<boolean>> => {
   await tx.query(
     format(
-      `DELETE FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE attr IN (%L)`,
+      `DELETE FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1 AND attr IN (%L)`,
       attributes
-    )
+    ),
+    [entityId]
   );
   return wrapSuccessResult(true);
 };
