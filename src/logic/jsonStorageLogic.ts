@@ -36,9 +36,7 @@ const handleUpdateWeaponTypes = async (): Promise<Result<boolean>> => {
 
 const handleUpdateShopItems = async (): Promise<Result<boolean>> => {
   const weaponTypes = await dbGetJSONDocument<ShopItem[]>(WEAPON_TYPES_KEY);
-  if (!weaponTypes.success) {
-    return wrapErrorResult("No weapon types in db", 500);
-  }
+  if (!weaponTypes.success) return weaponTypes;
   const shopItems = await fetchShopItems(weaponTypes.result);
   return dbUpsertJSONDocument(SHOP_ITEMS_KEY, shopItems);
 };

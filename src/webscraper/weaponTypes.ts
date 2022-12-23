@@ -6,7 +6,7 @@ import { parseAttr, parseBulk, parseSP } from "./webscraperUtils";
 const WEAPONS_URL = "https://vennt.fandom.com/wiki/Weapons";
 
 const sectionMap: Record<string, keyof ShopItem> = {
-  Type: "weaponType",
+  Type: "weapon_type",
   Range: "range",
   Bulk: "bulk",
   Attribute: "attr",
@@ -51,8 +51,8 @@ const getWeaponTypes = (page: string): ShopItem[] => {
             weapon.sp = parseSP(text);
             weapon.cost = text;
             break;
-          case "weaponType":
-            weapon.weaponType = text;
+          case "weapon_type":
+            weapon.weapon_type = text;
             break;
           case "examples":
             weapon.examples = text;
@@ -77,7 +77,10 @@ const getWeaponTypes = (page: string): ShopItem[] => {
 };
 
 export const fetchWeaponTypes = async () => {
-  return await axios.get(WEAPONS_URL).then((response) => {
+  console.log("starting to web scrape weapon types")
+  const weaponTypes = await axios.get(WEAPONS_URL).then((response) => {
     return getWeaponTypes(response.data);
   });
+  console.log("complete web scrape weapon types")
+  return weaponTypes;
 };

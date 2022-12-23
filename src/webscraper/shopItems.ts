@@ -32,7 +32,7 @@ const defaultWeapons: ShopItem[] = [
       "All Three Rivers Guild adventurers are equipped with a sharp Blade to keep at their side for " +
       "close quarters encounters. You can make a melee attack at adjacent enemies. This weapon uses " +
       "your Dexterity as its weapon Attribute and deals 1d6+3 damage.",
-    weaponType: "Melee",
+    weapon_type: "Melee",
     attr: "dex",
     dmg: "1d6+3",
     range: "1m",
@@ -49,7 +49,7 @@ const defaultWeapons: ShopItem[] = [
       "All Three Rivers Guild adventurers are equipped with a Sidearm pistol that can shoot at a distance. " +
       "You can make a ranged attack at anything you can see. This weapon uses your Dexterity as its weapon " +
       "Attribute and deals 1d6 damage.",
-    weaponType: "Ranged",
+    weapon_type: "Ranged",
     attr: "dex",
     dmg: "1d6",
     range: "15m",
@@ -428,6 +428,7 @@ const getArmor = (page: string): ShopItem[] => {
 export const fetchShopItems = async (
   weaponTypes: ShopItem[]
 ): Promise<ShopItem[]> => {
+  console.log("starting to web scrape shop items")
   const equipment = await axios.get(EQUIPMENT_URL).then((response) => {
     const $ = load(response.data);
     // Adventuring Gear table
@@ -498,5 +499,6 @@ export const fetchShopItems = async (
     }
   });
 
+  console.log("complete web scrape shop items")
   return items;
 };

@@ -248,6 +248,18 @@ export const fullItemValidator = itemValidator.extend({
   entity_id: idValidator,
 });
 
+export const shopItemValidator = itemFieldsValidator.extend({
+  name: nameValidator.optional(),
+  bulk: z.number().int(),
+  desc: z.string().max(ITEM_MAX),
+  type: itemTypeValidator,
+  cost: z.string().max(NAME_MAX),
+  sp: z.number().int().optional(),
+  section: z.string().max(NAME_MAX).optional(),
+  examples: z.string().max(ITEM_MAX).optional(),
+  uses: usesValidator.optional(),
+});
+
 // CHANGELOG
 
 export const attributeChangelogValidator = z.object({
@@ -341,25 +353,7 @@ export type PartialEntityAttributes = z.infer<
 export type UpdateEntityAttributes = z.infer<typeof adjustAttributesValidator>;
 export type FilterChangelogBody = z.infer<typeof filterChangelogValidator>;
 export type JsonStorageKey = z.infer<typeof jsonStorageKeyValidator>;
-
-export type ShopItem = {
-  name?: string;
-  bulk: number;
-  desc: string;
-  type: EntityItemType;
-  section?: string;
-  courses?: string;
-  category?: string;
-  weaponType?: string;
-  range?: string;
-  attr?: string;
-  dmg?: string;
-  special?: string;
-  cost: string;
-  sp?: number;
-  examples?: string;
-  uses?: UsesMap;
-};
+export type ShopItem = z.infer<typeof shopItemValidator>;
 
 // SERVER TYPES
 
