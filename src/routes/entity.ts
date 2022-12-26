@@ -49,6 +49,7 @@ const updateEntityAttributes = async (req: Request, res: Response) => {
   if (!id) return;
   if (Object.keys(body.attributes).length === 0) {
     resError(res, "Attributes is empty", 400);
+    return;
   }
   pushResponse(
     res,

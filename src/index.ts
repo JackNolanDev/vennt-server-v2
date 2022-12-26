@@ -6,6 +6,7 @@ import pgSession from "connect-pg-simple";
 import pool from "./utils/pool";
 import authRoute from "./routes/auth";
 import entityRoute from "./routes/entity";
+import itemRoute from "./routes/item"
 import storageRoute from "./routes/storage"
 
 const isProd = process.env.NODE_ENV === "production";
@@ -44,6 +45,7 @@ app.get("/ping", (req, res) => {
 });
 app.use("/auth", authRoute);
 app.use("/entity", entityRoute);
+app.use("/item", itemRoute)
 app.use("/storage", storageRoute)
 
 app.listen(process.env.PORT ?? 5000);

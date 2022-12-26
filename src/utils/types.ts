@@ -243,6 +243,8 @@ export const itemValidator = z.object({
   active: z.boolean(),
 });
 
+export const partialItemValidator = itemValidator.partial();
+
 export const fullItemValidator = itemValidator.extend({
   id: idValidator,
   entity_id: idValidator,
@@ -333,10 +335,15 @@ export type UncompleteCollectedEntity = z.infer<
 export type FullCollectedEntity = z.infer<typeof fullCollectedEntityValidator>;
 export type CollectedEntity = UncompleteCollectedEntity | FullCollectedEntity;
 export type UsesMap = z.infer<typeof usesValidator>;
+export type UsesRoll = z.infer<typeof useRollValidator>;
+export type UsesHeal = z.infer<typeof useHealValidator>;
+export type UsesAdjust = z.infer<typeof useAdjustValidator>;
+export type UsesCheck = z.infer<typeof useCheckValidator>;
 export type EntityItemType = z.infer<typeof itemTypeValidator>;
 export type UncompleteEntityItem = z.infer<typeof itemValidator>;
 export type FullEntityItem = z.infer<typeof fullItemValidator>;
 export type EntityItem = UncompleteEntityItem | FullEntityItem;
+export type PartialEntityItem = z.infer<typeof partialItemValidator>;
 export type UncompleteEntityAbility = z.infer<typeof abilityValidator>;
 export type FullEntityAbility = z.infer<typeof fullAbilityValidator>;
 export type EntityAbility = UncompleteEntityAbility | FullEntityAbility;
@@ -350,6 +357,7 @@ export type EntityChangelog = UncompleteEntityChangelog | FullEntityChangelog;
 export type PartialEntityAttributes = z.infer<
   typeof partialAttributesValidator
 >;
+export type UseAttrMap = z.infer<typeof useAttrMapValidator>;
 export type UpdateEntityAttributes = z.infer<typeof adjustAttributesValidator>;
 export type FilterChangelogBody = z.infer<typeof filterChangelogValidator>;
 export type JsonStorageKey = z.infer<typeof jsonStorageKeyValidator>;
