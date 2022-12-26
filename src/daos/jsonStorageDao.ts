@@ -28,9 +28,9 @@ export const dbGetJSONDocument = async <T>(
   );
   if (response.success) {
     try {
-      return wrapSuccessResult(JSON.parse(response.result))
+      return wrapSuccessResult(JSON.parse(response.result));
     } catch (err) {
-      return wrapErrorResult("invalid JSON in DB", 500)
+      return wrapErrorResult("invalid JSON in DB", 500);
     }
   }
   return response;

@@ -77,10 +77,10 @@ const getWeaponTypes = (page: string): ShopItem[] => {
 };
 
 export const fetchWeaponTypes = async () => {
-  console.log("starting to web scrape weapon types")
+  console.log("starting to web scrape weapon types");
   const weaponTypes = await axios.get(WEAPONS_URL).then((response) => {
     return getWeaponTypes(response.data);
   });
-  console.log("complete web scrape weapon types")
+  console.log("complete web scrape weapon types");
   return weaponTypes;
 };

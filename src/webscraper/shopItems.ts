@@ -428,7 +428,7 @@ const getArmor = (page: string): ShopItem[] => {
 export const fetchShopItems = async (
   weaponTypes: ShopItem[]
 ): Promise<ShopItem[]> => {
-  console.log("starting to web scrape shop items")
+  console.log("starting to web scrape shop items");
   const equipment = await axios.get(EQUIPMENT_URL).then((response) => {
     const $ = load(response.data);
     // Adventuring Gear table
@@ -499,6 +499,6 @@ export const fetchShopItems = async (
     }
   });
 
-  console.log("complete web scrape shop items")
+  console.log("complete web scrape shop items");
   return items;
 };

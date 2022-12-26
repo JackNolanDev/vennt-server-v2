@@ -27,7 +27,7 @@ export const parseFirstVal = <T>(
     return wrapSuccessResult(first[field] as T);
   }
   return wrapErrorResult("Not found", errorCode);
-}
+};
 
 export class ResultError extends Error {
   result: ErrorResult;

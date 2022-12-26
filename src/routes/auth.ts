@@ -32,7 +32,7 @@ const login = async (req: Request, res: Response) => {
 
 const logout = async (req: Request, res: Response) => {
   req.session.destroy((err) => console.error(err));
-  pushResponse(res, { success: true, result: true})
+  pushResponse(res, { success: true, result: true });
 };
 
 const account = async (req: Request, res: Response) => {

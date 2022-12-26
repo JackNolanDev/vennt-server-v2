@@ -114,16 +114,16 @@ export const dbUpdateEntityAttributes = async (
       throw new ResultError(wrapErrorResult("Forbidden", 403));
     }
 
-    let changelogRows: UncompleteEntityChangelog[] = []
+    let changelogRows: UncompleteEntityChangelog[] = [];
     if (request.message) {
       changelogRows = Object.keys(request.attributes).map((attrIn) => {
         const attr = attrIn as EntityAttribute;
         return {
           attr,
-            msg: request.message ?? "",
-            prev: entity.attributes[attr],
-        }
-      })
+          msg: request.message ?? "",
+          prev: entity.attributes[attr],
+        };
+      });
     }
 
     entity.attributes = { ...entity.attributes, ...request.attributes };

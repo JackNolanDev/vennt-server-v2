@@ -1,6 +1,11 @@
 import { format } from "@scaleleap/pg-format";
 import { PoolClient, Pool } from "pg";
-import { parseFirst, parseFirstVal, parseList, wrapSuccessResult } from "../utils/db";
+import {
+  parseFirst,
+  parseFirstVal,
+  parseList,
+  wrapSuccessResult,
+} from "../utils/db";
 import {
   EntityAttribute,
   EntityAttributes,
@@ -24,14 +29,10 @@ export const ATTRIBUTE_CHANGELOG_TABLE = "vennt.attribute_changelog";
 export const ITEMS_TABLE = "vennt.items";
 export const JSON_STORAGE_TABLE = "vennt.json_storage";
 
-export const INSERT_ENTITY_COLUMNS =
-  `owner, name, type, attributes, other_fields`;
-export const INSERT_ABILITY_COLUMNS =
-  `entity_id, name, effect, custom_fields, uses, comment, active`;
-export const INSERT_CHANGELOG_COLUMNS =
-  `entity_id, attr, msg, prev`;
-export const INSERT_ITEM_COLUMNS = 
-  `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
+export const INSERT_ENTITY_COLUMNS = `owner, name, type, attributes, other_fields`;
+export const INSERT_ABILITY_COLUMNS = `entity_id, name, effect, custom_fields, uses, comment, active`;
+export const INSERT_CHANGELOG_COLUMNS = `entity_id, attr, msg, prev`;
+export const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
 export const ENTITY_COLUMNS = `${ENTITIES_TABLE}.id, ${INSERT_ENTITY_COLUMNS}`;
 export const ABILTIY_COLUMNS = `${ABILITIES_TABLE}.id, ${INSERT_ABILITY_COLUMNS}`;
 export const CHANGELOG_COLUMNS = `${ATTRIBUTE_CHANGELOG_TABLE}.id, ${INSERT_CHANGELOG_COLUMNS}, ${ATTRIBUTE_CHANGELOG_TABLE}.time`;
@@ -236,35 +237,65 @@ export const sqlFetchItemsByEntityId = async (
   );
 };
 
-export const sqlFetchItemWithOwnerById = async (tx: TX, itemId: string): Promise<Result<FullEntityItem & { owner: string}>> => {
+export const sqlFetchItemWithOwnerById = async (
+  tx: TX,
+  itemId: string
+): Promise<Result<FullEntityItem & { owner: string }>> => {
   return parseFirst(
-  await tx.query(
-    `SELECT ${ITEM_COLUMNS}, ${ENTITIES_TABLE}.owner
+    await tx.query(
+      `SELECT ${ITEM_COLUMNS}, ${ENTITIES_TABLE}.owner
     FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
     WHERE ${ITEMS_TABLE}.id = $1`,
-  [itemId]))
-}
+      [itemId]
+    )
+  );
+};
 
-export const sqlFetchItemOwnerById = async (tx: TX, itemId: string): Promise<Result<string>> => {
+export const sqlFetchItemOwnerById = async (
+  tx: TX,
+  itemId: string
+): Promise<Result<string>> => {
   return parseFirstVal(
     await tx.query(
       `SELECT ${ENTITIES_TABLE}.owner
       FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
       WHERE ${ITEMS_TABLE}.id = $1`,
-      [itemId]),
-    "owner")
-}
+      [itemId]
+    ),
+    "owner"
+  );
+};
 
-export const sqlUpdateItem = async (tx: TX, itemId: string, item: EntityItem): Promise<Result<FullEntityItem>> => {
-  return parseFirst(await tx.query(
-    `UPDATE ${ITEMS_TABLE}
+export const sqlUpdateItem = async (
+  tx: TX,
+  itemId: string,
+  item: EntityItem
+): Promise<Result<FullEntityItem>> => {
+  return parseFirst(
+    await tx.query(
+      `UPDATE ${ITEMS_TABLE}
     SET name = $1, bulk = $2, "desc" = $3, type = $4, custom_fields = $5, uses = $6, comment = $7, active = $8
     WHERE id = $9
     RETURNING ${ITEM_COLUMNS}`,
-    [item.name, item.bulk, item.desc, item.type, item.custom_fields, item.uses, item.comment, item.active, itemId]))
-}
+      [
+        item.name,
+        item.bulk,
+        item.desc,
+        item.type,
+        item.custom_fields,
+        item.uses,
+        item.comment,
+        item.active,
+        itemId,
+      ]
+    )
+  );
+};
 
-export const sqlDeleteItem = async (tx: TX, itemId: string): Promise<Result<boolean>> => {
+export const sqlDeleteItem = async (
+  tx: TX,
+  itemId: string
+): Promise<Result<boolean>> => {
   await tx.query(`DELETE FROM ${ITEMS_TABLE} WHERE id = $1`, [itemId]);
   return wrapSuccessResult(true);
-}
+};
