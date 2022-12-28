@@ -14,6 +14,8 @@ import {
   UpdateEntityAttributes,
   UncompleteEntityChangelog,
   EntityAttribute,
+  UncompleteEntityItem,
+  FullEntityItem,
 } from "../utils/types";
 import {
   sqlFetchAbilitiesByEntityId,
@@ -143,3 +145,7 @@ export const dbFilterChangelog = async (
 ): Promise<Result<boolean>> => {
   return sqlFilterChangelog(pool, entityId, attributes);
 };
+
+export const dbInsertItems = (entityId: string, items: UncompleteEntityItem[]): Promise<Result<FullEntityItem[]>> => {
+  return sqlInsertItems(pool, entityId, items);
+}

@@ -5,6 +5,7 @@ import {
   collectedEntityValidator,
   filterChangelogValidator,
   idValidator,
+  itemValidator,
 } from "../utils/types";
 import {
   entityEditPermission,
@@ -17,6 +18,7 @@ import {
   dbFetchCollectedEntity,
   dbFilterChangelog,
   dbInsertCollectedEntity,
+  dbInsertItems,
   dbListEntities,
   dbUpdateEntityAttributes,
 } from "../daos/entityDao";
@@ -66,10 +68,20 @@ const filterChangelog = async (req: Request, res: Response) => {
   pushResponse(res, await dbFilterChangelog(id, body.attributes));
 };
 
+const insertItems = async (req: Request, res: Response) => {
+  const body = parseBody(req, res, itemValidator.array());
+  if (!body) return;
+  const id = validateParam(req, res, "id", idValidator);
+  if (!id) return;
+  if (await entityEditPermission(res, id, req.session.account.id)) return;
+  pushResponse(res, await dbInsertItems(id, body))
+}
+
 const router = express.Router();
 router.post("", requireLoggedIn, addFullEntity);
 router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
+router.post("/:id/items", requireLoggedIn, insertItems)
 export default router;

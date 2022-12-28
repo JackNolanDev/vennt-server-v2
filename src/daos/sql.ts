@@ -33,10 +33,18 @@ export const INSERT_ENTITY_COLUMNS = `owner, name, type, attributes, other_field
 export const INSERT_ABILITY_COLUMNS = `entity_id, name, effect, custom_fields, uses, comment, active`;
 export const INSERT_CHANGELOG_COLUMNS = `entity_id, attr, msg, prev`;
 export const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", type, custom_fields, uses, comment, active`;
-export const ENTITY_COLUMNS = `${ENTITIES_TABLE}.id, ${INSERT_ENTITY_COLUMNS}`;
-export const ABILTIY_COLUMNS = `${ABILITIES_TABLE}.id, ${INSERT_ABILITY_COLUMNS}`;
-export const CHANGELOG_COLUMNS = `${ATTRIBUTE_CHANGELOG_TABLE}.id, ${INSERT_CHANGELOG_COLUMNS}, ${ATTRIBUTE_CHANGELOG_TABLE}.time`;
-export const ITEM_COLUMNS = `${ITEMS_TABLE}.id, ${INSERT_ITEM_COLUMNS}`;
+export const ENTITY_COLUMNS =
+  `${ENTITIES_TABLE}.id, ${ENTITIES_TABLE}.owner, ${ENTITIES_TABLE}.name, ${ENTITIES_TABLE}.type, \
+  ${ENTITIES_TABLE}.attributes, ${ENTITIES_TABLE}.other_fields`;
+export const ABILTIY_COLUMNS =
+  `${ABILITIES_TABLE}.id, ${ABILITIES_TABLE}.entity_id, ${ABILITIES_TABLE}.name, ${ABILITIES_TABLE}.effect, \
+  ${ABILITIES_TABLE}.custom_fields, ${ABILITIES_TABLE}.uses, ${ABILITIES_TABLE}.comment, ${ABILITIES_TABLE}.active`;
+export const CHANGELOG_COLUMNS =
+  `${ATTRIBUTE_CHANGELOG_TABLE}.id, ${ATTRIBUTE_CHANGELOG_TABLE}.entity_id, ${ATTRIBUTE_CHANGELOG_TABLE}.attr, \
+  ${ATTRIBUTE_CHANGELOG_TABLE}.msg, ${ATTRIBUTE_CHANGELOG_TABLE}.prev, ${ATTRIBUTE_CHANGELOG_TABLE}.time`;
+export const ITEM_COLUMNS =
+  `${ITEMS_TABLE}.id, ${ITEMS_TABLE}.entity_id, ${ITEMS_TABLE}.name, ${ITEMS_TABLE}.bulk, ${ITEMS_TABLE}.desc, \
+  ${ITEMS_TABLE}.type, ${ITEMS_TABLE}.custom_fields, ${ITEMS_TABLE}.uses, ${ITEMS_TABLE}.comment, ${ITEMS_TABLE}.active`;
 
 // ENTITIES
 

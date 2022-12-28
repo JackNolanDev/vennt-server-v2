@@ -160,21 +160,23 @@ const getAdvancedWeapons = (
   const weapons: ShopItem[] = [];
   const $ = load(page);
   const weaponHeadlines = $("h3 .mw-headline");
-  weaponHeadlines.each((idx, el) => {
+  weaponHeadlines.each((_, el) => {
     if (!el.parent) {
       return;
     }
-    let weapon: ShopItem = {
+    const weapon: Partial<ShopItem> = {
       section: "Advanced Weapons",
       courses: "Weapons",
+    };
+    let fullWeapon: ShopItem = {
+      type: "equipment",
       bulk: 0,
       desc: "",
-      type: "container",
-      cost: "",
+      cost: ""
     };
     weapon.name = $(el).text();
     const parent = $(el.parent);
-    parent.nextUntil("h3").each((idx, el) => {
+    parent.nextUntil("h3").each((_, el) => {
       const section = $(el).children("b").first().text();
       if (weaponSections[section] !== undefined) {
         let text = $(el)
@@ -186,7 +188,7 @@ const getAdvancedWeapons = (
             (type) => type.category === text
           );
           if (weaponTemplate !== undefined) {
-            weapon = Object.assign({ ...weaponTemplate }, weapon);
+            fullWeapon = weaponTemplate;
           }
         } else if (weaponSections[section] === "cost") {
           weapon.sp = parseSP(text);
@@ -211,8 +213,9 @@ const getAdvancedWeapons = (
         }
       }
     });
-    delete weapon.examples;
-    weapons.push(weapon);
+    const compiledWeapon: ShopItem = { ...fullWeapon, ...weapon };
+    delete compiledWeapon.examples;
+    weapons.push(compiledWeapon);
   });
   return weapons;
 };
@@ -361,6 +364,7 @@ const getArmor = (page: string): ShopItem[] => {
               item.bulk = parseBulk(text);
               break;
             case 4:
+              item.cost = text;
               item.sp = parseSP(text);
               break;
           }
