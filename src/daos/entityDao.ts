@@ -146,6 +146,9 @@ export const dbFilterChangelog = async (
   return sqlFilterChangelog(pool, entityId, attributes);
 };
 
-export const dbInsertItems = (entityId: string, items: UncompleteEntityItem[]): Promise<Result<FullEntityItem[]>> => {
+export const dbInsertItems = (
+  entityId: string,
+  items: UncompleteEntityItem[]
+): Promise<Result<FullEntityItem[]>> => {
   return sqlInsertItems(pool, entityId, items);
-}
+};

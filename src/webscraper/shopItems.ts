@@ -172,7 +172,7 @@ const getAdvancedWeapons = (
       type: "equipment",
       bulk: 0,
       desc: "",
-      cost: ""
+      cost: "",
     };
     weapon.name = $(el).text();
     const parent = $(el.parent);

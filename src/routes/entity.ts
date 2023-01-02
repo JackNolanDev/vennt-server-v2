@@ -74,8 +74,8 @@ const insertItems = async (req: Request, res: Response) => {
   const id = validateParam(req, res, "id", idValidator);
   if (!id) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbInsertItems(id, body))
-}
+  pushResponse(res, await dbInsertItems(id, body));
+};
 
 const router = express.Router();
 router.post("", requireLoggedIn, addFullEntity);
@@ -83,5 +83,5 @@ router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
-router.post("/:id/items", requireLoggedIn, insertItems)
+router.post("/:id/items", requireLoggedIn, insertItems);
 export default router;
