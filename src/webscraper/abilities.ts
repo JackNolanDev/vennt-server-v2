@@ -6,6 +6,7 @@ import {
 } from "../utils/types";
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
+import { cleanQuotes } from "./webscraperUtils";
 
 const LIST_OF_PATHS = "https://vennt.fandom.com/wiki/List_of_Paths";
 const BASE_URL = "https://vennt.fandom.com";
@@ -109,8 +110,8 @@ const parseAbilityPage = async (
 ): Promise<[PathDetails, UncompleteEntityAbility[]]> => {
   const page = await axios.get(url);
   const $ = load(page.data);
-  const name = $("#firstHeading").first().text().trim();
-  const pathDetails: PathDetails = { name, url, desc: "" };
+  const pathName = cleanQuotes($("#firstHeading").first().text().trim());
+  const pathDetails: PathDetails = { name: pathName, url, desc: "" };
   const abilities: UncompleteEntityAbility[] = [];
   const pageWrapper = $("#mw-content-text > div.mw-parser-output");
 
@@ -135,24 +136,27 @@ const parseAbilityPage = async (
     currentAbility = {
       name,
       effect: "",
-      custom_fields: {},
+      custom_fields: {
+        path: pathName,
+      },
       active: false,
     };
   };
 
   pageWrapper.children().each((_, el) => {
-    const fullEl = $(el);
-    if (fullEl.is("p")) {
+    const outerHTML = () => $.html(el);
+    if (el.tagName === "p") {
+      const fullEl = $(el);
       const text = fullEl.text().trim();
-      const boldText = fullEl.children("b").first().text().trim();
-      const italicText = fullEl.children("i").first().text().trim();
       if (text.length === 0) {
         possibleAbilityName = undefined;
+        completeCurrentAbility();
         return;
       }
+      const boldText = fullEl.children("b").first().text().trim();
       if (boldText === text) {
         // full line is bold - probably ability title
-        possibleAbilityName = text;
+        possibleAbilityName = cleanQuotes(text);
       }
       if (
         possibleAbilityName &&
@@ -175,6 +179,7 @@ const parseAbilityPage = async (
           }
         );
         if (!handled) {
+          const italicText = fullEl.children("i").first().text().trim();
           if (
             italicText === text &&
             currentAbility.custom_fields &&
@@ -184,7 +189,7 @@ const parseAbilityPage = async (
             // save first italic line as flavor text when it comes before any effects
             currentAbility.custom_fields.flavor = text;
           } else {
-            currentAbility.effect += fullEl.html(); // will be parsed later
+            currentAbility.effect += outerHTML();
           }
         }
       } else if (!foundFirstAbility && !possibleAbilityName) {
@@ -196,14 +201,14 @@ const parseAbilityPage = async (
           return false;
         });
         if (!handled) {
-          pathDetails.desc += fullEl.html(); // will be parsed later
+          pathDetails.desc += outerHTML();
         }
       }
     } else if (addToDescTags.has(el.tagName)) {
       if (currentAbility) {
-        currentAbility.effect += fullEl.html();
+        currentAbility.effect += outerHTML();
       } else if (!foundFirstAbility) {
-        pathDetails.desc += fullEl.html(); // will be parsed later
+        pathDetails.desc += outerHTML();
       }
     }
   });
@@ -211,9 +216,7 @@ const parseAbilityPage = async (
     completeCurrentAbility();
   }
   pathDetails.desc = markdown.translate(pathDetails.desc);
-  console.log(`Found ${abilities.length} abilities in ${name}`);
-  console.log(pathDetails);
-  console.log(abilities);
+  console.log(`Found ${abilities.length} abilities in ${pathName}`);
   return [pathDetails, abilities];
 };
 
@@ -222,15 +225,17 @@ export const fetchAbilities = async (): Promise<{
   abilities: UncompleteEntityAbility[];
 }> => {
   console.log("starting to web scrape abilities");
-  const markdown = new NodeHtmlMarkdown({
-    //ignore: ["br", "a"]
-  });
-  // TODO: need to add custom implementation for "a"
+  const markdown = new NodeHtmlMarkdown(
+    {ignore: ["br", "img"]},
+    // do not parse ability links
+    { "a": ({node}) => ({ content: node.textContent ?? ""})});
   const paths: PathDetails[] = [];
   const abilities: UncompleteEntityAbility[] = [];
-  // const pageUrls = await fetchPathUrls();
-  // DO NOT DO A PROMISE.ALL SO WE DON'T GET RATE LIMITED
-  const pageUrls = new Set(["https://vennt.fandom.com/wiki/Path_of_the_Face"]);
+  const pageUrls = await fetchPathUrls();
+  // const pageUrls = new Set(["https://vennt.fandom.com/wiki/Path_of_the_Face",
+  // "https://vennt.fandom.com/wiki/Path_of_the_Magician",
+  // "https://vennt.fandom.com/wiki/Path_of_the_Spellcaster"]);
+  // iterate over urls consecutively instead of in parallel to prevent getting rate limited
   for (const url of pageUrls) {
     const [path, pathAbilities] = await parseAbilityPage(url, markdown);
     paths.push(path);
