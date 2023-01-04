@@ -27,7 +27,6 @@ export const ENTITIES_TABLE = "vennt.entities";
 export const ABILITIES_TABLE = "vennt.abilities";
 export const ATTRIBUTE_CHANGELOG_TABLE = "vennt.attribute_changelog";
 export const ITEMS_TABLE = "vennt.items";
-export const JSON_STORAGE_TABLE = "vennt.json_storage";
 
 export const INSERT_ENTITY_COLUMNS = `owner, name, type, attributes, other_fields`;
 export const INSERT_ABILITY_COLUMNS = `entity_id, name, effect, custom_fields, uses, comment, active`;

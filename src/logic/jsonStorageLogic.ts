@@ -1,11 +1,10 @@
-import { writeFileSync } from "fs";
 import {
   dbGetJSONDocument,
   dbUpsertJSONDocument,
 } from "../daos/jsonStorageDao";
-import { wrapErrorResult, wrapSuccessResult } from "../utils/db";
+import { wrapErrorResult } from "../utils/db";
 import {
-  ABILITIES_ITEMS_KEY,
+  ABILITIES_KEY,
   JsonStorageKey,
   Result,
   SHOP_ITEMS_KEY,
@@ -24,7 +23,7 @@ export const handleUpdateJsonStorage = async (
       return handleUpdateWeaponTypes();
     case SHOP_ITEMS_KEY:
       return handleUpdateShopItems();
-    case ABILITIES_ITEMS_KEY:
+    case ABILITIES_KEY:
       return handleUpdateAbilities();
     default:
       console.log(
@@ -47,7 +46,6 @@ const handleUpdateShopItems = async (): Promise<Result<boolean>> => {
 };
 
 const handleUpdateAbilities = async (): Promise<Result<boolean>> => {
-  const response = await fetchAbilities();
-  writeFileSync("abilities.json", JSON.stringify(response));
-  return wrapSuccessResult(true);
+  const abilities = await fetchAbilities();
+  return dbUpsertJSONDocument(ABILITIES_KEY, abilities);
 };

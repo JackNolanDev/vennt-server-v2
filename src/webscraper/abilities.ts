@@ -2,6 +2,7 @@ import axios from "axios";
 import {
   EntityAbilityFieldsStrings,
   PathDetails,
+  PathsAndAbilites,
   UncompleteEntityAbility,
 } from "../utils/types";
 import { load } from "cheerio";
@@ -220,21 +221,16 @@ const parseAbilityPage = async (
   return [pathDetails, abilities];
 };
 
-export const fetchAbilities = async (): Promise<{
-  paths: PathDetails[];
-  abilities: UncompleteEntityAbility[];
-}> => {
+export const fetchAbilities = async (): Promise<PathsAndAbilites> => {
   console.log("starting to web scrape abilities");
   const markdown = new NodeHtmlMarkdown(
-    {ignore: ["br", "img"]},
+    { ignore: ["br", "img"] },
     // do not parse ability links
-    { "a": ({node}) => ({ content: node.textContent ?? ""})});
+    { a: ({ node }) => ({ content: node.textContent ?? "" }) }
+  );
   const paths: PathDetails[] = [];
   const abilities: UncompleteEntityAbility[] = [];
   const pageUrls = await fetchPathUrls();
-  // const pageUrls = new Set(["https://vennt.fandom.com/wiki/Path_of_the_Face",
-  // "https://vennt.fandom.com/wiki/Path_of_the_Magician",
-  // "https://vennt.fandom.com/wiki/Path_of_the_Spellcaster"]);
   // iterate over urls consecutively instead of in parallel to prevent getting rate limited
   for (const url of pageUrls) {
     const [path, pathAbilities] = await parseAbilityPage(url, markdown);

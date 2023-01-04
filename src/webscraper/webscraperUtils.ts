@@ -46,7 +46,5 @@ export const parseCourses = (text: string): string => {
 };
 
 export const cleanQuotes = (text: string): string => {
-  return text
-  .replace(/[\u2018\u2019]/g, "'")
-  .replace(/[\u201C\u201D]/g, '"');
-}
+  return text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+};

@@ -1,37 +1,43 @@
 import { JsonStorageKey, Result } from "../utils/types";
-import pool from "../utils/pool";
-import { JSON_STORAGE_TABLE } from "./sql";
-import { parseFirstVal, wrapErrorResult, wrapSuccessResult } from "../utils/db";
+import { wrapErrorResult, wrapSuccessResult } from "../utils/db";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getS3Client } from "../utils/s3";
+import axios from "axios";
+
+export const JSON_STORAGE_BUCKET = "json-storage";
+export const JSON_STORAGE_PUBLIC_URL =
+  process.env.JSON_STORAGE_URL ??
+  "https://pub-8e2f06dbcb7b4dde8553a52dd656dbee.r2.dev";
 
 export const dbUpsertJSONDocument = async (
   key: JsonStorageKey,
-  document: unknown
+  document: object
 ): Promise<Result<boolean>> => {
-  await pool.query(
-    `INSERT INTO ${JSON_STORAGE_TABLE} (key, json) 
-    VALUES ($1, $2) 
-    ON CONFLICT (key)
-    DO UPDATE SET json = $2, updated = CURRENT_TIMESTAMP`,
-    [key, JSON.stringify(document)]
+  const client = getS3Client();
+  if (!client.success) return client;
+  const response = await client.result.send(
+    new PutObjectCommand({
+      Bucket: JSON_STORAGE_BUCKET,
+      Key: key,
+      Body: JSON.stringify(document),
+    })
   );
-  return wrapSuccessResult(true);
+  if (response.$metadata.httpStatusCode === 200) {
+    console.log(`PUT ${key} in storage`);
+    return wrapSuccessResult(true);
+  }
+  return wrapErrorResult("S3 PUT failed", 500);
 };
 
 export const dbGetJSONDocument = async <T>(
   key: JsonStorageKey
 ): Promise<Result<T>> => {
-  const response = parseFirstVal<string>(
-    await pool.query(`SELECT json FROM ${JSON_STORAGE_TABLE} WHERE key = $1`, [
-      key,
-    ]),
-    "json"
-  );
-  if (response.success) {
-    try {
-      return wrapSuccessResult(JSON.parse(response.result));
-    } catch (err) {
-      return wrapErrorResult("invalid JSON in DB", 500);
+  const axiosResponse = await axios.get(`${JSON_STORAGE_PUBLIC_URL}/${key}`);
+  if (axiosResponse.status === 200) {
+    if (typeof axiosResponse.data === "object") {
+      return wrapSuccessResult(axiosResponse.data);
     }
+    return wrapErrorResult("invalid JSON in storage", 500);
   }
-  return response;
+  return wrapErrorResult(axiosResponse.statusText, axiosResponse.status);
 };

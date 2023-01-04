@@ -2,12 +2,15 @@ import express from "express";
 import cors from "cors";
 import session from "express-session";
 import pgSession from "connect-pg-simple";
+import dotEnv from "dotenv";
 
 import pool from "./utils/pool";
 import authRoute from "./routes/auth";
 import entityRoute from "./routes/entity";
 import itemRoute from "./routes/item";
-import storageRoute from "./routes/storage";
+import adminRoute from "./routes/admin";
+
+dotEnv.config();
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -46,6 +49,8 @@ app.get("/ping", (req, res) => {
 app.use("/auth", authRoute);
 app.use("/entity", entityRoute);
 app.use("/item", itemRoute);
-app.use("/storage", storageRoute);
+app.use("/admin", adminRoute);
+
+console.log("server started");
 
 app.listen(process.env.PORT ?? 5000);
