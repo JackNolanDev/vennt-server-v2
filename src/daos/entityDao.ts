@@ -14,12 +14,12 @@ import {
   UpdateEntityAttributes,
   UncompleteEntityChangelog,
   EntityAttribute,
-  UncompleteEntityItem,
-  FullEntityItem,
+  FullEntityChangelog,
 } from "../utils/types";
 import {
   sqlFetchAbilitiesByEntityId,
   sqlFetchChangelogByEntityId,
+  sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
   sqlFetchItemsByEntityId,
   sqlFilterChangelog,
@@ -146,9 +146,6 @@ export const dbFilterChangelog = async (
   return sqlFilterChangelog(pool, entityId, attributes);
 };
 
-export const dbInsertItems = (
-  entityId: string,
-  items: UncompleteEntityItem[]
-): Promise<Result<FullEntityItem[]>> => {
-  return sqlInsertItems(pool, entityId, items);
-};
+export const dbFetchChangelogByEntityIdAttribute = async (entityId: string, attr: EntityAttribute): Promise<Result<FullEntityChangelog[]>> => {
+  return sqlFetchChangelogByEntityIdAttribute(pool, entityId, attr);
+}

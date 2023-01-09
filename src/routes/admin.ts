@@ -2,13 +2,13 @@ import express from "express";
 import type { Request, Response } from "express";
 import { requireAdmin } from "../utils/middleware";
 import { jsonStorageKeyValidator } from "../utils/types";
-import { pushResponse, validateParam } from "../utils/express";
+import { pushResponse, parseParam } from "../utils/express";
 import { JSON_STORAGE_BUCKET } from "../daos/jsonStorageDao";
 import { handleUpdateJsonStorage } from "../logic/jsonStorageLogic";
 import { configureS3BucketCors } from "../utils/s3";
 
 const updateJsonStorage = async (req: Request, res: Response) => {
-  const key = validateParam(req, res, "key", jsonStorageKeyValidator);
+  const key = parseParam(req, res, "key", jsonStorageKeyValidator);
   if (!key) return;
   pushResponse(res, await handleUpdateJsonStorage(key));
 };

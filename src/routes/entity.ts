@@ -2,6 +2,7 @@ import express from "express";
 import type { Request, Response } from "express";
 import {
   adjustAttributesValidator,
+  attributeNameValidator,
   collectedEntityValidator,
   filterChangelogValidator,
   idValidator,
@@ -10,18 +11,19 @@ import {
 import {
   entityEditPermission,
   parseBody,
+  parseParam,
   pushResponse,
   resError,
-  validateParam,
 } from "../utils/express";
 import {
+  dbFetchChangelogByEntityIdAttribute,
   dbFetchCollectedEntity,
   dbFilterChangelog,
   dbInsertCollectedEntity,
-  dbInsertItems,
   dbListEntities,
   dbUpdateEntityAttributes,
 } from "../daos/entityDao";
+import { dbInsertItems } from "../daos/itemDao"
 import { requireLoggedIn } from "../utils/middleware";
 
 const addFullEntity = async (req: Request, res: Response) => {
@@ -39,7 +41,7 @@ const listEntities = async (req: Request, res: Response) => {
 };
 
 const fetchCollectedEntity = async (req: Request, res: Response) => {
-  const id = validateParam(req, res, "id", idValidator);
+  const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   pushResponse(res, await dbFetchCollectedEntity(id));
 };
@@ -47,7 +49,7 @@ const fetchCollectedEntity = async (req: Request, res: Response) => {
 const updateEntityAttributes = async (req: Request, res: Response) => {
   const body = parseBody(req, res, adjustAttributesValidator);
   if (!body) return;
-  const id = validateParam(req, res, "id", idValidator);
+  const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   if (Object.keys(body.attributes).length === 0) {
     resError(res, "Attributes is empty", 400);
@@ -62,16 +64,24 @@ const updateEntityAttributes = async (req: Request, res: Response) => {
 const filterChangelog = async (req: Request, res: Response) => {
   const body = parseBody(req, res, filterChangelogValidator);
   if (!body) return;
-  const id = validateParam(req, res, "id", idValidator);
+  const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
   pushResponse(res, await dbFilterChangelog(id, body.attributes));
 };
 
+const getAttrChangelog = async (req: Request, res: Response) => {
+  const id = parseParam(req, res, "id", idValidator);
+  if (!id) return;
+  const attr = parseParam(req, res, "keu", attributeNameValidator);
+  if (!attr) return;
+  pushResponse(res, await dbFetchChangelogByEntityIdAttribute(id, attr))
+}
+
 const insertItems = async (req: Request, res: Response) => {
   const body = parseBody(req, res, itemValidator.array());
   if (!body) return;
-  const id = validateParam(req, res, "id", idValidator);
+  const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
   pushResponse(res, await dbInsertItems(id, body));
@@ -83,5 +93,6 @@ router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
+router.get(":/id/changelog/:attr", requireLoggedIn, getAttrChangelog)
 router.post("/:id/items", requireLoggedIn, insertItems);
 export default router;

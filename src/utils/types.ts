@@ -249,6 +249,7 @@ export const itemValidator = z.object({
 });
 
 export const partialItemValidator = itemValidator.partial();
+export const patchItemValidator = partialItemValidator.refine((item) => Object.keys(item).length > 0, { message: "Item is empty"})
 
 export const fullItemValidator = itemValidator.extend({
   id: idValidator,
@@ -303,7 +304,7 @@ export const fullCollectedEntityValidator = z.object({
 export const partialAttributesValidator = attributesValidator.partial();
 export const adjustAttributesValidator = z.object({
   message: z.string().max(CHANGELOG_MAX).optional(),
-  attributes: partialAttributesValidator,
+  attributes: partialAttributesValidator.refine((attrs) => Object.keys(attrs).length > 0, { message: "Attributes is empty"}),
 });
 
 export const filterChangelogValidator = z.object({

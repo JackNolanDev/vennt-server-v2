@@ -180,6 +180,19 @@ export const sqlFetchChangelogByEntityId = async (
   );
 };
 
+export const sqlFetchChangelogByEntityIdAttribute = async (
+  tx: TX,
+  id: string,
+  attr: EntityAttribute
+): Promise<Result<FullEntityChangelog[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ${CHANGELOG_COLUMNS} FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1 AND attr = $2`,
+      [id, attr]
+    )
+  );
+};
+
 export const sqlFilterChangelog = async (
   tx: TX,
   entityId: string,

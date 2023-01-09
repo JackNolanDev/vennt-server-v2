@@ -4,13 +4,22 @@ import {
   unwrapResultOrError,
   wrapErrorResult,
 } from "../utils/db";
-import { FullEntityItem, PartialEntityItem, Result } from "../utils/types";
+import pool from "../utils/pool";
+import { FullEntityItem, PartialEntityItem, Result, UncompleteEntityItem } from "../utils/types";
 import {
   sqlDeleteItem,
   sqlFetchItemOwnerById,
   sqlFetchItemWithOwnerById,
+  sqlInsertItems,
   sqlUpdateItem,
 } from "./sql";
+
+export const dbInsertItems = (
+  entityId: string,
+  items: UncompleteEntityItem[]
+): Promise<Result<FullEntityItem[]>> => {
+  return sqlInsertItems(pool, entityId, items);
+};
 
 export const dbUpdateItem = (
   partialItem: PartialEntityItem,
