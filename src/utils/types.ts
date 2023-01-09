@@ -212,7 +212,7 @@ export const partialAbilityValidator = abilityValidator
 
 export const fullAbilityValidator = abilityValidator.extend({
   id: idValidator,
-  entoity_id: idValidator,
+  entity_id: idValidator,
 });
 
 // ITEMS

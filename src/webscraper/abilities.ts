@@ -122,6 +122,9 @@ const parseAbilityPage = async (
 
   const completeCurrentAbility = () => {
     if (currentAbility) {
+      if (currentAbility.custom_fields && !currentAbility.custom_fields.activation) {
+        currentAbility.custom_fields.activation = "Passive"
+      }
       currentAbility.effect = markdown.translate(currentAbility.effect);
       abilities.push(currentAbility);
       currentAbility = undefined;
