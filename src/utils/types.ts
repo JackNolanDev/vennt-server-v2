@@ -298,15 +298,18 @@ export const collectedEntityValidator = z.object({
   entity: entityValidator,
   abilities: abilityValidator.array(),
   items: itemValidator.array(),
-  changelog: attributeChangelogValidator.array(),
 });
 
 export const fullCollectedEntityValidator = z.object({
   entity: fullEntityValidator,
   abilities: fullAbilityValidator.array(),
   items: fullItemValidator.array(),
-  changelog: fullAttributeChangelogValidator.array(),
 });
+
+export const collectedEntityWithChangelogValidator =
+  collectedEntityValidator.extend({
+    changelog: attributeChangelogValidator.array(),
+  });
 
 // other endpoints
 
@@ -367,6 +370,9 @@ export type UncompleteCollectedEntity = z.infer<
 >;
 export type FullCollectedEntity = z.infer<typeof fullCollectedEntityValidator>;
 export type CollectedEntity = UncompleteCollectedEntity | FullCollectedEntity;
+export type UncompleteCollectedEntityWithChangelog = z.infer<
+  typeof collectedEntityWithChangelogValidator
+>;
 export type UsesMap = z.infer<typeof usesValidator>;
 export type UsesRoll = z.infer<typeof useRollValidator>;
 export type UsesHeal = z.infer<typeof useHealValidator>;

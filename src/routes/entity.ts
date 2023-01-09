@@ -4,7 +4,7 @@ import {
   abilityValidator,
   adjustAttributesValidator,
   attributeNameValidator,
-  collectedEntityValidator,
+  collectedEntityWithChangelogValidator,
   filterChangelogValidator,
   idValidator,
   itemValidator,
@@ -29,7 +29,7 @@ import { requireLoggedIn } from "../utils/middleware";
 import { dbInsertAbilities } from "../daos/abilityDao";
 
 const addFullEntity = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, collectedEntityValidator);
+  const body = parseBody(req, res, collectedEntityWithChangelogValidator);
   if (!body) return;
 
   pushResponse(
@@ -75,7 +75,7 @@ const filterChangelog = async (req: Request, res: Response) => {
 const getAttrChangelog = async (req: Request, res: Response) => {
   const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
-  const attr = parseParam(req, res, "keu", attributeNameValidator);
+  const attr = parseParam(req, res, "attr", attributeNameValidator);
   if (!attr) return;
   pushResponse(res, await dbFetchChangelogByEntityIdAttribute(id, attr));
 };
@@ -104,7 +104,7 @@ router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
-router.get(":/id/changelog/:attr", requireLoggedIn, getAttrChangelog);
+router.get("/:id/changelog/:attr", requireLoggedIn, getAttrChangelog);
 router.post("/:id/abilities", requireLoggedIn, insertAbilities);
 router.post("/:id/items", requireLoggedIn, insertItems);
 export default router;

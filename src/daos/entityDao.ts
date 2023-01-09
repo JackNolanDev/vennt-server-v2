@@ -7,7 +7,6 @@ import {
 } from "../utils/db";
 import pool from "../utils/pool";
 import {
-  UncompleteCollectedEntity,
   FullCollectedEntity,
   Result,
   FullEntity,
@@ -15,10 +14,10 @@ import {
   UncompleteEntityChangelog,
   EntityAttribute,
   FullEntityChangelog,
+  UncompleteCollectedEntityWithChangelog,
 } from "../utils/types";
 import {
   sqlFetchAbilitiesByEntityId,
-  sqlFetchChangelogByEntityId,
   sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
   sqlFetchItemsByEntityId,
@@ -32,7 +31,7 @@ import {
 } from "./sql";
 
 export const dbInsertCollectedEntity = async (
-  collected: UncompleteCollectedEntity,
+  collected: UncompleteCollectedEntityWithChangelog,
   owner: string
 ): Promise<Result<FullCollectedEntity>> => {
   if (
@@ -49,7 +48,7 @@ export const dbInsertCollectedEntity = async (
     const abilities = unwrapResultOrError(
       await sqlInsertAbilities(tx, entity.id, collected.abilities)
     );
-    const changelog = unwrapResultOrError(
+    unwrapResultOrError(
       await sqlInsertChangelog(tx, entity.id, collected.changelog)
     );
     const items = unwrapResultOrError(
@@ -59,7 +58,6 @@ export const dbInsertCollectedEntity = async (
     return wrapSuccessResult({
       entity,
       abilities,
-      changelog,
       items,
     });
   });
@@ -80,16 +78,12 @@ export const dbFetchCollectedEntity = async (
   const abilities = await sqlFetchAbilitiesByEntityId(pool, id);
   if (!abilities.success) return abilities;
 
-  const changelog = await sqlFetchChangelogByEntityId(pool, id);
-  if (!changelog.success) return changelog;
-
   const items = await sqlFetchItemsByEntityId(pool, id);
   if (!items.success) return items;
 
   return wrapSuccessResult({
     entity: entity.result,
     abilities: abilities.result,
-    changelog: changelog.result,
     items: items.result,
   });
 };
@@ -104,7 +98,6 @@ export const dbUserOwnsEntity = async (
   return wrapSuccessResult(entity.result.owner === owner);
 };
 
-// TODO: might want to make this return FullCollectedEntity and just do a full replace on frontend
 export const dbUpdateEntityAttributes = async (
   entityId: string,
   request: UpdateEntityAttributes,

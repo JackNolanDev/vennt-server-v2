@@ -5,6 +5,7 @@ import pgSession from "connect-pg-simple";
 import dotEnv from "dotenv";
 
 import pool from "./utils/pool";
+import abilityRoute from "./routes/ability";
 import authRoute from "./routes/auth";
 import entityRoute from "./routes/entity";
 import itemRoute from "./routes/item";
@@ -46,6 +47,7 @@ app.use(
 app.get("/ping", (req, res) => {
   res.send("pong");
 });
+app.use("/ability", abilityRoute);
 app.use("/auth", authRoute);
 app.use("/entity", entityRoute);
 app.use("/item", itemRoute);
