@@ -1,11 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import { requireLoggedIn } from "../utils/middleware";
-import {
-  parseBody,
-  pushResponse,
-  parseParam,
-} from "../utils/express";
+import { parseBody, pushResponse, parseParam } from "../utils/express";
 import { idValidator, partialItemValidator } from "../utils/types";
 import { dbDeleteItem, dbUpdateItem } from "../daos/itemDao";
 

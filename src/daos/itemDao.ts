@@ -5,7 +5,12 @@ import {
   wrapErrorResult,
 } from "../utils/db";
 import pool from "../utils/pool";
-import { FullEntityItem, PartialEntityItem, Result, UncompleteEntityItem } from "../utils/types";
+import {
+  FullEntityItem,
+  PartialEntityItem,
+  Result,
+  UncompleteEntityItem,
+} from "../utils/types";
 import {
   sqlDeleteItem,
   sqlFetchItemOwnerById,

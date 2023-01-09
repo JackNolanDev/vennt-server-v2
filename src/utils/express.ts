@@ -55,24 +55,47 @@ export const entityEditPermission = async (
 
 // WIP input parser - doesn't quite define the types correctly
 
-type InputShape<BodyValidator extends z.ZodTypeAny, ParamValidators extends Record<string, z.ZodTypeAny>> = {
-  body?: BodyValidator,
-  params?: ParamValidators
-}
+type InputShape<
+  BodyValidator extends z.ZodTypeAny,
+  ParamValidators extends Record<string, z.ZodTypeAny>
+> = {
+  body?: BodyValidator;
+  params?: ParamValidators;
+};
 
-export const parseInputs = <BodyValidator extends z.ZodTypeAny, ParamValidators extends Record<string, z.ZodTypeAny>>(req: Request, res: Response, input: InputShape<BodyValidator, ParamValidators>): { body?: z.infer<BodyValidator>} & Record<keyof ParamValidators, z.infer<ParamValidators[keyof ParamValidators]>> | undefined => {
-  const response: Partial<{ body?: z.infer<BodyValidator>} & Record<keyof ParamValidators, z.infer<ParamValidators[keyof ParamValidators]>>> = { }
+export const parseInputs = <
+  BodyValidator extends z.ZodTypeAny,
+  ParamValidators extends Record<string, z.ZodTypeAny>
+>(
+  req: Request,
+  res: Response,
+  input: InputShape<BodyValidator, ParamValidators>
+):
+  | ({ body?: z.infer<BodyValidator> } & Record<
+      keyof ParamValidators,
+      z.infer<ParamValidators[keyof ParamValidators]>
+    >)
+  | undefined => {
+  const response: Partial<
+    { body?: z.infer<BodyValidator> } & Record<
+      keyof ParamValidators,
+      z.infer<ParamValidators[keyof ParamValidators]>
+    >
+  > = {};
   if (input.body) {
     const val = parseBody(req, res, input.body);
     if (!val) return;
-    response.body = val
+    response.body = val;
   }
   if (input.params) {
     Object.entries(input.params).forEach(([param, validator]) => {
-      const val = parseParam(req, res, param, validator)
+      const val = parseParam(req, res, param, validator);
       if (!val) return;
-      response[param as keyof ParamValidators] = val
-    })
+      response[param as keyof ParamValidators] = val;
+    });
   }
-  return response as { body?: z.infer<BodyValidator>} & Record<keyof ParamValidators, z.infer<ParamValidators[keyof ParamValidators]>>;
-}
+  return response as { body?: z.infer<BodyValidator> } & Record<
+    keyof ParamValidators,
+    z.infer<ParamValidators[keyof ParamValidators]>
+  >;
+};

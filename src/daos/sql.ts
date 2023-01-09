@@ -7,6 +7,7 @@ import {
   wrapSuccessResult,
 } from "../utils/db";
 import {
+  EntityAbility,
   EntityAttribute,
   EntityAttributes,
   EntityItem,
@@ -73,25 +74,25 @@ export const sqlListEntities = async (
 
 export const sqlFetchEntityById = async (
   tx: TX,
-  id: string
+  entityId: string
 ): Promise<Result<FullEntity>> => {
   return parseFirst(
     await tx.query(
       `SELECT ${ENTITY_COLUMNS} FROM ${ENTITIES_TABLE} WHERE id = $1`,
-      [id]
+      [entityId]
     )
   );
 };
 
 export const sqlUpdateEntityAttributes = async (
   tx: TX,
-  id: string,
+  entityId: string,
   attributes: EntityAttributes
 ): Promise<Result<FullEntity>> => {
   return parseFirst(
     await tx.query(
       `UPDATE ${ENTITIES_TABLE} SET attributes = $1 WHERE id = $2 RETURNING ${ENTITY_COLUMNS}`,
-      [attributes, id]
+      [attributes, entityId]
     ),
     500
   );
@@ -101,14 +102,14 @@ export const sqlUpdateEntityAttributes = async (
 
 export const sqlInsertAbilities = async (
   tx: TX,
-  entity: string,
+  entityId: string,
   abilities: UncompleteEntityAbility[]
 ): Promise<Result<FullEntityAbility[]>> => {
   if (abilities.length === 0) {
     return wrapSuccessResult([]);
   }
   const abilityRows = abilities.map((ability) => [
-    entity,
+    entityId,
     ability.name,
     ability.effect,
     ability.custom_fields,
@@ -130,28 +131,88 @@ export const sqlInsertAbilities = async (
 
 export const sqlFetchAbilitiesByEntityId = async (
   tx: TX,
-  id: string
+  entityId: string
 ): Promise<Result<FullEntityAbility[]>> => {
   return parseList(
     await tx.query(
       `SELECT ${ABILTIY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1`,
-      [id]
+      [entityId]
     )
   );
+};
+
+export const sqlFetchAbilityWithOwnerById = async (
+  tx: TX,
+  abilityId: string
+): Promise<Result<FullEntityAbility & { owner: string }>> => {
+  return parseFirst(
+    await tx.query(
+      `SELECT ${ABILTIY_COLUMNS}, ${ENTITIES_TABLE}.owner
+      FROM ${ABILITIES_TABLE} JOIN ${ENTITIES_TABLE} ON ${ABILITIES_TABLE}.entity_id = ${ENTITIES_TABLE}.id
+      WHERE ${ABILITIES_TABLE}.id = $1`,
+      [abilityId]
+    )
+  );
+};
+
+export const sqlFetchAbilityOwnerById = async (
+  tx: TX,
+  abilityId: string
+): Promise<Result<string>> => {
+  return parseFirstVal(
+    await tx.query(
+      `SELECT ${ENTITIES_TABLE}.owner
+      FROM ${ABILITIES_TABLE} JOIN ${ENTITIES_TABLE} ON ${ABILITIES_TABLE}.entity_id = ${ENTITIES_TABLE}.id
+      WHERE ${ABILITIES_TABLE}.id = $1`,
+      [abilityId]
+    )
+  );
+};
+
+export const sqlUpdateAbility = async (
+  tx: TX,
+  abilityId: string,
+  ability: EntityAbility
+): Promise<Result<FullEntityAbility>> => {
+  return parseFirstVal(
+    await tx.query(
+      `UPDATE ${ABILITIES_TABLE}
+      SET name = $1, effect = $2, custom_fields = $3, uses = $4, comment = $5, active = $6
+      WHERE id = $7
+      RETURNING ${ABILTIY_COLUMNS}`,
+      [
+        ability.name,
+        ability.effect,
+        ability.custom_fields,
+        ability.uses,
+        ability.comment,
+        ability.active,
+        abilityId,
+      ]
+    )
+  );
+};
+
+export const sqlDeleteAbility = async (
+  tx: TX,
+  abilityId: string
+): Promise<Result<boolean>> => {
+  await tx.query(`DELETE FROM ${ABILITIES_TABLE} WHERE id = $1`, [abilityId]);
+  return wrapSuccessResult(true);
 };
 
 // CHANGELOG
 
 export const sqlInsertChangelog = async (
   tx: TX,
-  entity: string,
+  entityId: string,
   changelog: UncompleteEntityChangelog[]
 ): Promise<Result<FullEntityChangelog[]>> => {
   if (changelog.length === 0) {
     return wrapSuccessResult([]);
   }
   const changelogRows = changelog.map((row) => [
-    entity,
+    entityId,
     row.attr,
     row.msg,
     row.prev,
@@ -170,12 +231,12 @@ export const sqlInsertChangelog = async (
 
 export const sqlFetchChangelogByEntityId = async (
   tx: TX,
-  id: string
+  entityId: string
 ): Promise<Result<FullEntityChangelog[]>> => {
   return parseList(
     await tx.query(
       `SELECT ${CHANGELOG_COLUMNS} FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1`,
-      [id]
+      [entityId]
     )
   );
 };
@@ -212,14 +273,14 @@ export const sqlFilterChangelog = async (
 
 export const sqlInsertItems = async (
   tx: TX,
-  entity: string,
+  entityId: string,
   items: UncompleteEntityItem[]
 ): Promise<Result<FullEntityItem[]>> => {
   if (items.length === 0) {
     return wrapSuccessResult([]);
   }
   const itemRows = items.map((item) => [
-    entity,
+    entityId,
     item.name,
     item.bulk,
     item.desc,
@@ -243,12 +304,12 @@ export const sqlInsertItems = async (
 
 export const sqlFetchItemsByEntityId = async (
   tx: TX,
-  id: string
+  entityId: string
 ): Promise<Result<FullEntityItem[]>> => {
   return parseList(
     await tx.query(
       `SELECT ${ITEM_COLUMNS} FROM ${ITEMS_TABLE} WHERE entity_id = $1`,
-      [id]
+      [entityId]
     )
   );
 };
@@ -260,8 +321,8 @@ export const sqlFetchItemWithOwnerById = async (
   return parseFirst(
     await tx.query(
       `SELECT ${ITEM_COLUMNS}, ${ENTITIES_TABLE}.owner
-    FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
-    WHERE ${ITEMS_TABLE}.id = $1`,
+      FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
+      WHERE ${ITEMS_TABLE}.id = $1`,
       [itemId]
     )
   );
@@ -277,8 +338,7 @@ export const sqlFetchItemOwnerById = async (
       FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
       WHERE ${ITEMS_TABLE}.id = $1`,
       [itemId]
-    ),
-    "owner"
+    )
   );
 };
 
@@ -290,9 +350,9 @@ export const sqlUpdateItem = async (
   return parseFirst(
     await tx.query(
       `UPDATE ${ITEMS_TABLE}
-    SET name = $1, bulk = $2, "desc" = $3, type = $4, custom_fields = $5, uses = $6, comment = $7, active = $8
-    WHERE id = $9
-    RETURNING ${ITEM_COLUMNS}`,
+      SET name = $1, bulk = $2, "desc" = $3, type = $4, custom_fields = $5, uses = $6, comment = $7, active = $8
+      WHERE id = $9
+      RETURNING ${ITEM_COLUMNS}`,
       [
         item.name,
         item.bulk,

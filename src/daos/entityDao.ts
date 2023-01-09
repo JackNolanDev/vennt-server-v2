@@ -146,6 +146,9 @@ export const dbFilterChangelog = async (
   return sqlFilterChangelog(pool, entityId, attributes);
 };
 
-export const dbFetchChangelogByEntityIdAttribute = async (entityId: string, attr: EntityAttribute): Promise<Result<FullEntityChangelog[]>> => {
+export const dbFetchChangelogByEntityIdAttribute = async (
+  entityId: string,
+  attr: EntityAttribute
+): Promise<Result<FullEntityChangelog[]>> => {
   return sqlFetchChangelogByEntityIdAttribute(pool, entityId, attr);
-}
+};

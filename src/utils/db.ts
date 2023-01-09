@@ -19,12 +19,14 @@ export const parseList = <T>(queryRes: QueryResult): Result<T[]> => {
 
 export const parseFirstVal = <T>(
   queryRes: QueryResult,
-  field: string,
   errorCode = 404
 ): Result<T> => {
   const first = queryRes.rows[0];
-  if (first !== undefined && first[field] !== undefined) {
-    return wrapSuccessResult(first[field] as T);
+  if (typeof first === "object") {
+    const firstVals = Object.values(first);
+    if (firstVals[0] !== undefined) {
+      return wrapSuccessResult(firstVals[0] as T);
+    }
   }
   return wrapErrorResult("Not found", errorCode);
 };

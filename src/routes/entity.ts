@@ -1,6 +1,7 @@
 import express from "express";
 import type { Request, Response } from "express";
 import {
+  abilityValidator,
   adjustAttributesValidator,
   attributeNameValidator,
   collectedEntityValidator,
@@ -23,8 +24,9 @@ import {
   dbListEntities,
   dbUpdateEntityAttributes,
 } from "../daos/entityDao";
-import { dbInsertItems } from "../daos/itemDao"
+import { dbInsertItems } from "../daos/itemDao";
 import { requireLoggedIn } from "../utils/middleware";
+import { dbInsertAbilities } from "../daos/abilityDao";
 
 const addFullEntity = async (req: Request, res: Response) => {
   const body = parseBody(req, res, collectedEntityValidator);
@@ -75,8 +77,17 @@ const getAttrChangelog = async (req: Request, res: Response) => {
   if (!id) return;
   const attr = parseParam(req, res, "keu", attributeNameValidator);
   if (!attr) return;
-  pushResponse(res, await dbFetchChangelogByEntityIdAttribute(id, attr))
-}
+  pushResponse(res, await dbFetchChangelogByEntityIdAttribute(id, attr));
+};
+
+const insertAbilities = async (req: Request, res: Response) => {
+  const body = parseBody(req, res, abilityValidator.array());
+  if (!body) return;
+  const id = parseParam(req, res, "id", idValidator);
+  if (!id) return;
+  if (await entityEditPermission(res, id, req.session.account.id)) return;
+  pushResponse(res, await dbInsertAbilities(id, body));
+};
 
 const insertItems = async (req: Request, res: Response) => {
   const body = parseBody(req, res, itemValidator.array());
@@ -93,6 +104,7 @@ router.get("", requireLoggedIn, listEntities);
 router.get("/:id", requireLoggedIn, fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
-router.get(":/id/changelog/:attr", requireLoggedIn, getAttrChangelog)
+router.get(":/id/changelog/:attr", requireLoggedIn, getAttrChangelog);
+router.post("/:id/abilities", requireLoggedIn, insertAbilities);
 router.post("/:id/items", requireLoggedIn, insertItems);
 export default router;

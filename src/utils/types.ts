@@ -204,6 +204,12 @@ export const abilityValidator = z.object({
   active: z.boolean(),
 });
 
+export const partialAbilityValidator = abilityValidator
+  .partial()
+  .refine((ability) => Object.keys(ability).length > 0, {
+    message: "Partial ability is empty",
+  });
+
 export const fullAbilityValidator = abilityValidator.extend({
   id: idValidator,
   entoity_id: idValidator,
@@ -248,8 +254,11 @@ export const itemValidator = z.object({
   active: z.boolean(),
 });
 
-export const partialItemValidator = itemValidator.partial();
-export const patchItemValidator = partialItemValidator.refine((item) => Object.keys(item).length > 0, { message: "Item is empty"})
+export const partialItemValidator = itemValidator
+  .partial()
+  .refine((item) => Object.keys(item).length > 0, {
+    message: "Partial item is empty",
+  });
 
 export const fullItemValidator = itemValidator.extend({
   id: idValidator,
@@ -304,7 +313,10 @@ export const fullCollectedEntityValidator = z.object({
 export const partialAttributesValidator = attributesValidator.partial();
 export const adjustAttributesValidator = z.object({
   message: z.string().max(CHANGELOG_MAX).optional(),
-  attributes: partialAttributesValidator.refine((attrs) => Object.keys(attrs).length > 0, { message: "Attributes is empty"}),
+  attributes: partialAttributesValidator.refine(
+    (attrs) => Object.keys(attrs).length > 0,
+    { message: "Attributes is empty" }
+  ),
 });
 
 export const filterChangelogValidator = z.object({
@@ -368,6 +380,7 @@ export type PartialEntityItem = z.infer<typeof partialItemValidator>;
 export type UncompleteEntityAbility = z.infer<typeof abilityValidator>;
 export type FullEntityAbility = z.infer<typeof fullAbilityValidator>;
 export type EntityAbility = UncompleteEntityAbility | FullEntityAbility;
+export type PartialEntityAbility = z.infer<typeof partialAbilityValidator>;
 export type EntityAbilityFieldsStrings = z.infer<
   typeof abilityFieldsValidatorStrings
 >;
