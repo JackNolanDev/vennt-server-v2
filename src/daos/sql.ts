@@ -174,7 +174,7 @@ export const sqlUpdateAbility = async (
   abilityId: string,
   ability: EntityAbility
 ): Promise<Result<FullEntityAbility>> => {
-  return parseFirstVal(
+  return parseFirst(
     await tx.query(
       `UPDATE ${ABILITIES_TABLE}
       SET name = $1, effect = $2, custom_fields = $3, uses = $4, comment = $5, active = $6

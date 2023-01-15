@@ -101,7 +101,7 @@ const insertItems = async (req: Request, res: Response) => {
 const router = express.Router();
 router.post("", requireLoggedIn, addFullEntity);
 router.get("", requireLoggedIn, listEntities);
-router.get("/:id", requireLoggedIn, fetchCollectedEntity);
+router.get("/:id", fetchCollectedEntity);
 router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
 router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
 router.get("/:id/changelog/:attr", requireLoggedIn, getAttrChangelog);
