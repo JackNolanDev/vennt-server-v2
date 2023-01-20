@@ -1,5 +1,7 @@
 import axios from "axios";
 import {
+  AbilityCostMapBoolean,
+  AbilityCostMapNumber,
   EntityAbilityFieldsStrings,
   PathDetails,
   PathsAndAbilites,
@@ -8,6 +10,7 @@ import {
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import { cleanQuotes } from "./webscraperUtils";
+import { ABILITY_USES, REPEATABLE_SIGNIFIERS } from "./abilitiesUses";
 
 const LIST_OF_PATHS = "https://vennt.fandom.com/wiki/List_of_Paths";
 const BASE_URL = "https://vennt.fandom.com";
@@ -77,12 +80,53 @@ const parseTripple = (
   };
 };
 
+const baseNumberRegex = "(?<number>-?\\d+(?:-\\d+)?\\*?)\\s";
+const activationNumberRegex: Record<keyof AbilityCostMapNumber, RegExp> = {
+  mp: new RegExp(`${baseNumberRegex}mp`),
+  vim: new RegExp(`${baseNumberRegex}vim`),
+  hp: new RegExp(`${baseNumberRegex}hp`),
+  hero: new RegExp(`${baseNumberRegex}hero point`),
+  actions: new RegExp(`${baseNumberRegex}action`),
+  reactions: new RegExp(`${baseNumberRegex}reaction`),
+}
+const activationBooleanRegex: Record<keyof AbilityCostMapBoolean, RegExp> = {
+  attack: /attack/,
+  passive: /passive/,
+  respite: /respite/,
+  intermission: /intermission/
+}
+
 const parseActivation = (
   text: string,
   ability: UncompleteEntityAbility
 ): void => {
   parseSimpleAbilityLine("activation")(text, ability);
-  // TODO: do fancy cost map logic
+  const cleanText = text.toLowerCase();
+  Object.entries(activationNumberRegex).forEach(([keyIn, regex]) => {
+    const key = keyIn as keyof AbilityCostMapNumber;
+    const match = cleanText.match(regex);
+    if (match && match.length > 0 && match.groups?.number && ability.custom_fields) {
+      if (match.groups.number.match(/^-?\d+$/)) {
+        const val = parseInt(match.groups.number);
+        if (!isNaN(val)) {
+          if (!ability.custom_fields.cost) {
+            ability.custom_fields.cost = {}
+          }
+          ability.custom_fields.cost[key] = val
+        }
+      }
+    }
+  });
+  Object.entries(activationBooleanRegex).forEach(([keyIn, regex]) => {
+    const key = keyIn as keyof AbilityCostMapBoolean;
+    const match = cleanText.match(regex);
+    if (match && match.length > 0 && ability.custom_fields) {
+      if (!ability.custom_fields.cost) {
+        ability.custom_fields.cost = {}
+      }
+      ability.custom_fields.cost[key] = true
+    }
+  });
 };
 
 const parseAbilityLine: Record<
@@ -105,6 +149,29 @@ const parseAbilityLine: Record<
 const abilitySecondLines = ["This ability", "Cost", "Prereq", "Unlock"];
 const addToDescTags = new Set(["ul", "ol", "table"]);
 
+const addSpecialAbilityDetails = (ability: UncompleteEntityAbility, markdown: NodeHtmlMarkdown): UncompleteEntityAbility => {
+  if (!ability.custom_fields) {
+    ability.custom_fields = {}
+  }
+  if (!ability.custom_fields.activation) {
+    ability.custom_fields.activation = "Passive";
+    if (ability.custom_fields.cost) {
+      ability.custom_fields.cost.passive = true;
+    } else {
+      ability.custom_fields.cost = { passive: true }
+    }
+  }
+  const lowerCaseEffect = ability.effect.toLowerCase();
+  if (REPEATABLE_SIGNIFIERS.some((signifier) => lowerCaseEffect.includes(signifier))) {
+    ability.custom_fields.repeatable = true;
+  }
+  if (ABILITY_USES[ability.name]) {
+    ability.uses = ABILITY_USES[ability.name]
+  }
+  ability.effect = markdown.translate(ability.effect);
+  return ability;
+}
+
 const parseAbilityPage = async (
   url: string,
   markdown: NodeHtmlMarkdown
@@ -122,11 +189,7 @@ const parseAbilityPage = async (
 
   const completeCurrentAbility = () => {
     if (currentAbility) {
-      if (currentAbility.custom_fields && !currentAbility.custom_fields.activation) {
-        currentAbility.custom_fields.activation = "Passive"
-      }
-      currentAbility.effect = markdown.translate(currentAbility.effect);
-      abilities.push(currentAbility);
+      abilities.push(addSpecialAbilityDetails(currentAbility, markdown));
       currentAbility = undefined;
     }
   };

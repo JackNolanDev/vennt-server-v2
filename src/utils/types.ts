@@ -163,16 +163,23 @@ export const usesValidator = z.object({
 
 // ABILITIES
 
-export const abilityCostValidator = z.object({
+export const abilityCostNumberValidator = z.object({
   mp: z.number().int().optional(),
   vim: z.number().int().optional(),
   hp: z.number().int().optional(),
   hero: z.number().int().optional(),
   actions: z.number().int().optional(),
   reactions: z.number().int().optional(),
+})
+
+export const abilityCostBooleanValidator = z.object({
   attack: z.boolean().optional(),
   passive: z.boolean().optional(),
-});
+  respite: z.boolean().optional(),
+  intermission: z.boolean().optional(),
+})
+
+export const abilityCostValidator = abilityCostNumberValidator.merge(abilityCostBooleanValidator)
 
 export const abilityFieldsValidatorStrings = z.object({
   activation: z.string().max(NAME_MAX).optional(),
@@ -193,7 +200,11 @@ export const abilityFieldsValidator = abilityFieldsValidatorStrings.extend({
   mp_cost: z.number().int().array().length(3).optional(),
   cast_dl: z.number().int().array().length(3).optional(),
   not_req: z.boolean().optional(),
+  repeatable: z.boolean().optional(),
+  times_taken: z.number().int().min(0).optional(),
 });
+
+export const abilityFieldsNameValidator = abilityFieldsValidator.keyof();
 
 export const abilityValidator = z.object({
   name: nameValidator,
@@ -387,9 +398,13 @@ export type UncompleteEntityAbility = z.infer<typeof abilityValidator>;
 export type FullEntityAbility = z.infer<typeof fullAbilityValidator>;
 export type EntityAbility = UncompleteEntityAbility | FullEntityAbility;
 export type PartialEntityAbility = z.infer<typeof partialAbilityValidator>;
+export type AbilityCostMapNumber = z.infer<typeof abilityCostNumberValidator>
+export type AbilityCostMapBoolean= z.infer<typeof abilityCostBooleanValidator>
+export type AbilityCostMap = z.infer<typeof abilityCostValidator>;
 export type EntityAbilityFieldsStrings = z.infer<
   typeof abilityFieldsValidatorStrings
 >;
+export type EntityAbilityFields = z.infer<typeof abilityFieldsNameValidator>;
 export type UncompleteEntityChangelog = z.infer<
   typeof attributeChangelogValidator
 >;
