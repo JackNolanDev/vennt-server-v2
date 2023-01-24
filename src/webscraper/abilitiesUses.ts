@@ -7,4 +7,4 @@ export const REPEATABLE_SIGNIFIERS = [
   "can be taken multiple times",
 ];
 
-export const ABILITY_USES: Record<string, UsesMap> = {}
+export const ABILITY_USES: Record<string, UsesMap> = {};

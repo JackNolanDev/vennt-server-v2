@@ -85,3 +85,5 @@ export const wrapErrorResult = (error: string, code: number): ErrorResult => {
     code,
   };
 };
+
+export const FORBIDDEN_RESULT = wrapErrorResult("Forbidden", 403);

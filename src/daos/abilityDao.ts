@@ -1,8 +1,8 @@
 import {
+  FORBIDDEN_RESULT,
   ResultError,
   handleTransaction,
   unwrapResultOrError,
-  wrapErrorResult,
 } from "../utils/db";
 import pool from "../utils/pool";
 import {
@@ -36,7 +36,7 @@ export const dbUpdateAbility = (
       await sqlFetchAbilityWithOwnerById(tx, abilityId)
     );
     if (currentAbility.owner !== owner) {
-      throw new ResultError(wrapErrorResult("Forbidden", 403));
+      throw new ResultError(FORBIDDEN_RESULT);
     }
     const updatedAbility = { ...currentAbility, ...partialAbility };
     return sqlUpdateAbility(tx, abilityId, updatedAbility);
@@ -52,7 +52,7 @@ export const dbDeleteAbility = (
       await sqlFetchAbilityOwnerById(tx, abilityId)
     );
     if (abilityOwner !== owner) {
-      throw new ResultError(wrapErrorResult("Forbidden", 403));
+      throw new ResultError(FORBIDDEN_RESULT);
     }
     return sqlDeleteAbility(tx, abilityId);
   });

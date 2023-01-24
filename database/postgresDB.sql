@@ -25,7 +25,8 @@ CREATE TABLE vennt.entities (
     name text NOT NULL,
     type text DEFAULT 'CHARACTER'::text,
     attributes jsonb,
-    other_fields jsonb
+    other_fields jsonb,
+    public boolean NOT NULL DEFAULT false
 );
 CREATE UNIQUE INDEX entities_pkey ON vennt.entities(id uuid_ops);
 
@@ -79,11 +80,25 @@ CREATE TABLE vennt.entity_text (
     entity_id uuid NOT NULL REFERENCES vennt.entities(id),
     key text NOT NULL,
     text text NOT NULL,
-    metadata jsonb
+    public boolean NOT NULL DEFAULT false
 );
 
 CREATE UNIQUE INDEX entity_text_pkey ON vennt.entity_text(id uuid_ops);
 CREATE UNIQUE INDEX entity_key_unique ON vennt.entity_text(entity_id uuid_ops,key text_ops);
+
+-- entity_flux
+
+CREATE TABLE vennt.flux (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    entity_id uuid NOT NULL REFERENCES vennt.entities(id),
+    type text NOT NULL,
+    text text NOT NULL,
+    metadata jsonb
+);
+
+-- Indices -------------------------------------------------------
+
+CREATE UNIQUE INDEX flux_pkey ON vennt.flux(id uuid_ops);
 
 --------- CAMPAIGNS ---------
 

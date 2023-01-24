@@ -1,8 +1,8 @@
 import {
+  FORBIDDEN_RESULT,
   ResultError,
   handleTransaction,
   unwrapResultOrError,
-  wrapErrorResult,
 } from "../utils/db";
 import pool from "../utils/pool";
 import {
@@ -36,7 +36,7 @@ export const dbUpdateItem = (
       await sqlFetchItemWithOwnerById(tx, itemId)
     );
     if (currentItem.owner !== owner) {
-      throw new ResultError(wrapErrorResult("Forbidden", 403));
+      throw new ResultError(FORBIDDEN_RESULT);
     }
     const newItem = { ...currentItem, ...partialItem };
     return sqlUpdateItem(tx, itemId, newItem);
@@ -52,7 +52,7 @@ export const dbDeleteItem = (
       await sqlFetchItemOwnerById(tx, itemId)
     );
     if (itemOwner !== owner) {
-      throw new ResultError(wrapErrorResult("Forbidden", 403));
+      throw new ResultError(FORBIDDEN_RESULT);
     }
     return sqlDeleteItem(tx, itemId);
   });

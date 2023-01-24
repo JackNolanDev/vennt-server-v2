@@ -4,6 +4,7 @@ import {
   wrapSuccessResult,
   unwrapResultOrError,
   ResultError,
+  FORBIDDEN_RESULT,
 } from "../utils/db";
 import pool from "../utils/pool";
 import {
@@ -15,18 +16,25 @@ import {
   EntityAttribute,
   FullEntityChangelog,
   UncompleteCollectedEntityWithChangelog,
+  PartialEntity,
 } from "../utils/types";
 import {
+  sqlDeleteEntity,
   sqlFetchAbilitiesByEntityId,
   sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
+  sqlFetchEntityTextByEntityId,
+  sqlFetchFluxByEntityId,
   sqlFetchItemsByEntityId,
   sqlFilterChangelog,
   sqlInsertAbilities,
   sqlInsertChangelog,
   sqlInsertEntity,
+  sqlInsertEntityText,
+  sqlInsertFlux,
   sqlInsertItems,
   sqlListEntities,
+  sqlUpdateEntity,
   sqlUpdateEntityAttributes,
 } from "./sql";
 
@@ -54,11 +62,19 @@ export const dbInsertCollectedEntity = async (
     const items = unwrapResultOrError(
       await sqlInsertItems(tx, entity.id, collected.items)
     );
+    const text = unwrapResultOrError(
+      await sqlInsertEntityText(tx, entity.id, collected.text)
+    );
+    const flux = unwrapResultOrError(
+      await sqlInsertFlux(tx, entity.id, collected.flux)
+    );
 
     return wrapSuccessResult({
       entity,
       abilities,
       items,
+      text,
+      flux,
     });
   });
 };
@@ -70,10 +86,14 @@ export const dbListEntities = async (
 };
 
 export const dbFetchCollectedEntity = async (
-  id: string
+  id: string,
+  user?: string
 ): Promise<Result<FullCollectedEntity>> => {
   const entity = await sqlFetchEntityById(pool, id);
   if (!entity.success) return entity;
+  if (!entity.result.public && entity.result.owner !== user) {
+    return FORBIDDEN_RESULT;
+  }
 
   const abilities = await sqlFetchAbilitiesByEntityId(pool, id);
   if (!abilities.success) return abilities;
@@ -81,10 +101,22 @@ export const dbFetchCollectedEntity = async (
   const items = await sqlFetchItemsByEntityId(pool, id);
   if (!items.success) return items;
 
+  const text = await sqlFetchEntityTextByEntityId(
+    pool,
+    id,
+    entity.result.owner !== user
+  );
+  if (!text.success) return text;
+
+  const flux = await sqlFetchFluxByEntityId(pool, id);
+  if (!flux.success) return flux;
+
   return wrapSuccessResult({
     entity: entity.result,
     abilities: abilities.result,
     items: items.result,
+    text: text.result,
+    flux: flux.result,
   });
 };
 
@@ -106,7 +138,7 @@ export const dbUpdateEntityAttributes = async (
   return handleTransaction(async (tx) => {
     const entity = unwrapResultOrError(await sqlFetchEntityById(tx, entityId));
     if (entity.owner !== userId) {
-      throw new ResultError(wrapErrorResult("Forbidden", 403));
+      throw new ResultError(FORBIDDEN_RESULT);
     }
 
     let changelogRows: UncompleteEntityChangelog[] = [];
@@ -144,4 +176,27 @@ export const dbFetchChangelogByEntityIdAttribute = async (
   attr: EntityAttribute
 ): Promise<Result<FullEntityChangelog[]>> => {
   return sqlFetchChangelogByEntityIdAttribute(pool, entityId, attr);
+};
+
+export const dbUpdateEntity = async (
+  entityId: string,
+  user: string,
+  partialEntity: PartialEntity
+): Promise<Result<FullEntity>> => {
+  return handleTransaction(async (tx) => {
+    const currentEntity = unwrapResultOrError(
+      await sqlFetchEntityById(tx, entityId)
+    );
+    if (currentEntity.owner !== user) {
+      throw new ResultError(FORBIDDEN_RESULT);
+    }
+    const updatedEntity = { ...currentEntity, ...partialEntity };
+    return sqlUpdateEntity(tx, entityId, updatedEntity);
+  });
+};
+
+export const dbDeleteEntity = async (
+  entityId: string
+): Promise<Result<boolean>> => {
+  return sqlDeleteEntity(pool, entityId);
 };

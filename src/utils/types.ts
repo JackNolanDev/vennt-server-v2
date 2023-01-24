@@ -2,14 +2,16 @@ import { z } from "zod";
 
 export const NAME_MAX = 100;
 export const PASSWORD_MIN = 6;
-export const PASSWORD_MAX = 2000;
-export const ABILITY_MAX = 6000;
+export const PASSWORD_MAX = 2_000;
+export const ABILITY_MAX = 6_000;
 export const ABILITY_PREREQ_MAX = 200;
-export const ITEM_MAX = 2000;
-export const COMMENT_MAX = 2000;
+export const ITEM_MAX = 2_000;
+export const COMMENT_MAX = 2_000;
 export const CHANGELOG_MAX = 200;
 export const ATTRIBUTE_MIN = -15;
 export const ATTRIBUTE_MAX = 15;
+export const ENTITY_TEXT_MAX = 10_000;
+export const ENTITY_FLUX_MAX = 500;
 export const ATTRIBUTES = [
   "per",
   "tek",
@@ -74,7 +76,8 @@ export const attributeValidator = z
   .number()
   .int()
   .gte(ATTRIBUTE_MIN)
-  .lte(ATTRIBUTE_MAX);
+  .lte(ATTRIBUTE_MAX)
+  .default(0);
 export const combatStatValidator = z.number().int().min(0);
 export const giftValidator = z.enum(CHARACTER_GIFTS);
 export const entityTypeValidator = z.enum(["CHARACTER"]);
@@ -126,12 +129,20 @@ export const entityValidator = z.object({
   type: entityTypeValidator,
   attributes: attributesValidator,
   other_fields: otherAttributesValidator,
+  public: z.boolean().default(false),
 });
 
 export const fullEntityValidator = entityValidator.extend({
   id: idValidator,
   owner: idValidator,
 });
+
+export const partialEntityValidator = fullEntityValidator
+  .omit({ id: true })
+  .partial()
+  .refine((ability) => Object.keys(ability).length > 0, {
+    message: "Partial entity is empty",
+  });
 
 // USES
 
@@ -170,16 +181,18 @@ export const abilityCostNumberValidator = z.object({
   hero: z.number().int().optional(),
   actions: z.number().int().optional(),
   reactions: z.number().int().optional(),
-})
+});
 
 export const abilityCostBooleanValidator = z.object({
   attack: z.boolean().optional(),
   passive: z.boolean().optional(),
   respite: z.boolean().optional(),
   intermission: z.boolean().optional(),
-})
+});
 
-export const abilityCostValidator = abilityCostNumberValidator.merge(abilityCostBooleanValidator)
+export const abilityCostValidator = abilityCostNumberValidator.merge(
+  abilityCostBooleanValidator
+);
 
 export const abilityFieldsValidatorStrings = z.object({
   activation: z.string().max(NAME_MAX).optional(),
@@ -303,18 +316,69 @@ export const fullAttributeChangelogValidator =
     time: z.string().datetime(),
   });
 
+// ENTITY_TEXT
+
+export const entityTextKeyValidator = z.enum(["NOTES", "DESC", "BACKSTORY"]);
+export const entityTextStringValidator = z.string().max(ENTITY_TEXT_MAX);
+
+export const entityTextValidator = z.object({
+  key: entityTextKeyValidator,
+  text: entityTextStringValidator,
+  public: z.boolean().default(false),
+});
+
+export const fullEntityTextValidator = entityTextValidator.extend({
+  id: idValidator,
+  entity_id: idValidator,
+});
+
+// ENTITY_FLUX
+
+export const fluxTypeValidator = z.enum([
+  "TIDE",
+  "GRATE",
+  "DAM",
+  "EFFLUENT",
+  "DELTA",
+]);
+
+export const fluxMetadataValidator = z.object({
+  effect: z.string().max(ENTITY_FLUX_MAX),
+});
+
+export const entityFluxValidator = z.object({
+  type: fluxTypeValidator,
+  text: z.string().max(ENTITY_FLUX_MAX),
+  metadata: fluxMetadataValidator,
+});
+
+export const fullEntityFluxValidator = entityFluxValidator.extend({
+  id: idValidator,
+  entity_id: idValidator,
+});
+
+export const partialEntityFluxValidator = entityFluxValidator
+  .partial()
+  .refine((ability) => Object.keys(ability).length > 0, {
+    message: "Partial flux is empty",
+  });
+
 // COLLECTED ENTITY
 
 export const collectedEntityValidator = z.object({
   entity: entityValidator,
   abilities: abilityValidator.array(),
   items: itemValidator.array(),
+  text: entityTextValidator.array(),
+  flux: entityFluxValidator.array(),
 });
 
 export const fullCollectedEntityValidator = z.object({
   entity: fullEntityValidator,
   abilities: fullAbilityValidator.array(),
   items: fullItemValidator.array(),
+  text: fullEntityTextValidator.array(),
+  flux: fullEntityFluxValidator.array(),
 });
 
 export const collectedEntityWithChangelogValidator =
@@ -376,6 +440,7 @@ export type BaseEntityAttribute = z.infer<typeof baseAttributeFieldValidator>;
 export type UncompleteEntity = z.infer<typeof entityValidator>;
 export type FullEntity = z.infer<typeof fullEntityValidator>;
 export type Entity = UncompleteEntity | FullEntity;
+export type PartialEntity = z.infer<typeof partialEntityValidator>;
 export type UncompleteCollectedEntity = z.infer<
   typeof collectedEntityValidator
 >;
@@ -398,13 +463,20 @@ export type UncompleteEntityAbility = z.infer<typeof abilityValidator>;
 export type FullEntityAbility = z.infer<typeof fullAbilityValidator>;
 export type EntityAbility = UncompleteEntityAbility | FullEntityAbility;
 export type PartialEntityAbility = z.infer<typeof partialAbilityValidator>;
-export type AbilityCostMapNumber = z.infer<typeof abilityCostNumberValidator>
-export type AbilityCostMapBoolean= z.infer<typeof abilityCostBooleanValidator>
+export type AbilityCostMapNumber = z.infer<typeof abilityCostNumberValidator>;
+export type AbilityCostMapBoolean = z.infer<typeof abilityCostBooleanValidator>;
 export type AbilityCostMap = z.infer<typeof abilityCostValidator>;
 export type EntityAbilityFieldsStrings = z.infer<
   typeof abilityFieldsValidatorStrings
 >;
 export type EntityAbilityFields = z.infer<typeof abilityFieldsNameValidator>;
+export type EntityTextKey = z.infer<typeof entityTextKeyValidator>;
+export type UncompleteEntityText = z.infer<typeof entityTextValidator>;
+export type FullEntityText = z.infer<typeof fullEntityTextValidator>;
+export type EntityFluxType = z.infer<typeof fluxTypeValidator>;
+export type UncompleteEntityFlux = z.infer<typeof entityFluxValidator>;
+export type FullEntityFlux = z.infer<typeof fullEntityFluxValidator>;
+export type PartialEntityFlux = z.infer<typeof partialEntityFluxValidator>;
 export type UncompleteEntityChangelog = z.infer<
   typeof attributeChangelogValidator
 >;

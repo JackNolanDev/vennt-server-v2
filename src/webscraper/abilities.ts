@@ -88,13 +88,13 @@ const activationNumberRegex: Record<keyof AbilityCostMapNumber, RegExp> = {
   hero: new RegExp(`${baseNumberRegex}hero point`),
   actions: new RegExp(`${baseNumberRegex}action`),
   reactions: new RegExp(`${baseNumberRegex}reaction`),
-}
+};
 const activationBooleanRegex: Record<keyof AbilityCostMapBoolean, RegExp> = {
   attack: /attack/,
   passive: /passive/,
   respite: /respite/,
-  intermission: /intermission/
-}
+  intermission: /intermission/,
+};
 
 const parseActivation = (
   text: string,
@@ -105,15 +105,21 @@ const parseActivation = (
   Object.entries(activationNumberRegex).forEach(([keyIn, regex]) => {
     const key = keyIn as keyof AbilityCostMapNumber;
     const match = cleanText.match(regex);
-    if (match && match.length > 0 && match.groups?.number && ability.custom_fields) {
+    if (
+      match &&
+      match.length > 0 &&
+      match.groups?.number &&
+      ability.custom_fields
+    ) {
       if (match.groups.number.match(/^-?\d+$/)) {
         const val = parseInt(match.groups.number);
         if (!isNaN(val)) {
           if (!ability.custom_fields.cost) {
-            ability.custom_fields.cost = {}
+            ability.custom_fields.cost = {};
           }
-          ability.custom_fields.cost[key] = val
+          ability.custom_fields.cost[key] = val;
         }
+        // TODO: do something with match.groups.number if its not an integer
       }
     }
   });
@@ -122,9 +128,9 @@ const parseActivation = (
     const match = cleanText.match(regex);
     if (match && match.length > 0 && ability.custom_fields) {
       if (!ability.custom_fields.cost) {
-        ability.custom_fields.cost = {}
+        ability.custom_fields.cost = {};
       }
-      ability.custom_fields.cost[key] = true
+      ability.custom_fields.cost[key] = true;
     }
   });
 };
@@ -149,28 +155,35 @@ const parseAbilityLine: Record<
 const abilitySecondLines = ["This ability", "Cost", "Prereq", "Unlock"];
 const addToDescTags = new Set(["ul", "ol", "table"]);
 
-const addSpecialAbilityDetails = (ability: UncompleteEntityAbility, markdown: NodeHtmlMarkdown): UncompleteEntityAbility => {
+const addSpecialAbilityDetails = (
+  ability: UncompleteEntityAbility,
+  markdown: NodeHtmlMarkdown
+): UncompleteEntityAbility => {
   if (!ability.custom_fields) {
-    ability.custom_fields = {}
+    ability.custom_fields = {};
   }
   if (!ability.custom_fields.activation) {
     ability.custom_fields.activation = "Passive";
     if (ability.custom_fields.cost) {
       ability.custom_fields.cost.passive = true;
     } else {
-      ability.custom_fields.cost = { passive: true }
+      ability.custom_fields.cost = { passive: true };
     }
   }
   const lowerCaseEffect = ability.effect.toLowerCase();
-  if (REPEATABLE_SIGNIFIERS.some((signifier) => lowerCaseEffect.includes(signifier))) {
+  if (
+    REPEATABLE_SIGNIFIERS.some((signifier) =>
+      lowerCaseEffect.includes(signifier)
+    )
+  ) {
     ability.custom_fields.repeatable = true;
   }
   if (ABILITY_USES[ability.name]) {
-    ability.uses = ABILITY_USES[ability.name]
+    ability.uses = ABILITY_USES[ability.name];
   }
   ability.effect = markdown.translate(ability.effect);
   return ability;
-}
+};
 
 const parseAbilityPage = async (
   url: string,
