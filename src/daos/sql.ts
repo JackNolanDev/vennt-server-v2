@@ -472,7 +472,7 @@ export const sqlUpdateEntityText = async (
   text: string
 ): Promise<Result<boolean>> => {
   await tx.query(
-    `UPDATE ${ENTITY_TEXT_TABLE} SET "text" = $1 WHERE entityId = $2 AND key = $3`,
+    `UPDATE ${ENTITY_TEXT_TABLE} SET "text" = $1 WHERE entity_id = $2 AND key = $3`,
     [text, entityId, key]
   );
   return wrapSuccessResult(true);
@@ -485,7 +485,7 @@ export const sqlUpdateEntityTextPermission = async (
   permission: boolean
 ): Promise<Result<boolean>> => {
   await tx.query(
-    `UPDATE ${ENTITY_TEXT_TABLE} SET "public" = $1 WHERE entityId = $2 AND key = $3`,
+    `UPDATE ${ENTITY_TEXT_TABLE} SET "public" = $1 WHERE entity_id = $2 AND key = $3`,
     [permission, entityId, key]
   );
   return wrapSuccessResult(true);
@@ -497,7 +497,7 @@ export const sqlDeleteEntityText = async (
   key: EntityTextKey
 ): Promise<Result<boolean>> => {
   await tx.query(
-    `DELETE FROM ${ENTITY_TEXT_TABLE} WHERE entityId = $1 AND key = $2`,
+    `DELETE FROM ${ENTITY_TEXT_TABLE} WHERE entity_id = $1 AND key = $2`,
     [entityId, key]
   );
   return wrapSuccessResult(true);

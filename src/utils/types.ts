@@ -319,12 +319,17 @@ export const fullAttributeChangelogValidator =
 // ENTITY_TEXT
 
 export const entityTextKeyValidator = z.enum(["NOTES", "DESC", "BACKSTORY"]);
-export const entityTextStringValidator = z.string().max(ENTITY_TEXT_MAX);
 
-export const entityTextValidator = z.object({
-  key: entityTextKeyValidator,
-  text: entityTextStringValidator,
+export const entityTextTextValidator = z.object({
+  text: z.string().max(ENTITY_TEXT_MAX),
+})
+
+export const entityTextPermissionValidator = z.object({
   public: z.boolean().default(false),
+})
+
+export const entityTextValidator = entityTextTextValidator.merge(entityTextPermissionValidator).extend({
+  key: entityTextKeyValidator,
 });
 
 export const fullEntityTextValidator = entityTextValidator.extend({
@@ -514,6 +519,8 @@ export type Result<T> = SuccessResult<T> | ErrorResult;
 
 // FRONTEND TYPES
 export type HTMLString = string;
+
+export type SaveState = "EDITING" | "SAVING" | "SAVED";
 
 export type UpdatedEntityAttributes = {
   [attr in EntityAttribute]?: {

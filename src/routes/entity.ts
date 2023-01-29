@@ -7,7 +7,8 @@ import {
   collectedEntityWithChangelogValidator,
   entityFluxValidator,
   entityTextKeyValidator,
-  entityTextStringValidator,
+  entityTextPermissionValidator,
+  entityTextTextValidator,
   entityTextValidator,
   filterChangelogValidator,
   idValidator,
@@ -72,8 +73,6 @@ const updateEntity = async (req: Request, res: Response) => {
 };
 
 const deleteEntity = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, partialEntityValidator);
-  if (!body) return;
   const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
@@ -136,25 +135,25 @@ const insertEntityText = async (req: Request, res: Response) => {
 };
 
 const updateEntityText = async (req: Request, res: Response) => {
-  const text = parseBody(req, res, entityTextStringValidator);
-  if (!text) return;
+  const body = parseBody(req, res, entityTextTextValidator);
+  if (!body) return;
   const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   const key = parseParam(req, res, "key", entityTextKeyValidator);
   if (!key) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbUpdateEntityText(id, key, text));
+  pushResponse(res, await dbUpdateEntityText(id, key, body.text));
 };
 
 const updateEntityTextPermission = async (req: Request, res: Response) => {
-  const permission = parseBody(req, res, z.boolean());
+  const permission = parseBody(req, res, entityTextPermissionValidator);
   if (!permission) return;
   const id = parseParam(req, res, "id", idValidator);
   if (!id) return;
   const key = parseParam(req, res, "key", entityTextKeyValidator);
   if (!key) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbUpdateEntityTextPermission(id, key, permission));
+  pushResponse(res, await dbUpdateEntityTextPermission(id, key, permission.public));
 };
 
 const deleteEntityText = async (req: Request, res: Response) => {
