@@ -322,15 +322,17 @@ export const entityTextKeyValidator = z.enum(["NOTES", "DESC", "BACKSTORY"]);
 
 export const entityTextTextValidator = z.object({
   text: z.string().max(ENTITY_TEXT_MAX),
-})
+});
 
 export const entityTextPermissionValidator = z.object({
   public: z.boolean().default(false),
-})
-
-export const entityTextValidator = entityTextTextValidator.merge(entityTextPermissionValidator).extend({
-  key: entityTextKeyValidator,
 });
+
+export const entityTextValidator = entityTextTextValidator
+  .merge(entityTextPermissionValidator)
+  .extend({
+    key: entityTextKeyValidator,
+  });
 
 export const fullEntityTextValidator = entityTextValidator.extend({
   id: idValidator,
@@ -340,6 +342,7 @@ export const fullEntityTextValidator = entityTextValidator.extend({
 // ENTITY_FLUX
 
 export const fluxTypeValidator = z.enum([
+  "QUEST",
   "TIDE",
   "GRATE",
   "DAM",
@@ -348,13 +351,13 @@ export const fluxTypeValidator = z.enum([
 ]);
 
 export const fluxMetadataValidator = z.object({
-  effect: z.string().max(ENTITY_FLUX_MAX),
+  effect: z.string().max(ENTITY_FLUX_MAX).optional(),
 });
 
 export const entityFluxValidator = z.object({
   type: fluxTypeValidator,
   text: z.string().max(ENTITY_FLUX_MAX),
-  metadata: fluxMetadataValidator,
+  metadata: fluxMetadataValidator.optional().nullable(),
 });
 
 export const fullEntityFluxValidator = entityFluxValidator.extend({
