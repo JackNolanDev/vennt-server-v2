@@ -152,7 +152,10 @@ const updateEntityTextPermission = async (req: Request, res: Response) => {
   const key = parseParam(req, res, "key", entityTextKeyValidator);
   if (!key) return;
   if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbUpdateEntityTextPermission(id, key, permission.public));
+  pushResponse(
+    res,
+    await dbUpdateEntityTextPermission(id, key, permission.public)
+  );
 };
 
 const deleteEntityText = async (req: Request, res: Response) => {

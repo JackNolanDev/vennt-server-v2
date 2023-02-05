@@ -26,6 +26,9 @@ export const configureS3BucketCors = async (
 ): Promise<Result<boolean>> => {
   const client = getS3Client();
   if (!client.success) return client;
+  const allowedOrigins = process.env.WEBSITE_URL
+    ? ["http://localhost:5173", process.env.WEBSITE_URL]
+    : ["http://localhost:5173"];
   const response = await client.result.send(
     new PutBucketCorsCommand({
       Bucket: bucket,
@@ -33,7 +36,7 @@ export const configureS3BucketCors = async (
         CORSRules: [
           {
             AllowedMethods: ["GET"],
-            AllowedOrigins: ["http://localhost:5173"],
+            AllowedOrigins: allowedOrigins,
           },
         ],
       },
