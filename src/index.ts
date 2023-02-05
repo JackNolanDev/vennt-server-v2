@@ -29,9 +29,12 @@ const secret = process.env.SESSION_SECRET ?? "development secret";
 const setupPgSession = pgSession(session);
 app.use(
   session({
+    name: "vennt-session",
+    secret,
     resave: false,
     saveUninitialized: false,
-    secret,
+    proxy: isProd,
+    unset: "destroy",
     store: new setupPgSession({
       pool,
       createTableIfMissing: true,
