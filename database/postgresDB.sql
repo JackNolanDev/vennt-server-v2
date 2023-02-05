@@ -11,9 +11,6 @@ CREATE TABLE vennt.accounts (
     password text NOT NULL,
     role text NOT NULL DEFAULT 'USER'::text
 );
-CREATE UNIQUE INDEX accounts_pkey ON vennt.accounts(id uuid_ops);
-CREATE UNIQUE INDEX accounts_username_key ON vennt.accounts(username text_ops);
-CREATE UNIQUE INDEX accounts_email_key ON vennt.accounts(email text_ops);
 
 --------- CHARACTER SHEETS ---------
 
@@ -21,14 +18,13 @@ CREATE UNIQUE INDEX accounts_email_key ON vennt.accounts(email text_ops);
 
 CREATE TABLE vennt.entities (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    owner uuid NOT NULL REFERENCES vennt.accounts(id) ON DELETE CASCADE
+    owner uuid NOT NULL REFERENCES vennt.accounts(id) ON DELETE CASCADE,
     name text NOT NULL,
     type text DEFAULT 'CHARACTER'::text,
     attributes jsonb,
     other_fields jsonb,
     public boolean NOT NULL DEFAULT false
 );
-CREATE UNIQUE INDEX entities_pkey ON vennt.entities(id uuid_ops);
 
 -- items
 
@@ -44,7 +40,6 @@ CREATE TABLE vennt.items (
     comment text,
     active boolean NOT NULL DEFAULT false
 );
-CREATE UNIQUE INDEX items_pkey ON vennt.items(id uuid_ops);
 
 -- abilities
 
@@ -58,7 +53,6 @@ CREATE TABLE vennt.abilities (
     comment text,
     active boolean NOT NULL DEFAULT false
 );
-CREATE UNIQUE INDEX abilities_pkey ON vennt.abilities(id uuid_ops);
 
 -- entity_changelog
 
@@ -70,7 +64,6 @@ CREATE TABLE vennt.attribute_changelog (
     prev integer,
     time timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
-CREATE UNIQUE INDEX attribute_changelog_pkey ON vennt.attribute_changelog(id uuid_ops);
 CREATE INDEX entity_id_attr ON vennt.attribute_changelog(entity_id uuid_ops,attr text_ops);
 
 -- entity_text
@@ -82,8 +75,6 @@ CREATE TABLE vennt.entity_text (
     text text NOT NULL,
     public boolean NOT NULL DEFAULT false
 );
-
-CREATE UNIQUE INDEX entity_text_pkey ON vennt.entity_text(id uuid_ops);
 CREATE UNIQUE INDEX entity_key_unique ON vennt.entity_text(entity_id uuid_ops,key text_ops);
 
 -- entity_flux
@@ -95,10 +86,6 @@ CREATE TABLE vennt.flux (
     text text NOT NULL,
     metadata jsonb
 );
-
--- Indices -------------------------------------------------------
-
-CREATE UNIQUE INDEX flux_pkey ON vennt.flux(id uuid_ops);
 
 --------- CAMPAIGNS ---------
 

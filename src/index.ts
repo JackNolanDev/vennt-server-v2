@@ -53,6 +53,6 @@ app.use("/entity", entityRoute);
 app.use("/item", itemRoute);
 app.use("/admin", adminRoute);
 
-console.log("server started");
+console.log(`${isProd ? 'Production' : 'Local'} server started`);
 
 app.listen(process.env.PORT ?? 5000);
