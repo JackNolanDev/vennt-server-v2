@@ -45,7 +45,7 @@ export const INSERT_FLUX_COLUMNS = `entity_id, "type", "text", metadata`;
 
 export const ENTITY_COLUMNS = `${ENTITIES_TABLE}.id, ${ENTITIES_TABLE}.owner, ${ENTITIES_TABLE}.name, ${ENTITIES_TABLE}.type, \
   ${ENTITIES_TABLE}.attributes, ${ENTITIES_TABLE}.other_fields, ${ENTITIES_TABLE}.public`;
-export const ABILTIY_COLUMNS = `${ABILITIES_TABLE}.id, ${ABILITIES_TABLE}.entity_id, ${ABILITIES_TABLE}.name, ${ABILITIES_TABLE}.effect, \
+export const ABILITY_COLUMNS = `${ABILITIES_TABLE}.id, ${ABILITIES_TABLE}.entity_id, ${ABILITIES_TABLE}.name, ${ABILITIES_TABLE}.effect, \
   ${ABILITIES_TABLE}.custom_fields, ${ABILITIES_TABLE}.uses, ${ABILITIES_TABLE}.comment, ${ABILITIES_TABLE}.active`;
 export const CHANGELOG_COLUMNS = `${ATTRIBUTE_CHANGELOG_TABLE}.id, ${ATTRIBUTE_CHANGELOG_TABLE}.entity_id, ${ATTRIBUTE_CHANGELOG_TABLE}.attr, \
   ${ATTRIBUTE_CHANGELOG_TABLE}.msg, ${ATTRIBUTE_CHANGELOG_TABLE}.prev, ${ATTRIBUTE_CHANGELOG_TABLE}.time`;
@@ -175,7 +175,7 @@ export const sqlInsertAbilities = async (
       format(
         `INSERT INTO ${ABILITIES_TABLE} (${INSERT_ABILITY_COLUMNS})
         VALUES %L
-        RETURNING ${ABILTIY_COLUMNS}`,
+        RETURNING ${ABILITY_COLUMNS}`,
         abilityRows
       )
     )
@@ -188,7 +188,7 @@ export const sqlFetchAbilitiesByEntityId = async (
 ): Promise<Result<FullEntityAbility[]>> => {
   return parseList(
     await tx.query(
-      `SELECT ${ABILTIY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1`,
+      `SELECT ${ABILITY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1`,
       [entityId]
     )
   );
@@ -200,7 +200,7 @@ export const sqlFetchAbilityWithOwnerById = async (
 ): Promise<Result<FullEntityAbility & { owner: string }>> => {
   return parseFirst(
     await tx.query(
-      `SELECT ${ABILTIY_COLUMNS}, ${ENTITIES_TABLE}.owner
+      `SELECT ${ABILITY_COLUMNS}, ${ENTITIES_TABLE}.owner
       FROM ${ABILITIES_TABLE} JOIN ${ENTITIES_TABLE} ON ${ABILITIES_TABLE}.entity_id = ${ENTITIES_TABLE}.id
       WHERE ${ABILITIES_TABLE}.id = $1`,
       [abilityId]
@@ -232,7 +232,7 @@ export const sqlUpdateAbility = async (
       `UPDATE ${ABILITIES_TABLE}
       SET name = $1, effect = $2, custom_fields = $3, uses = $4, comment = $5, active = $6
       WHERE id = $7
-      RETURNING ${ABILTIY_COLUMNS}`,
+      RETURNING ${ABILITY_COLUMNS}`,
       [
         ability.name,
         ability.effect,

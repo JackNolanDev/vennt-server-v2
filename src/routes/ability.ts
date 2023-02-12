@@ -1,25 +1,24 @@
 import express from "express";
-import type { Request, Response } from "express";
-import { requireLoggedIn } from "../utils/middleware";
-import { parseBody, parseParam, pushResponse } from "../utils/express";
+import type { Request } from "express";
 import { idValidator, partialAbilityValidator } from "../utils/types";
 import { dbDeleteAbility, dbUpdateAbility } from "../daos/abilityDao";
+import { validateAuthHeader } from "../utils/jwt";
+import { wrapHandler } from "../utils/express";
 
-const updateAbility = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, partialAbilityValidator);
-  if (!body) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  pushResponse(res, await dbUpdateAbility(body, id, req.session.account.id));
+const updateAbility = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const body = partialAbilityValidator.parse(req.body);
+  const id = idValidator.parse(req.params.id);
+  return await dbUpdateAbility(body, id, account.id);
 };
 
-const deleteAbility = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  pushResponse(res, await dbDeleteAbility(id, req.session.account.id));
+const deleteAbility = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id);
+  return await dbDeleteAbility(id, account.id);
 };
 
 const router = express.Router();
-router.patch("/:id", requireLoggedIn, updateAbility);
-router.delete("/:id", requireLoggedIn, deleteAbility);
+router.patch("/:id", wrapHandler(updateAbility));
+router.delete("/:id", wrapHandler(deleteAbility));
 export default router;

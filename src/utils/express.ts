@@ -2,7 +2,13 @@ import type { Request, Response } from "express";
 import { ZodError, z } from "zod";
 import { AccountInfo, Result } from "./types";
 import { dbUserOwnsEntity } from "../daos/entityDao";
-import { ResultError, SERVER_ERROR_RESULT, wrapErrorResult } from "./db";
+import {
+  FORBIDDEN_RESULT,
+  ResultError,
+  SERVER_ERROR_RESULT,
+  wrapErrorResult,
+} from "./db";
+import { validateAuthHeader } from "./jwt";
 
 export const pushResponse = <T>(res: Response, result: Result<T>): void => {
   if (result.success) {
@@ -133,4 +139,11 @@ export const wrapHandler = <T>(
       }
     }
   };
+};
+
+export const validateAdmin = (req: Request): void => {
+  const account = validateAuthHeader(req);
+  if (account.role !== "ADMIN") {
+    throw new ResultError(FORBIDDEN_RESULT);
+  }
 };
