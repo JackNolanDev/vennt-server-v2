@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
-import { z } from "zod";
-import { Result } from "./types";
+import { ZodError, z } from "zod";
+import { AccountInfo, Result } from "./types";
 import { dbUserOwnsEntity } from "../daos/entityDao";
+import { ResultError, SERVER_ERROR_RESULT, wrapErrorResult } from "./db";
 
 export const pushResponse = <T>(res: Response, result: Result<T>): void => {
   if (result.success) {
@@ -53,6 +54,17 @@ export const entityEditPermission = async (
   return false;
 };
 
+export const validateEditEntityPermission = async (
+  account: AccountInfo, entityId: string,
+): Promise<void> => {
+  const check = await dbUserOwnsEntity(entityId, account.id);
+  if (!check.success) {
+    throw new ResultError(check)
+  } else if (!check.result && account.role !== "ADMIN") {
+    throw new ResultError(wrapErrorResult("Not allowed to edit this entity", 403))
+  }
+};
+
 // WIP input parser - doesn't quite define the types correctly
 
 type InputShape<
@@ -99,3 +111,21 @@ export const parseInputs = <
     z.infer<ParamValidators[keyof ParamValidators]>
   >;
 };
+
+export const wrapHandler = <T>(handler: (req: Request) => Promise<Result<T>>): (req: Request, res: Response) => Promise<void> => {
+  return async (req: Request, res: Response): Promise<void> => {
+    try {
+      const response = await handler(req)
+      pushResponse(res, response)
+    } catch (err) {
+      if (err instanceof ZodError) {
+        pushResponse(res, wrapErrorResult(err.message));
+      } else if (err instanceof ResultError) {
+        pushResponse(res, err.result);
+      } else {
+        console.error(err)
+        pushResponse(res, SERVER_ERROR_RESULT);
+      }
+    }
+  }
+}

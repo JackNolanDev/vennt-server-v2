@@ -70,6 +70,10 @@ export const dangerousAccountInfoValidator = accountInfoValidator.extend({
   password: passwordValidator,
 });
 
+export const accountTokenValidator = z.object({
+  token: z.string(),
+});
+
 // ENTITY FIELDS
 
 export const attributeValidator = z
@@ -437,6 +441,7 @@ export const pathsAndAbilitiesValidator = z.object({
 export type SignupRequest = z.infer<typeof signupRequestValidator>;
 export type LoginRequest = z.infer<typeof loginRequestValidator>;
 export type AccountInfo = z.infer<typeof accountInfoValidator>;
+export type AccountToken = z.infer<typeof accountTokenValidator>;
 export type DangerousAccountInfo = z.infer<
   typeof dangerousAccountInfoValidator
 >;

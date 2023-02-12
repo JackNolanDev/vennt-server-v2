@@ -1,6 +1,14 @@
 import express from "express";
-import type { Request, Response } from "express";
+import type { Request } from "express";
 import {
+  FullCollectedEntity,
+  FullEntity,
+  FullEntityAbility,
+  FullEntityChangelog,
+  FullEntityFlux,
+  FullEntityItem,
+  FullEntityText,
+  Result,
   abilityValidator,
   adjustAttributesValidator,
   attributeNameValidator,
@@ -17,10 +25,8 @@ import {
   partialEntityValidator,
 } from "../utils/types";
 import {
-  entityEditPermission,
-  parseBody,
-  parseParam,
-  pushResponse,
+  validateEditEntityPermission,
+  wrapHandler,
 } from "../utils/express";
 import {
   dbDeleteEntity,
@@ -33,7 +39,6 @@ import {
   dbUpdateEntityAttributes,
 } from "../daos/entityDao";
 import { dbInsertItems } from "../daos/itemDao";
-import { requireLoggedIn } from "../utils/middleware";
 import { dbInsertAbilities } from "../daos/abilityDao";
 import {
   dbDeleteEntityText,
@@ -42,180 +47,153 @@ import {
   dbUpdateEntityTextPermission,
 } from "../daos/entityTextDao";
 import { dbDeleteFlux, dbInsertFlux, dbUpdateFlux } from "../daos/fluxDao";
+import { validateAuthHeader, validateOptionalAuthHeader } from "../utils/jwt";
 
-const addFullEntity = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, collectedEntityWithChangelogValidator);
-  if (!body) return;
-
-  pushResponse(
-    res,
-    await dbInsertCollectedEntity(body, req.session.account.id)
-  );
+const addFullEntity = async (req: Request): Promise<Result<FullCollectedEntity>> => {
+  const account = validateAuthHeader(req);
+  const body = collectedEntityWithChangelogValidator.parse(req.body)
+  return await dbInsertCollectedEntity(body, account.id)
 };
 
-const listEntities = async (req: Request, res: Response) => {
-  pushResponse(res, await dbListEntities(req.session.account.id));
+const listEntities = async (req: Request): Promise<Result<FullEntity[]>> => {
+  const account = validateAuthHeader(req);
+  return await dbListEntities(account.id)
 };
 
-const fetchCollectedEntity = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  pushResponse(res, await dbFetchCollectedEntity(id, req.session.account?.id));
+const fetchCollectedEntity = async (req: Request): Promise<Result<FullCollectedEntity>> => {
+  const account = validateOptionalAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  return await dbFetchCollectedEntity(id, account?.id);
 };
 
-const updateEntity = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, partialEntityValidator);
-  if (!body) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  pushResponse(res, await dbUpdateEntity(id, req.session.account.id, body));
+const updateEntity = async (req: Request): Promise<Result<FullEntity>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  const body = partialEntityValidator.parse(req.body)
+  return await dbUpdateEntity(id, account.id, body);
 };
 
-const deleteEntity = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbDeleteEntity(id));
+const deleteEntity = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  return await dbDeleteEntity(id)
 };
 
-const updateEntityAttributes = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, adjustAttributesValidator);
-  if (!body) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  pushResponse(
-    res,
-    await dbUpdateEntityAttributes(id, body, req.session.account.id)
-  );
+const updateEntityAttributes = async (req: Request): Promise<Result<FullEntity>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  const body = adjustAttributesValidator.parse(req.body)
+  return await dbUpdateEntityAttributes(id, body, account.id)
 };
 
-const filterChangelog = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, filterChangelogValidator);
-  if (!body) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbFilterChangelog(id, body.attributes));
+const filterChangelog = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const body = filterChangelogValidator.parse(req.body)
+  return await dbFilterChangelog(id, body.attributes)
 };
 
-const getAttrChangelog = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const attr = parseParam(req, res, "attr", attributeNameValidator);
-  if (!attr) return;
-  pushResponse(res, await dbFetchChangelogByEntityIdAttribute(id, attr));
+const getAttrChangelog = async (req: Request): Promise<Result<FullEntityChangelog[]>> => {
+  const id = idValidator.parse(req.params.id)
+  const attr = attributeNameValidator.parse(req.params.attr)
+  return await dbFetchChangelogByEntityIdAttribute(id, attr);
 };
 
-const insertAbilities = async (req: Request, res: Response) => {
-  const abilities = parseBody(req, res, abilityValidator.array());
-  if (!abilities) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbInsertAbilities(id, abilities));
+const insertAbilities = async (req: Request): Promise<Result<FullEntityAbility[]>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const abilities = abilityValidator.array().parse(req.body);
+  return await dbInsertAbilities(id, abilities)
 };
 
-const insertItems = async (req: Request, res: Response) => {
-  const items = parseBody(req, res, itemValidator.array());
-  if (!items) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbInsertItems(id, items));
+const insertItems = async (req: Request): Promise<Result<FullEntityItem[]>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const items = itemValidator.array().parse(req.body);
+  return await dbInsertItems(id, items);
 };
 
-const insertEntityText = async (req: Request, res: Response) => {
-  const text = parseBody(req, res, entityTextValidator);
-  if (!text) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbInsertEntityText(id, text));
+const insertEntityText = async (req: Request): Promise<Result<FullEntityText>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const text = entityTextValidator.parse(req.body);
+  return await dbInsertEntityText(id, text);
 };
 
-const updateEntityText = async (req: Request, res: Response) => {
-  const body = parseBody(req, res, entityTextTextValidator);
-  if (!body) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const key = parseParam(req, res, "key", entityTextKeyValidator);
-  if (!key) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbUpdateEntityText(id, key, body.text));
+const updateEntityText = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const key = entityTextKeyValidator.parse(req.params.key)
+  const body = entityTextTextValidator.parse(req.body);
+  return await dbUpdateEntityText(id, key, body.text)
 };
 
-const updateEntityTextPermission = async (req: Request, res: Response) => {
-  const permission = parseBody(req, res, entityTextPermissionValidator);
-  if (!permission) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const key = parseParam(req, res, "key", entityTextKeyValidator);
-  if (!key) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(
-    res,
-    await dbUpdateEntityTextPermission(id, key, permission.public)
-  );
+const updateEntityTextPermission = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const key = entityTextKeyValidator.parse(req.params.key)
+  const permission = entityTextPermissionValidator.parse(req.body);
+  return await dbUpdateEntityTextPermission(id, key, permission.public)
 };
 
-const deleteEntityText = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const key = parseParam(req, res, "key", entityTextKeyValidator);
-  if (!key) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbDeleteEntityText(id, key));
+const deleteEntityText = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const key = entityTextKeyValidator.parse(req.params.key)
+  return await dbDeleteEntityText(id, key)
 };
 
-const insertFlux = async (req: Request, res: Response) => {
-  const flux = parseBody(req, res, entityFluxValidator);
-  if (!flux) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbInsertFlux(id, flux));
+const insertFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const flux = entityFluxValidator.parse(req.body);
+  return await await dbInsertFlux(id, flux)
 };
 
-const updateFlux = async (req: Request, res: Response) => {
-  const flux = parseBody(req, res, partialEntityFluxValidator);
-  if (!flux) return;
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const fluxId = parseParam(req, res, "fluxId", idValidator);
-  if (!fluxId) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbUpdateFlux(flux, fluxId));
+// TODO: I think the permission logic for update flux / delete flux is broken
+
+const updateFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const flux = partialEntityFluxValidator.parse(req.body);
+  const fluxId = idValidator.parse(req.params.fluxId)
+  return await dbUpdateFlux(flux, fluxId)
 };
 
-const deleteFlux = async (req: Request, res: Response) => {
-  const id = parseParam(req, res, "id", idValidator);
-  if (!id) return;
-  const fluxId = parseParam(req, res, "fluxId", idValidator);
-  if (!fluxId) return;
-  if (await entityEditPermission(res, id, req.session.account.id)) return;
-  pushResponse(res, await dbDeleteFlux(fluxId));
+const deleteFlux = async (req: Request): Promise<Result<boolean>> => {
+  const account = validateAuthHeader(req);
+  const id = idValidator.parse(req.params.id)
+  validateEditEntityPermission(account, id)
+  const fluxId = idValidator.parse(req.params.fluxId)
+  return await dbDeleteFlux(fluxId)
 };
 
 const router = express.Router();
-router.post("", requireLoggedIn, addFullEntity);
-router.get("", requireLoggedIn, listEntities);
-router.get("/:id", fetchCollectedEntity);
-router.patch("/:id", requireLoggedIn, updateEntity);
-router.delete("/:id", requireLoggedIn, deleteEntity);
-router.patch("/:id/attributes", requireLoggedIn, updateEntityAttributes);
-router.patch("/:id/changelog", requireLoggedIn, filterChangelog);
-router.get("/:id/changelog/:attr", requireLoggedIn, getAttrChangelog);
-router.post("/:id/abilities", requireLoggedIn, insertAbilities);
-router.post("/:id/items", requireLoggedIn, insertItems);
-router.post("/:id/text", requireLoggedIn, insertEntityText);
-router.put("/:id/text/:key", requireLoggedIn, updateEntityText);
-router.put(
-  "/:id/text/:key/permission",
-  requireLoggedIn,
-  updateEntityTextPermission
-);
-router.delete("/:id/text/:key", requireLoggedIn, deleteEntityText);
-router.post("/:id/flux", requireLoggedIn, insertFlux);
-router.patch("/:id/flux/:fluxId", requireLoggedIn, updateFlux);
-router.delete("/:id/flux/:fluxId", requireLoggedIn, deleteFlux);
+router.post("", wrapHandler(addFullEntity));
+router.get("", wrapHandler(listEntities));
+router.get("/:id", wrapHandler(fetchCollectedEntity));
+router.patch("/:id", wrapHandler(updateEntity));
+router.delete("/:id", wrapHandler(deleteEntity));
+router.patch("/:id/attributes", wrapHandler(updateEntityAttributes));
+router.patch("/:id/changelog", wrapHandler(filterChangelog));
+router.get("/:id/changelog/:attr", wrapHandler(getAttrChangelog));
+router.post("/:id/abilities", wrapHandler(insertAbilities));
+router.post("/:id/items", wrapHandler(insertItems));
+router.post("/:id/text", wrapHandler(insertEntityText));
+router.put("/:id/text/:key", wrapHandler(updateEntityText));
+router.put("/:id/text/:key/permission", wrapHandler(updateEntityTextPermission));
+router.delete("/:id/text/:key", wrapHandler(deleteEntityText));
+router.post("/:id/flux", wrapHandler(insertFlux));
+router.patch("/:id/flux/:fluxId", wrapHandler(updateFlux));
+router.delete("/:id/flux/:fluxId", wrapHandler(deleteFlux));
 export default router;

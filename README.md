@@ -28,3 +28,8 @@ Start server:
 | `R2_ACCESS_KEY_ID`     | Cloudflare access key ID                                  | ""                                                    |
 | `R2_SECRET_ACCESS_KEY` | Cloudflare secret access key                              | ""                                                    |
 | `JSON_STORAGE_URL`     | Public Cloudflare R2 URL for JSON STORAGE                 | `https://pub-8e2f06dbcb7b4dde8553a52dd656dbee.r2.dev` |
+
+TODO items
+- [ ] Store user session in local storage instead of cookie for now so safari is happy with it. Send in header
+- [ ] Safari does not like :has selector for layout management - try using JS for now
+- [ ] Try adding 0 width floating bar at the top of the header so the color extends up on mobile safari

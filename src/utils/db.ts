@@ -31,6 +31,37 @@ export const parseFirstVal = <T>(
   return wrapErrorResult("Not found", errorCode);
 };
 
+export const getFirst = <T>(
+  queryRes: QueryResult,
+  errorCode = 404,
+  errorMsg = "Not Found"
+): T => {
+  const first = queryRes.rows[0];
+  if (first !== undefined) {
+    return first as T;
+  }
+  throw new ResultError(wrapErrorResult(errorMsg, errorCode));
+}
+
+export const getList = <T>(queryRes: QueryResult): T[] => {
+  return queryRes.rows as T[];
+};
+
+export const getFirstVal = <T>(
+  queryRes: QueryResult,
+  errorCode = 404,
+  errorMsg = "Not Found"
+): T => {
+  const first = queryRes.rows[0];
+  if (typeof first === "object") {
+    const firstVals = Object.values(first);
+    if (firstVals[0] !== undefined) {
+      return firstVals[0] as T;
+    }
+  }
+  throw new ResultError(wrapErrorResult(errorMsg, errorCode));
+};
+
 export class ResultError extends Error {
   result: ErrorResult;
 
@@ -78,7 +109,7 @@ export const wrapSuccessResult = <T>(result: T): SuccessResult<T> => {
   };
 };
 
-export const wrapErrorResult = (error: string, code: number): ErrorResult => {
+export const wrapErrorResult = (error: string, code = 400): ErrorResult => {
   return {
     success: false,
     error,
@@ -86,4 +117,11 @@ export const wrapErrorResult = (error: string, code: number): ErrorResult => {
   };
 };
 
+export const throwErrorResult = (error: string, code = 400): void => {
+  throw new ResultError(wrapErrorResult(error, code));
+};
+
+export const UNAUTHORIZED_RESULT = wrapErrorResult("Unauthorized", 401);
 export const FORBIDDEN_RESULT = wrapErrorResult("Forbidden", 403);
+export const NOT_FOUND_RESULT = wrapErrorResult("Not Found", 404);
+export const SERVER_ERROR_RESULT = wrapErrorResult("Server Error", 500);

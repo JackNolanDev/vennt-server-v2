@@ -99,7 +99,6 @@ CREATE TABLE vennt.campaigns (
     init_index integer NOT NULL DEFAULT 0,
     init_round integer NOT NULL DEFAULT 0
 );
-CREATE UNIQUE INDEX campaigns_pkey ON vennt.campaigns(id uuid_ops);
 
 -- campaign_invites
 
@@ -111,8 +110,6 @@ CREATE TABLE vennt.campaign_invites (
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE UNIQUE INDEX campaign_invites_pkey ON vennt.campaign_invites(id uuid_ops);
-
 -- campaign_members
 
 CREATE TABLE vennt.campaign_members (
@@ -121,7 +118,6 @@ CREATE TABLE vennt.campaign_members (
     account_id uuid NOT NULL REFERENCES vennt.accounts(id),
     role text NOT NULL DEFAULT 'SPECTATOR'::text
 );
-CREATE UNIQUE INDEX campaign_members_pkey ON vennt.campaign_members(id uuid_ops);
 CREATE UNIQUE INDEX campaign_account_unique ON vennt.campaign_members(campaign_id uuid_ops,account_id uuid_ops);
 
 -- campaign_entities
@@ -132,4 +128,3 @@ CREATE TABLE vennt.campaign_entites (
     entity_id uuid NOT NULL REFERENCES vennt.entities(id) ON DELETE CASCADE,
     gm_only boolean NOT NULL DEFAULT false
 );
-CREATE UNIQUE INDEX campaign_entites_pkey ON vennt.campaign_entites(id uuid_ops);
