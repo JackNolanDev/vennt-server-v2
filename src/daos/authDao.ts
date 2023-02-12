@@ -28,11 +28,12 @@ export const verifyPassword = async (
     "SELECT id, username, email, role, password FROM vennt.accounts WHERE username = $1",
     [loginRequest.username]
   );
-  const row = getFirst<DangerousAccountInfo>(res, 403, "Incorrect password entered");
-  const matches = await bcrypt.compare(
-    loginRequest.password,
-    row.password
+  const row = getFirst<DangerousAccountInfo>(
+    res,
+    403,
+    "Incorrect password entered"
   );
+  const matches = await bcrypt.compare(loginRequest.password, row.password);
   if (matches) {
     return {
       id: row.id,
@@ -41,5 +42,5 @@ export const verifyPassword = async (
       role: row.role,
     };
   }
-  throw new ResultError(wrapErrorResult("Incorrect password entered", 403))
+  throw new ResultError(wrapErrorResult("Incorrect password entered", 403));
 };

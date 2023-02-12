@@ -55,13 +55,16 @@ export const entityEditPermission = async (
 };
 
 export const validateEditEntityPermission = async (
-  account: AccountInfo, entityId: string,
+  account: AccountInfo,
+  entityId: string
 ): Promise<void> => {
   const check = await dbUserOwnsEntity(entityId, account.id);
   if (!check.success) {
-    throw new ResultError(check)
+    throw new ResultError(check);
   } else if (!check.result && account.role !== "ADMIN") {
-    throw new ResultError(wrapErrorResult("Not allowed to edit this entity", 403))
+    throw new ResultError(
+      wrapErrorResult("Not allowed to edit this entity", 403)
+    );
   }
 };
 
@@ -112,20 +115,22 @@ export const parseInputs = <
   >;
 };
 
-export const wrapHandler = <T>(handler: (req: Request) => Promise<Result<T>>): (req: Request, res: Response) => Promise<void> => {
+export const wrapHandler = <T>(
+  handler: (req: Request) => Promise<Result<T>>
+): ((req: Request, res: Response) => Promise<void>) => {
   return async (req: Request, res: Response): Promise<void> => {
     try {
-      const response = await handler(req)
-      pushResponse(res, response)
+      const response = await handler(req);
+      pushResponse(res, response);
     } catch (err) {
       if (err instanceof ZodError) {
         pushResponse(res, wrapErrorResult(err.message));
       } else if (err instanceof ResultError) {
         pushResponse(res, err.result);
       } else {
-        console.error(err)
+        console.error(err);
         pushResponse(res, SERVER_ERROR_RESULT);
       }
     }
-  }
-}
+  };
+};

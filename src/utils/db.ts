@@ -41,7 +41,7 @@ export const getFirst = <T>(
     return first as T;
   }
   throw new ResultError(wrapErrorResult(errorMsg, errorCode));
-}
+};
 
 export const getList = <T>(queryRes: QueryResult): T[] => {
   return queryRes.rows as T[];
