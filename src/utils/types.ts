@@ -126,6 +126,7 @@ export const attributeNameValidator = attributesValidator.keyof();
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
+  second_gift: giftValidator.optional(),
 });
 
 export const entityValidator = z.object({
@@ -253,6 +254,7 @@ export const itemFieldsValidator = z.object({
   range: z.string().max(NAME_MAX).optional(),
   special: z.string().max(ITEM_MAX).optional(),
   weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
+  in_storage: z.boolean().optional(),
 });
 
 export const ITEM_TYPE_EQUIPMENT = "equipment";

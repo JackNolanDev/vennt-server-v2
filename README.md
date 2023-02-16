@@ -31,6 +31,16 @@ Start server:
 
 TODO items
 
-- [ ] Store user session in local storage instead of cookie for now so safari is happy with it. Send in header
-- [ ] Safari does not like :has selector for layout management - try using JS for now
-- [ ] Try adding 0 width floating bar at the top of the header so the color extends up on mobile safari
+- [x] Store user session in local storage instead of cookie for now so safari is happy with it. Send in header
+- [x] Safari does not like :has selector for layout management - try using JS for now
+- [x] Try adding 0 width floating bar at the top of the header so the color extends up on mobile safari (actually solved using theme metadata on header)
+- [x] Try increasing text size of all inputs to prevent zoom on ios
+- [x] Add `in_storage` flag to items, which means it will not count towards bulk but also can no longer be used
+- [ ] Add "refresh item" confirmation button for updating an item to the latest version on the wiki
+- [ ] Add "refresh ability" confirmation button for updating an ability to the latest version on the wiki
+- [ ] Add ability editing
+- [ ] Add custom ability generation
+- [ ] Add removing abilities
+- [ ] (MAYBE) Start tracking entities with a game version number. I can rerun the web scrapers and have them save to new keys, and when the entity version is newer we will read from the newer wiki pages.
+- [ ] Support multiple gifts
+- [ ] Support gift traits

@@ -60,7 +60,8 @@ const parseTable = (
   $: CheerioAPI,
   selector: string,
   type: EntityItemType,
-  section: string
+  section: string,
+  includesCourses = true
 ): ShopItem[] => {
   const items: ShopItem[] = [];
   // Adventuring Gear table
@@ -81,7 +82,9 @@ const parseTable = (
     const rowElements = $(row).children("td");
     rowElements.each((idx, el) => {
       const text = $(el).text().trim();
-      switch (idx) {
+      // skip the second column when courses are not in the table
+      const switchIdx = includesCourses ? idx : (idx === 0 ? 0 : idx + 1)
+      switch (switchIdx) {
         case 0:
           item.name = text;
           // include data that's hard to automatically parse
@@ -440,7 +443,8 @@ export const fetchShopItems = async (
       $,
       "#mw-content-text > div > table:nth-child(6) > tbody",
       "equipment",
-      "Adventuring Gear"
+      "Adventuring Gear",
+      false
     );
     // Unusual Devices table
     const devices = parseTable(

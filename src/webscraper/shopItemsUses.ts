@@ -87,4 +87,19 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
   "Lockpick set, Improved": {
     check: { bonus: "+3", attr: "dex" },
   },
+  "Spyglass": {
+    check: { bonus: "+6", attr: "per" },
+  },
+  "Periscoping Eyes": {
+    check: { bonus: "+3", attr: "per" },
+  },
+  "Six Lens Goggles": {
+    check: { bonus: "+1", attr: "per" },
+  },
+  "Synesthetic Sonic Goggles": {
+    check: { bonus: "+2", attr: "per" },
+  },
+  "Crowbar": {
+    check: { bonus: "+1", attr: "str" },
+  },
 };
