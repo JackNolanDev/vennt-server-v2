@@ -27,15 +27,21 @@ export const dbInsertFlux = async (
 
 export const dbUpdateFlux = (
   partialFlux: PartialEntityFlux,
-  fluxId: string
+  fluxId: string,
+  entityId: string
 ): Promise<Result<FullEntityFlux>> => {
   return handleTransaction(async (tx) => {
-    const currentFlux = unwrapResultOrError(await sqlFetchFluxById(tx, fluxId));
+    const currentFlux = unwrapResultOrError(
+      await sqlFetchFluxById(tx, fluxId, entityId)
+    );
     const newFlux = { ...currentFlux, ...partialFlux };
     return sqlUpdateFlux(tx, fluxId, newFlux);
   });
 };
 
-export const dbDeleteFlux = (fluxId: string): Promise<Result<boolean>> => {
-  return sqlDeleteFlux(pool, fluxId);
+export const dbDeleteFlux = (
+  fluxId: string,
+  entityId: string
+): Promise<Result<boolean>> => {
+  return sqlDeleteFlux(pool, fluxId, entityId);
 };

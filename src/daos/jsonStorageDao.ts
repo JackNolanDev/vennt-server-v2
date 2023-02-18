@@ -1,5 +1,5 @@
 import { JsonStorageKey, Result } from "../utils/types";
-import { wrapErrorResult, wrapSuccessResult } from "../utils/db";
+import { ResultError, wrapErrorResult, wrapSuccessResult } from "../utils/db";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getS3Client } from "../utils/s3";
 import axios from "axios";
@@ -29,15 +29,15 @@ export const dbUpsertJSONDocument = async (
   return wrapErrorResult("S3 PUT failed", 500);
 };
 
-export const dbGetJSONDocument = async <T>(
-  key: JsonStorageKey
-): Promise<Result<T>> => {
+export const dbGetJSONDocument = async <T>(key: JsonStorageKey): Promise<T> => {
   const axiosResponse = await axios.get(`${JSON_STORAGE_PUBLIC_URL}/${key}`);
   if (axiosResponse.status === 200) {
     if (typeof axiosResponse.data === "object") {
-      return wrapSuccessResult(axiosResponse.data);
+      return axiosResponse.data;
     }
-    return wrapErrorResult("invalid JSON in storage", 500);
+    throw new ResultError(wrapErrorResult("invalid JSON in storage", 500));
   }
-  return wrapErrorResult(axiosResponse.statusText, axiosResponse.status);
+  throw new ResultError(
+    wrapErrorResult(axiosResponse.statusText, axiosResponse.status)
+  );
 };

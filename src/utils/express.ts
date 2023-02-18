@@ -34,7 +34,7 @@ export const pushResponse = <T>(res: Response, result: Result<T>): void => {
   if (result.success) {
     res.status(200).json(result);
   } else {
-    res.status(result.code).json({ success: false, error: result.error })
+    res.status(result.code).json({ success: false, error: result.error });
   }
 };
 

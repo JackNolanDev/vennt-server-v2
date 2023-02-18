@@ -178,7 +178,7 @@ const updateFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
   validateEditEntityPermission(account, id);
   const flux = partialEntityFluxValidator.parse(req.body);
   const fluxId = idValidator.parse(req.params.fluxId);
-  return await dbUpdateFlux(flux, fluxId);
+  return await dbUpdateFlux(flux, fluxId, id);
 };
 
 const deleteFlux = async (req: Request): Promise<Result<boolean>> => {
@@ -186,7 +186,7 @@ const deleteFlux = async (req: Request): Promise<Result<boolean>> => {
   const id = idValidator.parse(req.params.id);
   validateEditEntityPermission(account, id);
   const fluxId = idValidator.parse(req.params.fluxId);
-  return await dbDeleteFlux(fluxId);
+  return await dbDeleteFlux(fluxId, id);
 };
 
 const router = express.Router();

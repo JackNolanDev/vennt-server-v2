@@ -508,7 +508,7 @@ export type FilterChangelogBody = z.infer<typeof filterChangelogValidator>;
 export type JsonStorageKey = z.infer<typeof jsonStorageKeyValidator>;
 export type ShopItem = z.infer<typeof shopItemValidator>;
 export type PathDetails = z.infer<typeof pathDetailsValidator>;
-export type PathsAndAbilites = z.infer<typeof pathsAndAbilitiesValidator>;
+export type PathsAndAbilities = z.infer<typeof pathsAndAbilitiesValidator>;
 
 // SERVER TYPES
 

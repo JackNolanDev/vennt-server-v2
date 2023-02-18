@@ -545,12 +545,14 @@ export const sqlFetchFluxByEntityId = async (
 
 export const sqlFetchFluxById = async (
   tx: TX,
-  fluxId: string
+  fluxId: string,
+  entityId: string
 ): Promise<Result<FullEntityFlux>> => {
   return parseFirst(
-    await tx.query(`SELECT ${FLUX_COLUMNS} FROM ${FLUX_TABLE} WHERE id = $1`, [
-      fluxId,
-    ])
+    await tx.query(
+      `SELECT ${FLUX_COLUMNS} FROM ${FLUX_TABLE} WHERE id = $1 AND entity_id = $2`,
+      [fluxId, entityId]
+    )
   );
 };
 
@@ -572,8 +574,12 @@ export const sqlUpdateFlux = async (
 
 export const sqlDeleteFlux = async (
   tx: TX,
-  fluxId: string
+  fluxId: string,
+  entityId: string
 ): Promise<Result<boolean>> => {
-  await tx.query(`DELETE FROM ${FLUX_TABLE} WHERE id = $1`, [fluxId]);
+  await tx.query(`DELETE FROM ${FLUX_TABLE} WHERE id = $1 AND entity_is = $2`, [
+    fluxId,
+    entityId,
+  ]);
   return wrapSuccessResult(true);
 };

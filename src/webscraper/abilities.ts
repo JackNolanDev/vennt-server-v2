@@ -4,7 +4,7 @@ import {
   AbilityCostMapNumber,
   EntityAbilityFieldsStrings,
   PathDetails,
-  PathsAndAbilites,
+  PathsAndAbilities as PathsAndAbilities,
   UncompleteEntityAbility,
 } from "../utils/types";
 import { load } from "cheerio";
@@ -300,7 +300,7 @@ const parseAbilityPage = async (
   return [pathDetails, abilities];
 };
 
-export const fetchAbilities = async (): Promise<PathsAndAbilites> => {
+export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
   console.log("starting to web scrape abilities");
   const markdown = new NodeHtmlMarkdown(
     { ignore: ["br", "img"] },

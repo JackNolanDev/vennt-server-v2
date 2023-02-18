@@ -83,7 +83,7 @@ const parseTable = (
     rowElements.each((idx, el) => {
       const text = $(el).text().trim();
       // skip the second column when courses are not in the table
-      const switchIdx = includesCourses ? idx : (idx === 0 ? 0 : idx + 1)
+      const switchIdx = includesCourses ? idx : idx === 0 ? 0 : idx + 1;
       switch (switchIdx) {
         case 0:
           item.name = text;
