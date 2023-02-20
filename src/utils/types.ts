@@ -312,7 +312,7 @@ export const shopItemValidator = itemFieldsValidator.extend({
 export const attributeChangelogValidator = z.object({
   attr: attributesValidator.keyof(),
   msg: z.string().max(CHANGELOG_MAX),
-  prev: z.number().optional(),
+  prev: z.number().optional().nullable(),
 });
 
 export const fullAttributeChangelogValidator =
@@ -532,12 +532,16 @@ export type HTMLString = string;
 
 export type SaveState = "EDITING" | "SAVING" | "SAVED";
 
+export type UpdatedEntityAttribute = {
+  // TODO: add reason for values shifting
+  base?: number;
+  val: number;
+  reason?: string[];
+  items?: EntityItem[];
+};
+
 export type UpdatedEntityAttributes = {
-  [attr in EntityAttribute]?: {
-    // TODO: add reason for values shifting
-    base?: number;
-    val: number;
-  };
+  [attr in EntityAttribute]?: UpdatedEntityAttribute;
 };
 
 export type DiceToggle = {
