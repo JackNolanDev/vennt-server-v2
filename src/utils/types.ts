@@ -170,11 +170,13 @@ export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
   attr: attributeNameValidator,
 });
+export const useExposeCombatStats = attributeNameValidator.array();
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),
   heal: useHealValidator.optional(),
   adjust: useAdjustValidator.optional(),
   check: useCheckValidator.optional(),
+  exposeCombatStats: useExposeCombatStats.optional(),
 });
 
 // ABILITIES
