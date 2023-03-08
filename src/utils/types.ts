@@ -166,17 +166,86 @@ export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
   attr: useAttrMapValidator,
 });
+export const criteriaFieldOperator = z.enum(["equals"]);
+export const useCriteriaFieldValidator = z.object({
+  type: z.literal("field"),
+  path: z.string().min(1).array(),
+  operator: criteriaFieldOperator,
+  key: z.string().min(1),
+});
+export const useCriteriaKeyValidator = z.object({
+  type: z.literal("key"),
+  operator: criteriaFieldOperator,
+  key: z.string().min(1),
+  value: z.string().min(1),
+})
+export const useCriteriaSpecialValidator = z.object({
+  type: z.literal("special"),
+  name: z.enum(["isSpell"]),
+});
+export const useCriteriaBaseValidatorBase = z.object({
+  type: z.literal("base"),
+  operator: z.enum(["every", "some"]),
+});
+export type UseCriteriaBase = z.infer<typeof useCriteriaBaseValidatorBase> & {
+  tests: Array<z.infer<typeof useCriteriaValidator>>;
+};
+export const useCriteriaBaseValidator: z.ZodType<UseCriteriaBase> =
+  useCriteriaBaseValidatorBase.extend({
+    tests: z.array(z.lazy(() => useCriteriaValidator)),
+  });
+export const useCriteriaValidator = z.union([
+  useCriteriaFieldValidator,
+  useCriteriaKeyValidator,
+  useCriteriaSpecialValidator,
+  useCriteriaBaseValidator,
+]);
+export const useAdjustAbilityCostValidator = z.object({
+  adjust_cost: z.number().int(),
+});
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
   attr: attributeNameValidator,
 });
 export const useExposeCombatStats = attributeNameValidator.array();
+export const useCriteriaBenefit = z.object({
+  criteria: useCriteriaValidator,
+  adjust: useAdjustValidator.optional(),
+  adjust_ability_cost: useAdjustAbilityCostValidator.optional(),
+  check: useCheckValidator.optional(),
+});
+export const useCriteriaBenefitResults = useCriteriaBenefit.array();
+export const useRadioInputBase = z.object({
+  type: z.literal("radio"),
+  key: z.string().min(1),
+});
+export type UseRadioInput = z.infer<typeof useRadioInputBase> & {
+  choices: Record<string, UseInputs>;
+};
+export const useRadioInput: z.ZodType<UseRadioInput> = useRadioInputBase.extend(
+  {
+    choices: z.record(
+      z.string().min(1),
+      z.lazy(() => useInputs)
+    ),
+  }
+);
+export const useTextInput = z.object({
+  type: z.literal("text"),
+  key: z.string().min(1),
+});
+export const useInput = useRadioInput.or(useTextInput);
+export const useInputs = useInput.array();
+export type UseInputs = z.infer<typeof useInputs>;
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),
   heal: useHealValidator.optional(),
   adjust: useAdjustValidator.optional(),
+  adjust_ability_cost: useAdjustAbilityCostValidator.optional(),
   check: useCheckValidator.optional(),
-  exposeCombatStats: useExposeCombatStats.optional(),
+  expose_combat_stats: useExposeCombatStats.optional(),
+  inputs: useInputs.optional(),
+  criteria_benefits: useCriteriaBenefitResults.optional(),
 });
 
 // ABILITIES
@@ -222,6 +291,7 @@ export const abilityFieldsValidator = abilityFieldsValidatorStrings.extend({
   not_req: z.boolean().optional(),
   repeatable: z.boolean().optional(),
   times_taken: z.number().int().min(0).optional(),
+  keys: z.record(z.string().min(1), z.string().min(1)).optional(),
 });
 
 export const abilityFieldsNameValidator = abilityFieldsValidator.keyof();
