@@ -84,7 +84,7 @@ export const attributeValidator = z
   .default(0);
 export const combatStatValidator = z.number().int().min(0);
 export const giftValidator = z.enum(CHARACTER_GIFTS);
-export const entityTypeValidator = z.enum(["CHARACTER"]);
+export const entityTypeValidator = z.enum(["CHARACTER", "COG"]);
 export const baseAttributeFieldValidator = z.enum(ATTRIBUTES);
 
 // NOTE: ALL FUTURE ATTRIBUTES SHOULD BE optional()
@@ -114,19 +114,72 @@ export const attributesValidator = z.object({
   armor: z.number().int().optional(),
   burden: z.number().int().optional(),
   casting: z.number().int().optional(),
-  level: z.number().int().optional(),
-  acc: z.number().int().optional(),
+  L: z.number().int().optional(),
+  X: z.number().int().optional(),
   radius: z.number().optional(),
-  reach: z.number().optional(),
-  shield: z.number().optional(),
+  reach: z.number().int().optional(),
+  shield: z.number().int().optional(),
+  bluespace: z.number().int().optional(),
+  free_hands: z.number().int().optional(),
+  carrying_capacity: z.number().int().optional(),
+  alert: z.number().int().optional(),
+  acc: z.number().int().optional(),
+  dmg: z.number().int().optional(),
+  // WEAPON SPECIFIC BONUSES
+  aggressive_acc: z.number().int().optional(),
+  aggressive_dmg: z.number().int().optional(),
+  arcana_acc: z.number().int().optional(),
+  arcana_dmg: z.number().int().optional(),
+  balanced_acc: z.number().int().optional(),
+  balanced_dmg: z.number().int().optional(),
+  blade_acc: z.number().int().optional(),
+  blade_dmg: z.number().int().optional(),
+  bow_acc: z.number().int().optional(),
+  bow_dmg: z.number().int().optional(),
+  brawling_acc: z.number().int().optional(),
+  brawling_dmg: z.number().int().optional(),
+  brutal_acc: z.number().int().optional(),
+  brutal_dmg: z.number().int().optional(),
+  cannon_acc: z.number().int().optional(),
+  cannon_dmg: z.number().int().optional(),
+  great_acc: z.number().int().optional(),
+  great_dmg: z.number().int().optional(),
+  grenade_acc: z.number().int().optional(),
+  grenade_dmg: z.number().int().optional(),
+  hookwhip_acc: z.number().int().optional(),
+  hookwhip_dmg: z.number().int().optional(),
+  improvised_acc: z.number().int().optional(),
+  improvised_dmg: z.number().int().optional(),
+  polearm_acc: z.number().int().optional(),
+  polearm_dmg: z.number().int().optional(),
+  protector_acc: z.number().int().optional(),
+  protector_dmg: z.number().int().optional(),
+  rifle_acc: z.number().int().optional(),
+  rifle_dmg: z.number().int().optional(),
+  shotgun_acc: z.number().int().optional(),
+  shotgun_dmg: z.number().int().optional(),
+  sidearm_acc: z.number().int().optional(),
+  sidearm_dmg: z.number().int().optional(),
+  thrown_acc: z.number().int().optional(),
+  thrown_dmg: z.number().int().optional(),
+  tinkertech_acc: z.number().int().optional(),
+  tinkertech_dmg: z.number().int().optional(),
+  unarmed_acc: z.number().int().optional(),
+  unarmed_dmg: z.number().int().optional(),
+  whip_acc: z.number().int().optional(),
+  whip_dmg: z.number().int().optional(),
 });
 
 export const attributeNameValidator = attributesValidator.keyof();
+export const validAttributes = Object.keys(
+  attributeNameValidator.Values
+) as EntityAttribute[];
 
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
   second_gift: giftValidator.optional(),
+  cog_type: z.string().max(NAME_MAX).optional(),
 });
 
 export const entityValidator = z.object({
@@ -167,22 +220,26 @@ export const useAdjustValidator = z.object({
   attr: useAttrMapValidator,
 });
 export const criteriaFieldOperator = z.enum(["equals"]);
+export type CriteriaFieldOperator = z.infer<typeof criteriaFieldOperator>;
 export const useCriteriaFieldValidator = z.object({
   type: z.literal("field"),
   path: z.string().min(1).array(),
   operator: criteriaFieldOperator,
   key: z.string().min(1),
 });
+export type UseCriteriaField = z.infer<typeof useCriteriaFieldValidator>;
 export const useCriteriaKeyValidator = z.object({
   type: z.literal("key"),
   operator: criteriaFieldOperator,
   key: z.string().min(1),
   value: z.string().min(1),
-})
+});
+export type UseCriteriaKey = z.infer<typeof useCriteriaKeyValidator>;
 export const useCriteriaSpecialValidator = z.object({
   type: z.literal("special"),
   name: z.enum(["isSpell"]),
 });
+export type UseCriteriaSpecial = z.infer<typeof useCriteriaSpecialValidator>;
 export const useCriteriaBaseValidatorBase = z.object({
   type: z.literal("base"),
   operator: z.enum(["every", "some"]),
@@ -200,6 +257,7 @@ export const useCriteriaValidator = z.union([
   useCriteriaSpecialValidator,
   useCriteriaBaseValidator,
 ]);
+export type UseCriteria = z.infer<typeof useCriteriaValidator>;
 export const useAdjustAbilityCostValidator = z.object({
   adjust_cost: z.number().int(),
 });
@@ -234,6 +292,7 @@ export const useTextInput = z.object({
   type: z.literal("text"),
   key: z.string().min(1),
 });
+export type UseTextInput = z.infer<typeof useTextInput>;
 export const useInput = useRadioInput.or(useTextInput);
 export const useInputs = useInput.array();
 export type UseInputs = z.infer<typeof useInputs>;

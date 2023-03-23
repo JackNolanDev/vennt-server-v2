@@ -288,7 +288,10 @@ export const sqlFetchChangelogByEntityId = async (
 ): Promise<Result<FullEntityChangelog[]>> => {
   return parseList(
     await tx.query(
-      `SELECT ${CHANGELOG_COLUMNS} FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1`,
+      `SELECT ${CHANGELOG_COLUMNS}
+      FROM ${ATTRIBUTE_CHANGELOG_TABLE}
+      WHERE entity_id = $1
+      ORDER BY time ASC`,
       [entityId]
     )
   );
@@ -301,7 +304,10 @@ export const sqlFetchChangelogByEntityIdAttribute = async (
 ): Promise<Result<FullEntityChangelog[]>> => {
   return parseList(
     await tx.query(
-      `SELECT ${CHANGELOG_COLUMNS} FROM ${ATTRIBUTE_CHANGELOG_TABLE} WHERE entity_id = $1 AND attr = $2`,
+      `SELECT ${CHANGELOG_COLUMNS}
+      FROM ${ATTRIBUTE_CHANGELOG_TABLE}
+      WHERE entity_id = $1 AND attr = $2
+      ORDER BY time ASC`,
       [id, attr]
     )
   );

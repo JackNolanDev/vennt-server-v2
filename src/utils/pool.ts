@@ -11,6 +11,7 @@ if (process.env.DATABASE_URL) {
 } else {
   pool = new Pool({
     database: "vennt",
+    port: 5436
   });
 }
 
