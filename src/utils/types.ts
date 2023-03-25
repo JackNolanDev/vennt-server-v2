@@ -175,11 +175,39 @@ export const validAttributes = Object.keys(
   attributeNameValidator.Values
 ) as EntityAttribute[];
 
+// COG CREATION FIELDS
+
+export const COG_ATTRIBUTE_LEVELS = [
+  "weak",
+  "moderate",
+  "strong",
+  "exceptional",
+] as const;
+
+export const cogAttributeLevelValidator = z.enum(COG_ATTRIBUTE_LEVELS);
+
+export const cogCreateOptionsValidator = z.object({
+  name: z.string(),
+  level: z.string().or(z.number()),
+  type: z.string(),
+  desc: z.string(),
+  attrOverrides: z.record(
+    baseAttributeFieldValidator,
+    cogAttributeLevelValidator
+  ),
+  abilitySelection: z.record(z.string(), z.string()),
+  variableAbilityCost: z.record(z.string(), z.string().or(z.number())),
+});
+
+export type CogAttributeLevel = z.infer<typeof cogAttributeLevelValidator>;
+export type CogCreateOptions = z.infer<typeof cogCreateOptionsValidator>;
+
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
   second_gift: giftValidator.optional(),
   cog_type: z.string().max(NAME_MAX).optional(),
+  cog_creation_options: cogCreateOptionsValidator.optional(),
 });
 
 export const entityValidator = z.object({
