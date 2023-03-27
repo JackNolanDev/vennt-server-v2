@@ -18,8 +18,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CORS policy
-const origin = process.env.WEBSITE_URL ?? "http://localhost:5173";
-app.use(cors({ origin, credentials: true }));
+const allowed_origins = ["http://localhost:5173"];
+if (process.env.WEBSITE_URL) {
+  allowed_origins.push(process.env.WEBSITE_URL)
+}
+app.use(cors({ origin: allowed_origins, credentials: true }));
 
 app.get("/ping", (req, res) => {
   res.send("pong");
