@@ -17,10 +17,12 @@ import {
   FullEntityChangelog,
   UncompleteCollectedEntityWithChangelog,
   PartialEntity,
+  FullCollectedEntityWithChangelog,
 } from "../utils/types";
 import {
   sqlDeleteEntity,
   sqlFetchAbilitiesByEntityId,
+  sqlFetchChangelogByEntityId,
   sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
   sqlFetchEntityTextByEntityId,
@@ -117,6 +119,22 @@ export const dbFetchCollectedEntity = async (
     items: items.result,
     text: text.result,
     flux: flux.result,
+  });
+};
+
+export const dbFetchCollectedEntityFull = async (
+  id: string,
+  user?: string
+): Promise<Result<FullCollectedEntityWithChangelog>> => {
+  const baseEntity = unwrapResultOrError(
+    await dbFetchCollectedEntity(id, user)
+  );
+  const entityChangelog = unwrapResultOrError(
+    await sqlFetchChangelogByEntityId(pool, id)
+  );
+  return wrapSuccessResult({
+    ...baseEntity,
+    changelog: entityChangelog,
   });
 };
 

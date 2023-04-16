@@ -2,6 +2,7 @@ import express from "express";
 import type { Request } from "express";
 import {
   FullCollectedEntity,
+  FullCollectedEntityWithChangelog,
   FullEntity,
   FullEntityAbility,
   FullEntityChangelog,
@@ -29,6 +30,7 @@ import {
   dbDeleteEntity,
   dbFetchChangelogByEntityIdAttribute,
   dbFetchCollectedEntity,
+  dbFetchCollectedEntityFull,
   dbFilterChangelog,
   dbInsertCollectedEntity,
   dbListEntities,
@@ -79,6 +81,14 @@ const deleteEntity = async (req: Request): Promise<Result<boolean>> => {
   const id = idValidator.parse(req.params.id);
   validateEditEntityPermission(account, id);
   return await dbDeleteEntity(id);
+};
+
+const fetchCollectedEntityFull = async (
+  req: Request
+): Promise<Result<FullCollectedEntityWithChangelog>> => {
+  const account = validateOptionalAuthHeader(req);
+  const id = idValidator.parse(req.params.id);
+  return await dbFetchCollectedEntityFull(id, account?.id);
 };
 
 const updateEntityAttributes = async (
@@ -195,6 +205,7 @@ router.get("", wrapHandler(listEntities));
 router.get("/:id", wrapHandler(fetchCollectedEntity));
 router.patch("/:id", wrapHandler(updateEntity));
 router.delete("/:id", wrapHandler(deleteEntity));
+router.get("/:id/full", wrapHandler(fetchCollectedEntityFull));
 router.patch("/:id/attributes", wrapHandler(updateEntityAttributes));
 router.patch("/:id/changelog", wrapHandler(filterChangelog));
 router.get("/:id/changelog/:attr", wrapHandler(getAttrChangelog));

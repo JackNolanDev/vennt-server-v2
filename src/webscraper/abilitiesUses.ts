@@ -31,7 +31,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
             { type: "text", key: "hybrid_arcana_2" },
             { type: "text", key: "hybrid_arcana_3" },
           ],
-          Archmage: [{ type: "text", key: "archmage_arcana" }]
+          Archmage: [{ type: "text", key: "archmage_arcana" }],
         },
       },
     ],
@@ -49,11 +49,11 @@ export const ABILITY_USES: Record<string, UsesMap> = {
             },
             {
               type: "special",
-              name: "isSpell"
-            }
-          ]
+              name: "isSpell",
+            },
+          ],
         },
-        adjust_ability_cost: { adjust_cost: -100 }
+        adjust_ability_cost: { adjust_cost: -100 },
       },
       {
         criteria: {
@@ -68,7 +68,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
             },
             {
               type: "special",
-              name: "isSpell"
+              name: "isSpell",
             },
             {
               type: "base",
@@ -92,15 +92,15 @@ export const ABILITY_USES: Record<string, UsesMap> = {
                   operator: "equals",
                   key: "hybrid_arcana_3",
                 },
-              ]
-            }
-          ]
+              ],
+            },
+          ],
         },
         adjust_ability_cost: { adjust_cost: -100 },
         check: {
           attr: "casting",
           bonus: "+1",
-        }
+        },
       },
       {
         criteria: {
@@ -115,7 +115,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
             },
             {
               type: "special",
-              name: "isSpell"
+              name: "isSpell",
             },
             {
               type: "field",
@@ -123,13 +123,13 @@ export const ABILITY_USES: Record<string, UsesMap> = {
               operator: "equals",
               key: "archmage_arcana",
             },
-          ]
+          ],
         },
         adjust_ability_cost: { adjust_cost: -100 },
         check: {
           attr: "casting",
           bonus: "+3",
-        }
+        },
       },
     ],
   },

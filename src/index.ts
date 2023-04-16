@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 // CORS policy
 const allowed_origins = ["http://localhost:5173"];
 if (process.env.WEBSITE_URL) {
-  allowed_origins.push(process.env.WEBSITE_URL)
+  allowed_origins.push(process.env.WEBSITE_URL);
 }
 app.use(cors({ origin: allowed_origins, credentials: true }));
 

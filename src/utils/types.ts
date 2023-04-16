@@ -559,6 +559,11 @@ export const collectedEntityWithChangelogValidator =
     changelog: attributeChangelogValidator.array(),
   });
 
+export const fullCollectedEntityWithChangelogValidator =
+  fullCollectedEntityValidator.extend({
+    changelog: fullAttributeChangelogValidator.array(),
+  });
+
 // other endpoints
 
 export const partialAttributesValidator = attributesValidator.partial();
@@ -623,6 +628,9 @@ export type FullCollectedEntity = z.infer<typeof fullCollectedEntityValidator>;
 export type CollectedEntity = UncompleteCollectedEntity | FullCollectedEntity;
 export type UncompleteCollectedEntityWithChangelog = z.infer<
   typeof collectedEntityWithChangelogValidator
+>;
+export type FullCollectedEntityWithChangelog = z.infer<
+  typeof fullCollectedEntityWithChangelogValidator
 >;
 export type UsesMap = z.infer<typeof usesValidator>;
 export type UsesRoll = z.infer<typeof useRollValidator>;
