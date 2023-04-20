@@ -247,7 +247,7 @@ export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
   attr: useAttrMapValidator,
 });
-export const criteriaFieldOperator = z.enum(["equals"]);
+export const criteriaFieldOperator = z.enum(["equals", "gte"]);
 export type CriteriaFieldOperator = z.infer<typeof criteriaFieldOperator>;
 export const useCriteriaFieldValidator = z.object({
   type: z.literal("field"),
@@ -263,6 +263,13 @@ export const useCriteriaKeyValidator = z.object({
   value: z.string().min(1),
 });
 export type UseCriteriaKey = z.infer<typeof useCriteriaKeyValidator>;
+export const useCriteriaAttrValidator = z.object({
+  type: z.literal("attr"),
+  operator: criteriaFieldOperator,
+  attr: attributeNameValidator,
+  value: z.string().min(1),
+});
+export type UseCriteriaAttr = z.infer<typeof useCriteriaAttrValidator>;
 export const useCriteriaSpecialValidator = z.object({
   type: z.literal("special"),
   name: z.enum(["isSpell"]),
@@ -282,6 +289,7 @@ export const useCriteriaBaseValidator: z.ZodType<UseCriteriaBase> =
 export const useCriteriaValidator = z.union([
   useCriteriaFieldValidator,
   useCriteriaKeyValidator,
+  useCriteriaAttrValidator,
   useCriteriaSpecialValidator,
   useCriteriaBaseValidator,
 ]);

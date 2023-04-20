@@ -393,6 +393,7 @@ const getArmor = (page: string): ShopItem[] => {
         let shieldBonus = "";
         let parsedShield: number | undefined;
         let parsedBurden: number | undefined;
+        let parsedHandsUsed: number | undefined;
         rowElements.each((idx, el) => {
           const text = $(el).text().trim();
           switch (idx) {
@@ -408,6 +409,10 @@ const getArmor = (page: string): ShopItem[] => {
               break;
             case 2:
               item.special = `Hands Required to Equip: ${text}`;
+              parsedHandsUsed = parseInt(text);
+              if (!isNaN(parsedHandsUsed) && item.uses && item.uses.adjust) {
+                item.uses.adjust.attr.free_hands = -parsedHandsUsed;
+              }
               break;
             case 3:
               item.desc = `${shieldBonus}, Burden: ${text}`;

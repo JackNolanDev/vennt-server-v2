@@ -71,9 +71,27 @@ const getWeaponTypes = (page: string): ShopItem[] => {
         }
       }
     });
+    addWeaponUses(weapon);
     weapons.push(weapon);
   });
   return weapons;
+};
+
+const addWeaponUses = (weapon: ShopItem): void => {
+  let handsUsed = 1;
+  if (
+    weapon.name &&
+    ["Unarmed", "Thrown", "Improvised", "Grenade"].includes(weapon.name)
+  ) {
+    handsUsed = 0;
+  } else if (weapon.weapon_type?.includes("Two-Handed")) {
+    handsUsed = 2;
+  }
+  if (handsUsed > 0) {
+    weapon.uses = {
+      adjust: { time: "permanent", attr: { free_hands: -handsUsed } },
+    };
+  }
 };
 
 export const fetchWeaponTypes = async () => {

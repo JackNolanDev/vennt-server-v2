@@ -133,4 +133,142 @@ export const ABILITY_USES: Record<string, UsesMap> = {
       },
     ],
   },
+  "Spell Hand I: Spellcaster": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "2",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand II: Spellcaster": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "2",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand III: Spellcaster": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "2",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand I: Spellsword": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "1",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
+            arcana_dmg: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand II: Spellsword": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "1",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
+            arcana_dmg: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand I: Arcane Weapons": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "attr",
+          attr: "free_hands",
+          operator: "gte",
+          value: "1",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            arcana_acc: 5,
+            arcana_dmg: 1,
+          },
+        },
+      },
+    ],
+  },
+  "Spell Hand II: Arcane Weapons": {
+    adjust: {
+      time: "permanent",
+      attr: {
+        arcana_acc: "arcana_acc + free_hands - 1",
+        arcana_dmg: "arcana_dmg + (5 * free_hands) - 5",
+      },
+    },
+  },
+  "Spell Hand III: Arcane Weapons": {
+    adjust: {
+      time: "permanent",
+      attr: {
+        arcana_acc: "arcana_acc + free_hands",
+        arcana_dmg: "arcana_dmg + (5 * free_hands)",
+      },
+    },
+  },
+  "Spell Hand IV: Arcane Weapons": {
+    adjust: {
+      time: "permanent",
+      attr: {
+        arcana_acc: "arcana_acc + free_hands",
+        arcana_dmg: "arcana_dmg + (5 * free_hands)",
+      },
+    },
+  },
 };

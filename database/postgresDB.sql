@@ -70,7 +70,7 @@ CREATE INDEX entity_id_attr ON vennt.attribute_changelog(entity_id uuid_ops,attr
 
 CREATE TABLE vennt.entity_text (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    entity_id uuid NOT NULL REFERENCES vennt.entities(id),
+    entity_id uuid NOT NULL REFERENCES vennt.entities(id) ON DELETE CASCADE,
     key text NOT NULL,
     text text NOT NULL,
     public boolean NOT NULL DEFAULT false
@@ -81,7 +81,7 @@ CREATE UNIQUE INDEX entity_key_unique ON vennt.entity_text(entity_id uuid_ops,ke
 
 CREATE TABLE vennt.flux (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    entity_id uuid NOT NULL REFERENCES vennt.entities(id),
+    entity_id uuid NOT NULL REFERENCES vennt.entities(id) ON DELETE CASCADE,
     type text NOT NULL,
     text text NOT NULL,
     metadata jsonb
