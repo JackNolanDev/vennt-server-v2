@@ -208,6 +208,7 @@ export const otherAttributesValidator = z.object({
   second_gift: giftValidator.optional(),
   cog_type: z.string().max(NAME_MAX).optional(),
   cog_creation_options: cogCreateOptionsValidator.optional(),
+  gift_boon: z.string().optional(),
 });
 
 export const entityValidator = z.object({
@@ -247,29 +248,47 @@ export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
   attr: useAttrMapValidator,
 });
-export const criteriaFieldOperator = z.enum(["equals", "gte"]);
+export const criteriaFieldOperator = z.enum([
+  "equals",
+  "gte",
+  "gt",
+  "lte",
+  "lt",
+]);
 export type CriteriaFieldOperator = z.infer<typeof criteriaFieldOperator>;
-export const useCriteriaFieldValidator = z.object({
-  type: z.literal("field"),
-  path: z.string().min(1).array(),
-  operator: criteriaFieldOperator,
-  key: z.string().min(1),
-});
-export type UseCriteriaField = z.infer<typeof useCriteriaFieldValidator>;
-export const useCriteriaKeyValidator = z.object({
-  type: z.literal("key"),
-  operator: criteriaFieldOperator,
-  key: z.string().min(1),
-  value: z.string().min(1),
-});
-export type UseCriteriaKey = z.infer<typeof useCriteriaKeyValidator>;
-export const useCriteriaAttrValidator = z.object({
+export const useCriteriaComparisonFieldAttrValidator = z.object({
   type: z.literal("attr"),
-  operator: criteriaFieldOperator,
   attr: attributeNameValidator,
-  value: z.string().min(1),
 });
-export type UseCriteriaAttr = z.infer<typeof useCriteriaAttrValidator>;
+export const useCriteriaComparisonFieldAbilityValidator = z.object({
+  type: z.literal("ability_field"),
+  path: z.string().min(1).array(),
+});
+export const useCriteriaComparisonFieldKeyValidator = z.object({
+  type: z.literal("key"),
+  key: z.string().min(1),
+});
+export const useCriteriaComparisonFieldConstValidator = z.object({
+  type: z.literal("const"),
+  const: z.string().min(1),
+});
+export const useCriteriaComparisonFieldEquationValidator = z.object({
+  type: z.literal("equation"),
+  equation: z.string().min(1),
+});
+export const useCriteriaComparisonFieldValidator = z.union([
+  useCriteriaComparisonFieldAttrValidator,
+  useCriteriaComparisonFieldAbilityValidator,
+  useCriteriaComparisonFieldKeyValidator,
+  useCriteriaComparisonFieldConstValidator,
+  useCriteriaComparisonFieldEquationValidator,
+]);
+export const useCriteriaComparisonValidator = z.object({
+  type: z.literal("comp"),
+  left: useCriteriaComparisonFieldValidator,
+  right: useCriteriaComparisonFieldValidator,
+  operator: criteriaFieldOperator,
+});
 export const useCriteriaSpecialValidator = z.object({
   type: z.literal("special"),
   name: z.enum(["isSpell"]),
@@ -287,15 +306,13 @@ export const useCriteriaBaseValidator: z.ZodType<UseCriteriaBase> =
     tests: z.array(z.lazy(() => useCriteriaValidator)),
   });
 export const useCriteriaValidator = z.union([
-  useCriteriaFieldValidator,
-  useCriteriaKeyValidator,
-  useCriteriaAttrValidator,
+  useCriteriaComparisonValidator,
   useCriteriaSpecialValidator,
   useCriteriaBaseValidator,
 ]);
 export type UseCriteria = z.infer<typeof useCriteriaValidator>;
 export const useAdjustAbilityCostValidator = z.object({
-  adjust_cost: z.number().int(),
+  adjust_cost: z.union([z.number().int(), z.string().min(1).max(NAME_MAX)]),
 });
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
@@ -358,6 +375,7 @@ export const abilityCostBooleanValidator = z.object({
   attack: z.boolean().optional(),
   passive: z.boolean().optional(),
   respite: z.boolean().optional(),
+  rest: z.boolean().optional(),
   intermission: z.boolean().optional(),
 });
 

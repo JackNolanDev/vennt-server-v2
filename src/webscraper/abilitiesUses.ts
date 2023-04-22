@@ -11,6 +11,9 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   "Spell Training": {
     expose_combat_stats: ["casting"],
   },
+  "Tinker's Training": {
+    expose_combat_stats: ["bluespace"],
+  },
   "Dauntless Dashing": {
     adjust: {
       time: "permanent",
@@ -42,10 +45,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
           operator: "every",
           tests: [
             {
-              type: "key",
-              key: "prestige_selection",
+              type: "comp",
+              left: {
+                type: "key",
+                key: "prestige_selection",
+              },
+              right: {
+                type: "const",
+                const: "Jack",
+              },
               operator: "equals",
-              value: "Jack",
             },
             {
               type: "special",
@@ -61,10 +70,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
           operator: "every",
           tests: [
             {
-              type: "key",
-              key: "prestige_selection",
+              type: "comp",
+              left: {
+                type: "key",
+                key: "prestige_selection",
+              },
+              right: {
+                type: "const",
+                const: "Hybrid",
+              },
               operator: "equals",
-              value: "Hybrid",
             },
             {
               type: "special",
@@ -75,22 +90,40 @@ export const ABILITY_USES: Record<string, UsesMap> = {
               operator: "some",
               tests: [
                 {
-                  type: "field",
-                  path: ["custom_fields", "path"],
+                  type: "comp",
+                  left: {
+                    type: "ability_field",
+                    path: ["custom_fields", "path"],
+                  },
+                  right: {
+                    type: "key",
+                    key: "hybrid_arcana_1",
+                  },
                   operator: "equals",
-                  key: "hybrid_arcana_1",
                 },
                 {
-                  type: "field",
-                  path: ["custom_fields", "path"],
+                  type: "comp",
+                  left: {
+                    type: "ability_field",
+                    path: ["custom_fields", "path"],
+                  },
+                  right: {
+                    type: "key",
+                    key: "hybrid_arcana_2",
+                  },
                   operator: "equals",
-                  key: "hybrid_arcana_2",
                 },
                 {
-                  type: "field",
-                  path: ["custom_fields", "path"],
+                  type: "comp",
+                  left: {
+                    type: "ability_field",
+                    path: ["custom_fields", "path"],
+                  },
+                  right: {
+                    type: "key",
+                    key: "hybrid_arcana_3",
+                  },
                   operator: "equals",
-                  key: "hybrid_arcana_3",
                 },
               ],
             },
@@ -108,20 +141,32 @@ export const ABILITY_USES: Record<string, UsesMap> = {
           operator: "every",
           tests: [
             {
-              type: "key",
-              key: "prestige_selection",
+              type: "comp",
+              left: {
+                type: "key",
+                key: "prestige_selection",
+              },
+              right: {
+                type: "const",
+                const: "Archmage",
+              },
               operator: "equals",
-              value: "Archmage",
             },
             {
               type: "special",
               name: "isSpell",
             },
             {
-              type: "field",
-              path: ["custom_fields", "path"],
+              type: "comp",
+              left: {
+                type: "ability_field",
+                path: ["custom_fields", "path"],
+              },
+              right: {
+                type: "key",
+                key: "archmage_arcana",
+              },
               operator: "equals",
-              key: "archmage_arcana",
             },
           ],
         },
@@ -137,10 +182,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "2",
+          },
           operator: "gte",
-          value: "2",
         },
         adjust: {
           time: "permanent",
@@ -155,10 +206,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "2",
+          },
           operator: "gte",
-          value: "2",
         },
         adjust: {
           time: "permanent",
@@ -173,10 +230,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "2",
+          },
           operator: "gte",
-          value: "2",
         },
         adjust: {
           time: "permanent",
@@ -191,10 +254,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "1",
+          },
           operator: "gte",
-          value: "1",
         },
         adjust: {
           time: "permanent",
@@ -210,10 +279,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "1",
+          },
           operator: "gte",
-          value: "1",
         },
         adjust: {
           time: "permanent",
@@ -229,10 +304,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     criteria_benefits: [
       {
         criteria: {
-          type: "attr",
-          attr: "free_hands",
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "1",
+          },
           operator: "gte",
-          value: "1",
         },
         adjust: {
           time: "permanent",

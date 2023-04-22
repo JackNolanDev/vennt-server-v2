@@ -93,6 +93,7 @@ const activationBooleanRegex: Record<keyof AbilityCostMapBoolean, RegExp> = {
   attack: /attack/,
   passive: /passive/,
   respite: /respite/,
+  rest: /rest/,
   intermission: /intermission/,
 };
 
