@@ -256,39 +256,58 @@ export const criteriaFieldOperator = z.enum([
   "lt",
 ]);
 export type CriteriaFieldOperator = z.infer<typeof criteriaFieldOperator>;
-export const useCriteriaComparisonFieldAttrValidator = z.object({
+export const useCriteriaCompFieldAttrValidator = z.object({
   type: z.literal("attr"),
   attr: attributeNameValidator,
 });
-export const useCriteriaComparisonFieldAbilityValidator = z.object({
+export type UseCriteriaCompFieldAttr = z.infer<
+  typeof useCriteriaCompFieldAttrValidator
+>;
+export const useCriteriaCompFieldAbilityValidator = z.object({
   type: z.literal("ability_field"),
   path: z.string().min(1).array(),
 });
-export const useCriteriaComparisonFieldKeyValidator = z.object({
+export type UseCriteriaCompFieldAbilityField = z.infer<
+  typeof useCriteriaCompFieldAbilityValidator
+>;
+export const useCriteriaCompFieldKeyValidator = z.object({
   type: z.literal("key"),
   key: z.string().min(1),
 });
-export const useCriteriaComparisonFieldConstValidator = z.object({
+export type UseCriteriaCompFieldKey = z.infer<
+  typeof useCriteriaCompFieldKeyValidator
+>;
+export const useCriteriaCompFieldConstValidator = z.object({
   type: z.literal("const"),
   const: z.string().min(1),
 });
-export const useCriteriaComparisonFieldEquationValidator = z.object({
+export type UseCriteriaCompFieldCost = z.infer<
+  typeof useCriteriaCompFieldConstValidator
+>;
+export const useCriteriaCompFieldEquationValidator = z.object({
   type: z.literal("equation"),
   equation: z.string().min(1),
 });
-export const useCriteriaComparisonFieldValidator = z.union([
-  useCriteriaComparisonFieldAttrValidator,
-  useCriteriaComparisonFieldAbilityValidator,
-  useCriteriaComparisonFieldKeyValidator,
-  useCriteriaComparisonFieldConstValidator,
-  useCriteriaComparisonFieldEquationValidator,
+export type UseCriteriaCompFieldEquation = z.infer<
+  typeof useCriteriaCompFieldEquationValidator
+>;
+export const useCriteriaCompFieldValidator = z.union([
+  useCriteriaCompFieldAttrValidator,
+  useCriteriaCompFieldAbilityValidator,
+  useCriteriaCompFieldKeyValidator,
+  useCriteriaCompFieldConstValidator,
+  useCriteriaCompFieldEquationValidator,
 ]);
-export const useCriteriaComparisonValidator = z.object({
+export type UseCriteriaCompField = z.infer<
+  typeof useCriteriaCompFieldValidator
+>;
+export const useCriteriaCompValidator = z.object({
   type: z.literal("comp"),
-  left: useCriteriaComparisonFieldValidator,
-  right: useCriteriaComparisonFieldValidator,
+  left: useCriteriaCompFieldValidator,
+  right: useCriteriaCompFieldValidator,
   operator: criteriaFieldOperator,
 });
+export type UseCriteriaComp = z.infer<typeof useCriteriaCompValidator>;
 export const useCriteriaSpecialValidator = z.object({
   type: z.literal("special"),
   name: z.enum(["isSpell"]),
@@ -306,7 +325,7 @@ export const useCriteriaBaseValidator: z.ZodType<UseCriteriaBase> =
     tests: z.array(z.lazy(() => useCriteriaValidator)),
   });
 export const useCriteriaValidator = z.union([
-  useCriteriaComparisonValidator,
+  useCriteriaCompValidator,
   useCriteriaSpecialValidator,
   useCriteriaBaseValidator,
 ]);
@@ -608,11 +627,13 @@ export const filterChangelogValidator = z.object({
 export const WEAPON_TYPES_KEY = "VENNT_WEAPON_TYPES";
 export const SHOP_ITEMS_KEY = "VENNT_SHOP_ITEMS";
 export const ABILITIES_KEY = "VENNT_ABILITIES";
+export const ABILITIES_KEY_OLD = "VENNT_ABILITIES_0.13.7";
 
 export const jsonStorageKeyValidator = z.enum([
   WEAPON_TYPES_KEY,
   SHOP_ITEMS_KEY,
   ABILITIES_KEY,
+  ABILITIES_KEY_OLD,
 ]);
 
 export const pathDetailsValidator = z.object({
@@ -758,8 +779,8 @@ export type DiceSettings = {
   drop?: number;
   fatigued?: boolean;
   end?: string;
-  flow?: boolean;
-  ebb?: boolean;
+  flow?: number;
+  ebb?: number;
   otherToggles?: DiceOtherToggles;
   adjust?: number | string;
   count?: number;

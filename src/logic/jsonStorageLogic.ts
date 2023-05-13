@@ -5,6 +5,7 @@ import {
 import { wrapErrorResult } from "../utils/db";
 import {
   ABILITIES_KEY,
+  ABILITIES_KEY_OLD,
   JsonStorageKey,
   PathsAndAbilities,
   Result,
@@ -17,17 +18,20 @@ import { rebuildAbilityUses } from "../webscraper/abilitiesRebuildUses";
 import { fetchShopItems } from "../webscraper/shopItems";
 import { rebuildItemUses } from "../webscraper/shopItemsRebuildUses";
 import { fetchWeaponTypes } from "../webscraper/weaponTypes";
+import { mergeAbilities } from "./mergeAbilities";
 
 export const handleUpdateJsonStorage = async (
   key: JsonStorageKey
 ): Promise<Result<boolean>> => {
   switch (key) {
     case WEAPON_TYPES_KEY:
-      return handleUpdateWeaponTypes(key);
+      return handleUpdateWeaponTypes();
     case SHOP_ITEMS_KEY:
-      return handleUpdateShopItems(key);
+      return handleUpdateShopItems();
     case ABILITIES_KEY:
-      return handleUpdateAbilities(key);
+      return handleUpdateAbilities();
+    case ABILITIES_KEY_OLD:
+      return handleUpdateAbilitiesForwardCompatible();
     default:
       console.log(
         `handleUpdateJsonStorage - unexpected json storage key: ${key}`
@@ -36,26 +40,31 @@ export const handleUpdateJsonStorage = async (
   return wrapErrorResult("key type not handled", 400);
 };
 
-const handleUpdateWeaponTypes = async (
-  key: JsonStorageKey
-): Promise<Result<boolean>> => {
+const handleUpdateWeaponTypes = async (): Promise<Result<boolean>> => {
   const weaponTypes = await fetchWeaponTypes();
-  return dbUpsertJSONDocument(key, weaponTypes);
+  return dbUpsertJSONDocument(WEAPON_TYPES_KEY, weaponTypes);
 };
 
-const handleUpdateShopItems = async (
-  key: JsonStorageKey
-): Promise<Result<boolean>> => {
-  const weaponTypes = await dbGetJSONDocument<ShopItem[]>(key);
+const handleUpdateShopItems = async (): Promise<Result<boolean>> => {
+  const weaponTypes = await dbGetJSONDocument<ShopItem[]>(WEAPON_TYPES_KEY);
   const shopItems = await fetchShopItems(weaponTypes);
-  return dbUpsertJSONDocument(key, shopItems);
+  return dbUpsertJSONDocument(SHOP_ITEMS_KEY, shopItems);
 };
 
-const handleUpdateAbilities = async (
-  key: JsonStorageKey
-): Promise<Result<boolean>> => {
+const handleUpdateAbilities = async (): Promise<Result<boolean>> => {
   const abilities = await fetchAbilities();
-  return dbUpsertJSONDocument(key, abilities);
+  return dbUpsertJSONDocument(ABILITIES_KEY, abilities);
+};
+
+const handleUpdateAbilitiesForwardCompatible = async (): Promise<
+  Result<boolean>
+> => {
+  const oldAbilities = await dbGetJSONDocument<PathsAndAbilities>(
+    ABILITIES_KEY_OLD
+  );
+  const newAbilities = await fetchAbilities();
+  const abilities = mergeAbilities(oldAbilities, newAbilities);
+  return dbUpsertJSONDocument(ABILITIES_KEY, abilities);
 };
 
 export const handleRebuildUses = async (
@@ -63,9 +72,9 @@ export const handleRebuildUses = async (
 ): Promise<Result<boolean>> => {
   switch (key) {
     case SHOP_ITEMS_KEY:
-      return handleRebuildUsesShopItems(key);
+      return handleRebuildUsesShopItems();
     case ABILITIES_KEY:
-      return handleRebuildUsesAbilities(key);
+      return handleRebuildUsesAbilities();
     default:
       console.log(
         `handleUpdateJsonStorage - unexpected json storage key: ${key}`
@@ -74,18 +83,14 @@ export const handleRebuildUses = async (
   return wrapErrorResult("key type not handled", 400);
 };
 
-const handleRebuildUsesShopItems = async (
-  key: JsonStorageKey
-): Promise<Result<boolean>> => {
-  const shopItems = await dbGetJSONDocument<ShopItem[]>(key);
+const handleRebuildUsesShopItems = async (): Promise<Result<boolean>> => {
+  const shopItems = await dbGetJSONDocument<ShopItem[]>(SHOP_ITEMS_KEY);
   const updatedShopItems = rebuildItemUses(shopItems);
-  return dbUpsertJSONDocument(key, updatedShopItems);
+  return dbUpsertJSONDocument(SHOP_ITEMS_KEY, updatedShopItems);
 };
 
-const handleRebuildUsesAbilities = async (
-  key: JsonStorageKey
-): Promise<Result<boolean>> => {
-  const abilities = await dbGetJSONDocument<PathsAndAbilities>(key);
+const handleRebuildUsesAbilities = async (): Promise<Result<boolean>> => {
+  const abilities = await dbGetJSONDocument<PathsAndAbilities>(ABILITIES_KEY);
   const updatedAbilities = rebuildAbilityUses(abilities);
-  return dbUpsertJSONDocument(key, updatedAbilities);
+  return dbUpsertJSONDocument(ABILITIES_KEY, updatedAbilities);
 };

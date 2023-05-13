@@ -312,10 +312,12 @@ export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
   const abilities: UncompleteEntityAbility[] = [];
   const pageUrls = await fetchPathUrls();
   // iterate over urls consecutively instead of in parallel to prevent getting rate limited
-  for (const url of pageUrls) {
+  for await (const url of pageUrls) {
     const [path, pathAbilities] = await parseAbilityPage(url, markdown);
     paths.push(path);
     abilities.push(...pathAbilities);
+    // sleep for 2 seconds to prevent getting rate limited by the wiki
+    await new Promise(r => setTimeout(r, 2000));
   }
   console.log("complete web scrape abilities");
   return { paths, abilities };
