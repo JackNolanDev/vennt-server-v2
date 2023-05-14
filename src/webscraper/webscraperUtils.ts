@@ -26,13 +26,13 @@ export const parseBulk = (text: string): number => {
 };
 
 export const parseSP = (text: string): number | undefined => {
-  const numVal = parseInt(text);
-  if (text.includes("sp") && !isNaN(numVal)) {
-    return numVal;
-  }
   if (text.includes("cp")) {
     // basically 0
     return 0;
+  }
+  const numVal = parseInt(text);
+  if (!isNaN(numVal)) {
+    return numVal;
   }
   return undefined;
 };

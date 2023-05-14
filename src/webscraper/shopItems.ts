@@ -36,6 +36,12 @@ const defaultWeapons: ShopItem[] = [
     attr: "dex",
     dmg: "1d6+3",
     range: "1m",
+    uses: {
+      adjust: {
+        time: "permanent",
+        attr: { free_hands: -1 },
+      },
+    },
   },
   {
     type: "weapon",
@@ -53,6 +59,12 @@ const defaultWeapons: ShopItem[] = [
     attr: "dex",
     dmg: "1d6",
     range: "15m",
+    uses: {
+      adjust: {
+        time: "permanent",
+        attr: { free_hands: -1 },
+      },
+    },
   },
 ];
 
@@ -61,20 +73,21 @@ const parseTable = (
   selector: string,
   type: EntityItemType,
   section: string,
-  includesCourses = true
+  courses?: string
 ): ShopItem[] => {
   const items: ShopItem[] = [];
   // Adventuring Gear table
   const table = $(selector);
   const tableElements = table.children("tr");
   tableElements.each((idx, row) => {
-    if (idx === 0) {
-      // first row for wiki tables is header
+    if (idx <= 1) {
+      // first 2 rows for wiki tables is header
       return;
     }
     const item: ShopItem = {
       type,
       section,
+      courses,
       bulk: 1,
       desc: "",
       cost: "",
@@ -82,9 +95,7 @@ const parseTable = (
     const rowElements = $(row).children("td");
     rowElements.each((idx, el) => {
       const text = $(el).text().trim();
-      // skip the second column when courses are not in the table
-      const switchIdx = includesCourses ? idx : idx === 0 ? 0 : idx + 1;
-      switch (switchIdx) {
+      switch (idx) {
         case 0:
           item.name = text;
           // include data that's hard to automatically parse
@@ -93,13 +104,10 @@ const parseTable = (
           }
           break;
         case 1:
-          item.courses = parseCourses(text);
-          break;
-        case 2:
           item.cost = text;
           item.sp = parseSP(text);
           break;
-        case 3:
+        case 2:
           item.desc = text;
           break;
       }
@@ -231,52 +239,63 @@ const getGrenades = (page: string, weaponTypes: ShopItem[]): ShopItem[] => {
     console.error("Did not find the grenade base template!");
     return [];
   }
-  const table = $("#mw-content-text > div > table > tbody");
-  const tableElements = table.children("tr");
-  tableElements.each((idx, row) => {
-    if (idx === 0) {
-      // first row for wiki tables is header
-      return;
-    }
-    const grenade: ShopItem = { ...template, section: "Grenades" };
-    const rowElements = $(row).children("td");
-    let specialDmg = "";
-    rowElements.each((idx, el) => {
-      const text = $(el).text().trim();
-      switch (idx) {
-        case 0:
-          grenade.name = text;
-          break;
-        case 1:
-          grenade.courses = parseCourses(text);
-          break;
-        case 2:
-          grenade.dmg = text;
-          break;
-        case 3:
-          specialDmg = `Blast Damage: ${text}`;
-          break;
-        case 4:
-          if (specialDmg.length > 0) {
-            specialDmg = `${specialDmg}, Blast Radius: ${text}.`;
-          }
-          break;
-        case 5:
-          grenade.cost = text;
-          grenade.sp = parseSP(text);
-          break;
-        case 6:
-          // swap desc and special fields of the base grenade
-          if (grenade.special) {
-            grenade.desc = grenade.special;
-            grenade.special = `${specialDmg} ${text}`;
-          }
-          break;
+  const selectors = [
+    { selector: "#mw-content-text > div > table:nth-child(12) > tbody" },
+    {
+      selector: "#mw-content-text > div > table:nth-child(15) > tbody",
+      courses: "Damages",
+    },
+  ];
+  selectors.forEach((selector) => {
+    const table = $(selector.selector);
+    const tableElements = table.children("tr");
+    tableElements.each((idx, row) => {
+      if (idx === 0) {
+        // first row for wiki tables is header
+        return;
       }
+      const grenade: ShopItem = {
+        ...template,
+        section: "Grenades",
+        courses: selector.courses,
+      };
+      const rowElements = $(row).children("td");
+      let specialDmg = "";
+      rowElements.each((idx, el) => {
+        const text = $(el).text().trim();
+        switch (idx) {
+          case 0:
+            grenade.name = text;
+            break;
+          case 1:
+            grenade.dmg = text;
+            break;
+          case 2:
+            specialDmg = `Blast Damage: ${text}`;
+            break;
+          case 3:
+            if (specialDmg.length > 0) {
+              specialDmg = `${specialDmg}, Blast Radius: ${text}.`;
+            }
+            break;
+          case 4:
+            grenade.cost = text;
+            grenade.sp = parseSP(text);
+            break;
+          case 5:
+            // swap desc and special fields of the base grenade
+            if (grenade.special) {
+              grenade.desc = grenade.special;
+              grenade.special = `${specialDmg} ${text}`;
+            }
+            break;
+        }
+      });
+      delete grenade.examples;
+      grenades.push(grenade);
     });
-    delete grenade.examples;
-    grenades.push(grenade);
   });
+
   return grenades;
 };
 
@@ -443,40 +462,109 @@ export const fetchShopItems = async (
   console.log("starting to web scrape shop items");
   const equipment = await axios.get(EQUIPMENT_URL).then((response) => {
     const $ = load(response.data);
-    // Adventuring Gear table
-    const gear = parseTable(
+    const mundaneBasic = parseTable(
       $,
-      "#mw-content-text > div > table:nth-child(6) > tbody",
+      "#mw-content-text > div > table:nth-child(12) > tbody",
       "equipment",
-      "Adventuring Gear",
-      false
+      "Mundane Basic Equipment"
     );
-    // Unusual Devices table
-    const devices = parseTable(
+    const unusualBasic = parseTable(
       $,
-      "#mw-content-text > div > table:nth-child(10) > tbody",
+      "#mw-content-text > div > table:nth-child(14) > tbody",
       "equipment",
-      "Unusual Devices"
+      "Unusual Basic Equipment"
     );
-    return gear.concat(devices);
+    const rareBasic = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(16) > tbody",
+      "equipment",
+      "Rare Basic Equipment (Cannot be purchased)"
+    );
+    const mundaneCombat = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(19) > tbody",
+      "equipment",
+      "Mundane Combat Equipment",
+      "Combat"
+    );
+    const unusualCombat = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(20) > tbody",
+      "equipment",
+      "Unusual Combat Equipment",
+      "Combat"
+    );
+    return mundaneBasic.concat(
+      unusualBasic,
+      rareBasic,
+      mundaneCombat,
+      unusualCombat
+    );
   });
   const consumables = await axios.get(CONSUMABLE_URL).then((response) => {
     const $ = load(response.data);
-    // Mundane Consumables table
-    const mundane = parseTable(
+    const mundaneBasic = parseTable(
       $,
-      "#mw-content-text > div > table:nth-child(7) > tbody",
+      "#mw-content-text > div > table:nth-child(12) > tbody",
       "consumable",
-      "Mundane Consumables"
+      "Mundane Basic Consumables"
     );
-    // Unusual Consumables table
-    const unusual = parseTable(
+    const unusualBasic = parseTable(
       $,
-      "#mw-content-text > div > table:nth-child(11) > tbody",
+      "#mw-content-text > div > table:nth-child(13) > tbody",
       "consumable",
-      "Unusual Consumables"
+      "Unusual Basic Consumables"
     );
-    return mundane.concat(unusual);
+    const rareBasic = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(14) > tbody",
+      "consumable",
+      "Rare Basic Consumables (Cannot be purchased)"
+    );
+    const mundaneHeroic = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(17) > tbody",
+      "consumable",
+      "Mundane Heroic Consumables",
+      "Heroism"
+    );
+    const mundaneDamage = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(20) > tbody",
+      "consumable",
+      "Mundane Damage Consumables",
+      "Damages"
+    );
+    const unusualDamage = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(22) > tbody",
+      "consumable",
+      "Unusual Damage Consumables",
+      "Damages"
+    );
+    const mundaneBaseCourse = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(27) > tbody",
+      "consumable",
+      "Mundane Base Course Consumables",
+      "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
+    );
+    const unusualBaseCourse = parseTable(
+      $,
+      "#mw-content-text > div > table:nth-child(28) > tbody",
+      "consumable",
+      "Unusual Base Course Consumables",
+      "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
+    );
+    return mundaneBasic.concat(
+      unusualBasic,
+      rareBasic,
+      mundaneHeroic,
+      mundaneDamage,
+      unusualDamage,
+      mundaneBaseCourse,
+      unusualBaseCourse
+    );
   });
   const containers = await axios.get(CONTAINER_URL).then((response) => {
     return getContainers(response.data);

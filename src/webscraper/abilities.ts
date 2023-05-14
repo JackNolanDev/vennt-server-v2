@@ -317,7 +317,7 @@ export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
     paths.push(path);
     abilities.push(...pathAbilities);
     // sleep for 2 seconds to prevent getting rate limited by the wiki
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 2000));
   }
   console.log("complete web scrape abilities");
   return { paths, abilities };
