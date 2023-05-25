@@ -144,6 +144,7 @@ const parseAbilityLine: Record<
   "Expedited for:": parseSimpleAbilityLine("expedited"),
   "Unlocks:": parseSimpleAbilityLine("unlocks"),
   "Partially Unlocks:": parseSimpleAbilityLine("partial_unlocks"),
+  "DC:": parseSimpleAbilityLine("build_dc"),
   "Build time:": parseSimpleAbilityLine("build_time"),
   "Range:": parseSimpleAbilityLine("range"),
   Prereq: parseSimpleAbilityLine("prereq"),

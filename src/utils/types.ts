@@ -458,6 +458,7 @@ export const itemFieldsValidator = z.object({
   range: z.string().max(NAME_MAX).optional(),
   special: z.string().max(ITEM_MAX).optional(),
   weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
+  dc_cost: z.number().int().optional(),
   in_storage: z.boolean().optional(),
 });
 
