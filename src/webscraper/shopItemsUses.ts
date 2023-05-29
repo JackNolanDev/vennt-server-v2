@@ -1,17 +1,17 @@
 import { UsesMap } from "../utils/types";
 
 export const SHOP_ITEM_USES: Record<string, UsesMap> = {
-  "Elixir of Energy*": {
-    roll: { dice: "6d6", attr: "vim" },
+  "Elixir of Energy": {
+    roll: { dice: "6d6", attr: "vim", heal: { recovery_shock: 6 } },
   },
-  "Elixir of Focus*": {
-    roll: { dice: "3d6", attr: "mp" },
+  "Elixir of Focus": {
+    roll: { dice: "3d6", attr: "mp", heal: { recovery_shock: 6 } },
   },
-  "Elixir of Life*": {
-    roll: { dice: "6d6", attr: "hp" },
+  "Elixir of Life": {
+    roll: { dice: "6d6", attr: "hp", heal: { recovery_shock: 6 } },
   },
   Godfire: {
-    roll: { dice: "2d6", attr: "hp" },
+    roll: { dice: "2d6", attr: "hp", heal: { recovery_shock: 2 } },
   },
   "Potion, Healing": {
     roll: { dice: "3d6", attr: "hp" },
@@ -23,14 +23,14 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
     roll: { dice: "4d6", attr: "vim" },
   },
   "Sour Blessing": {
-    roll: { dice: "4d6", attr: "hp" },
+    roll: { dice: "4d6", attr: "hp", heal: { recovery_shock: 3 } },
   },
   Tea: {
     roll: { dice: "1d6", attr: "mp" },
   },
   "Fighter Candy": {
     heal: {
-      attr: { hp: 1, vim: 3 },
+      attr: { hp: 1, vim: 3, recovery_shock: 1 },
     },
   },
   Rations: {
@@ -53,7 +53,7 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
       attr: { hp: 6, mp: 6, vim: 12 },
     },
   },
-  "Alcohol, Fancy*": {
+  "Alcohol, Fancy": {
     adjust: {
       time: "rest",
       attr: { cha: 1, wis: 1 },
@@ -62,7 +62,7 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
   "Barkskin Potion": {
     adjust: {
       time: "encounter",
-      attr: { armor: 3 },
+      attr: { armor: 4 },
     },
   },
   "Coffee, Fancy": {
@@ -78,6 +78,11 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
       attr: { armor: 7, speed: "speed/2" },
     },
   },
+  Ambrosia: {
+    heal: {
+      attr: { hp: 10000, vim: 10000, mp: 10000, recovery_shock: 9 },
+    },
+  },
   "Backpack, Armored": {
     adjust: {
       time: "permanent",
@@ -88,10 +93,10 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
     check: { bonus: "+3", attr: "dex" },
   },
   Spyglass: {
-    check: { bonus: "+6", attr: "per" },
+    check: { bonus: "+(2*tek)", attr: "per" },
   },
   "Periscoping Eyes": {
-    check: { bonus: "+3", attr: "per" },
+    check: { bonus: "+tek", attr: "per" },
   },
   "Six Lens Goggles": {
     check: { bonus: "+1", attr: "per" },

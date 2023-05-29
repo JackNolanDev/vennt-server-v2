@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import {
   AbilityCostMapBoolean,
   AbilityCostMapNumber,
@@ -9,8 +9,9 @@ import {
 } from "../utils/types";
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
-import { cleanQuotes } from "./webscraperUtils";
+import { cleanQuotes, sleep } from "./webscraperUtils";
 import { ABILITY_USES, REPEATABLE_SIGNIFIERS } from "./abilitiesUses";
+import { addProgrammaticUses } from "./abilitiesProgrammaticUses";
 
 const LIST_OF_PATHS = "https://vennt.fandom.com/wiki/List_of_Paths";
 const BASE_URL = "https://vennt.fandom.com";
@@ -183,6 +184,7 @@ const addSpecialAbilityDetails = (
   if (ABILITY_USES[ability.name]) {
     ability.uses = ABILITY_USES[ability.name];
   }
+  addProgrammaticUses(ability);
   ability.effect = markdown.translate(ability.effect);
   return ability;
 };
@@ -314,11 +316,24 @@ export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
   const pageUrls = await fetchPathUrls();
   // iterate over urls consecutively instead of in parallel to prevent getting rate limited
   for await (const url of pageUrls) {
-    const [path, pathAbilities] = await parseAbilityPage(url, markdown);
-    paths.push(path);
-    abilities.push(...pathAbilities);
-    // sleep for 2 seconds to prevent getting rate limited by the wiki
-    await new Promise((r) => setTimeout(r, 2000));
+    let errCount = 0;
+    while (errCount < 5) {
+      try {
+        const [path, pathAbilities] = await parseAbilityPage(url, markdown);
+        paths.push(path);
+        abilities.push(...pathAbilities);
+        // sleep for 2 seconds to prevent getting rate limited by the wiki
+        await sleep(2000);
+        break;
+      } catch (err: unknown) {
+        if (err instanceof AxiosError) {
+          console.log(`Errored with ${err.name} with message ${err.message} while fetching ${url}. Sleeping and trying again`);
+          // exponential back off
+          await sleep(Math.pow(2, errCount) * 2000);
+        }
+        errCount++;
+      }
+    } 
   }
   console.log("complete web scrape abilities");
   return { paths, abilities };

@@ -30,9 +30,9 @@ export const ABILITY_USES: Record<string, UsesMap> = {
         choices: {
           Jack: [],
           Hybrid: [
-            { type: "text", key: "hybrid_arcana_1" },
-            { type: "text", key: "hybrid_arcana_2" },
-            { type: "text", key: "hybrid_arcana_3" },
+            { type: "text", key: "hybrid_arcane_1" },
+            { type: "text", key: "hybrid_arcane_2" },
+            { type: "text", key: "hybrid_arcane_3" },
           ],
           Archmage: [{ type: "text", key: "archmage_arcana" }],
         },
@@ -97,7 +97,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
                   },
                   right: {
                     type: "key",
-                    key: "hybrid_arcana_1",
+                    key: "hybrid_arcane_1",
                   },
                   operator: "equals",
                 },
@@ -109,7 +109,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
                   },
                   right: {
                     type: "key",
-                    key: "hybrid_arcana_2",
+                    key: "hybrid_arcane_2",
                   },
                   operator: "equals",
                 },
@@ -121,7 +121,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
                   },
                   right: {
                     type: "key",
-                    key: "hybrid_arcana_3",
+                    key: "hybrid_arcane_3",
                   },
                   operator: "equals",
                 },
@@ -269,7 +269,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
           time: "permanent",
           attr: {
             casting: 1,
-            arcana_dmg: 1,
+            arcane_dmg: 1,
           },
         },
       },
@@ -294,7 +294,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
           time: "permanent",
           attr: {
             casting: 1,
-            arcana_dmg: 1,
+            arcane_dmg: 1,
           },
         },
       },
@@ -318,8 +318,8 @@ export const ABILITY_USES: Record<string, UsesMap> = {
         adjust: {
           time: "permanent",
           attr: {
-            arcana_acc: 5,
-            arcana_dmg: 1,
+            arcane_acc: 5,
+            arcane_dmg: 1,
           },
         },
       },
@@ -329,8 +329,8 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcana_acc: "arcana_acc + free_hands - 1",
-        arcana_dmg: "arcana_dmg + (5 * free_hands) - 5",
+        arcane_acc: "arcane_acc + free_hands - 1",
+        arcane_dmg: "arcane_dmg + (5 * free_hands) - 5",
       },
     },
   },
@@ -338,8 +338,8 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcana_acc: "arcana_acc + free_hands",
-        arcana_dmg: "arcana_dmg + (5 * free_hands)",
+        arcane_acc: "arcane_acc + free_hands",
+        arcane_dmg: "arcane_dmg + (5 * free_hands)",
       },
     },
   },
@@ -347,8 +347,8 @@ export const ABILITY_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcana_acc: "arcana_acc + free_hands",
-        arcana_dmg: "arcana_dmg + (5 * free_hands)",
+        arcane_acc: "arcane_acc + free_hands",
+        arcane_dmg: "arcane_dmg + (5 * free_hands)",
       },
     },
   },

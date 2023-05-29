@@ -123,13 +123,14 @@ export const attributesValidator = z.object({
   free_hands: z.number().int().optional(),
   carrying_capacity: z.number().int().optional(),
   alert: z.number().int().optional(),
+  recovery_shock: z.number().int().optional(),
   acc: z.number().int().optional(),
   dmg: z.number().int().optional(),
   // WEAPON SPECIFIC BONUSES
   aggressive_acc: z.number().int().optional(),
   aggressive_dmg: z.number().int().optional(),
-  arcana_acc: z.number().int().optional(),
-  arcana_dmg: z.number().int().optional(),
+  arcane_acc: z.number().int().optional(),
+  arcane_dmg: z.number().int().optional(),
   balanced_acc: z.number().int().optional(),
   balanced_dmg: z.number().int().optional(),
   blade_acc: z.number().int().optional(),
@@ -202,13 +203,38 @@ export const cogCreateOptionsValidator = z.object({
 export type CogAttributeLevel = z.infer<typeof cogAttributeLevelValidator>;
 export type CogCreateOptions = z.infer<typeof cogCreateOptionsValidator>;
 
+// DICE SETTINGS
+
+export const diceOtherTogglesValidator = z.record(
+  z.string(),
+  z.object({
+    toggled: z.boolean(),
+  })
+);
+export const diceSettingsValidator = z.object({
+  explodes: z.boolean().optional(),
+  rr1s: z.boolean().optional(),
+  drop: z.number().int().optional(),
+  fatigued: z.boolean().optional(),
+  end: z.string().max(NAME_MAX).optional(),
+  flow: z.number().int().optional(),
+  ebb: z.number().int().optional(),
+  otherToggles: diceOtherTogglesValidator.optional(),
+  adjust: z.union([z.number().int(), z.string().max(NAME_MAX)]).optional(),
+  count: z.number().optional(),
+  sides: z.number().optional(),
+});
+
+export type DiceOtherToggles = z.infer<typeof diceOtherTogglesValidator>;
+export type DiceSettings = z.infer<typeof diceSettingsValidator>;
+
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
   second_gift: giftValidator.optional(),
   cog_type: z.string().max(NAME_MAX).optional(),
   cog_creation_options: cogCreateOptionsValidator.optional(),
-  gift_boon: z.string().optional(),
+  dice_settings: diceSettingsValidator.optional(),
 });
 
 export const entityValidator = z.object({
@@ -240,6 +266,7 @@ export const useAttrMapValidator = z.record(
 export const useRollValidator = z.object({
   dice: z.string().max(NAME_MAX),
   attr: attributeNameValidator,
+  heal: useAttrMapValidator.optional(),
 });
 export const useHealValidator = z.object({
   attr: useAttrMapValidator,
@@ -336,6 +363,7 @@ export const useAdjustAbilityCostValidator = z.object({
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX),
   attr: attributeNameValidator,
+  dice_settings: diceSettingsValidator.optional(),
 });
 export const useExposeCombatStats = attributeNameValidator.array();
 export const useCriteriaBenefit = z.object({
@@ -432,7 +460,7 @@ export const abilityValidator = z.object({
   name: nameValidator,
   effect: z.string().min(1).max(ABILITY_MAX),
   custom_fields: abilityFieldsValidator.optional().nullable(),
-  uses: usesValidator.optional().nullable(),
+  uses: usesValidator.optional().nullable().catch(null), // if something in uses is invalid, default to null.
   comment: z.string().max(COMMENT_MAX).optional().nullable(),
   active: z.boolean(),
 });
@@ -484,7 +512,7 @@ export const itemValidator = z.object({
   desc: z.string().max(ITEM_MAX),
   type: itemTypeValidator,
   custom_fields: itemFieldsValidator.optional().nullable(),
-  uses: usesValidator.optional().nullable(),
+  uses: usesValidator.optional().nullable().catch(null), // if something in uses is invalid, default to null.
   comment: z.string().max(COMMENT_MAX).optional().nullable(),
   active: z.boolean(),
 });
@@ -509,7 +537,7 @@ export const shopItemValidator = itemFieldsValidator.extend({
   sp: z.number().int().optional(),
   section: z.string().max(NAME_MAX).optional(),
   examples: z.string().max(ITEM_MAX).optional(),
-  uses: usesValidator.optional(),
+  uses: usesValidator.optional().nullable().catch(null), // if something in uses is invalid, default to null.
 });
 
 // CHANGELOG
@@ -749,7 +777,6 @@ export type HTMLString = string;
 export type SaveState = "EDITING" | "SAVING" | "SAVED";
 
 export type UpdatedEntityAttribute = {
-  // TODO: add reason for values shifting
   base?: number;
   val: number;
   reason?: string[];
@@ -768,24 +795,6 @@ export type DiceToggle = {
 };
 export type DiceToggles = {
   [key: string]: DiceToggle;
-};
-export type DiceOtherToggles = {
-  [key: string]: {
-    toggled: boolean;
-  };
-};
-export type DiceSettings = {
-  explodes?: boolean;
-  rr1s?: boolean;
-  drop?: number;
-  fatigued?: boolean;
-  end?: string;
-  flow?: number;
-  ebb?: number;
-  otherToggles?: DiceOtherToggles;
-  adjust?: number | string;
-  count?: number;
-  sides?: number;
 };
 export type DiceCommands = {
   discord: string;
