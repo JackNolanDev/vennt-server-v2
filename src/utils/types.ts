@@ -361,7 +361,7 @@ export const useAdjustAbilityCostValidator = z.object({
   adjust_cost: z.union([z.number().int(), z.string().min(1).max(NAME_MAX)]),
 });
 export const useCheckValidator = z.object({
-  bonus: z.string().min(1).max(NAME_MAX),
+  bonus: z.string().min(1).max(NAME_MAX).optional(),
   attr: attributeNameValidator,
   dice_settings: diceSettingsValidator.optional(),
 });

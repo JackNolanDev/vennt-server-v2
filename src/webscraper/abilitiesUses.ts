@@ -352,4 +352,10 @@ export const ABILITY_USES: Record<string, UsesMap> = {
       },
     },
   },
+  "Sleight of Hand": {
+    check: {
+      attr: "dex",
+      bonus: "+3"
+    },
+  },
 };

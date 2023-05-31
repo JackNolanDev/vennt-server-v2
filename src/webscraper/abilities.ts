@@ -162,6 +162,7 @@ const addSpecialAbilityDetails = (
   ability: UncompleteEntityAbility,
   markdown: NodeHtmlMarkdown
 ): UncompleteEntityAbility => {
+  ability.effect = markdown.translate(ability.effect);
   if (!ability.custom_fields) {
     ability.custom_fields = {};
   }
@@ -185,7 +186,6 @@ const addSpecialAbilityDetails = (
     ability.uses = ABILITY_USES[ability.name];
   }
   addProgrammaticUses(ability);
-  ability.effect = markdown.translate(ability.effect);
   return ability;
 };
 

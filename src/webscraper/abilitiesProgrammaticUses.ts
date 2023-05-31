@@ -33,7 +33,12 @@ const handleWeaponAbilities = (ability: UncompleteEntityAbility): void => {
 
   ability.uses = {
     ...ability.uses,
-    [parsedWeaponAcc.data]: acc,
-    [parsedWeaponDmg.data]: dmg,
+    adjust: {
+      time: "permanent",
+      attr: {
+        [parsedWeaponAcc.data]: acc,
+        [parsedWeaponDmg.data]: dmg,
+      }
+    }
   };
 };
