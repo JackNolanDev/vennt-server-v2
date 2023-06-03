@@ -4,7 +4,8 @@ export const REPEATABLE_SIGNIFIERS = [
   "may be purchased multiple times",
   "may be taken multiple times",
   "take this ability multiple times",
-  "can be taken multiple times",
+  "this ability can be taken multiple times",
+  "you must meet the minimum level specified to purchase a bonus"
 ];
 
 export const ABILITY_USES: Record<string, UsesMap> = {
@@ -199,6 +200,10 @@ export const ABILITY_USES: Record<string, UsesMap> = {
             casting: 1,
           },
         },
+        check: {
+          attr: "casting",
+          bonus: "+1"
+        }
       },
     ],
   },
