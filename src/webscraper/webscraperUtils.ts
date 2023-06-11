@@ -51,4 +51,4 @@ export const cleanQuotes = (text: string): string => {
 
 export const sleep = async (ms: number): Promise<void> => {
   await new Promise((r) => setTimeout(r, ms));
-}
+};

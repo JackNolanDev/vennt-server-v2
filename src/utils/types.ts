@@ -89,7 +89,7 @@ export const baseAttributeFieldValidator = z.enum(ATTRIBUTES);
 
 // NOTE: ALL FUTURE ATTRIBUTES SHOULD BE optional()
 
-export const attributesValidator = z.object({
+export const builtInAttributesValidator = z.object({
   agi: attributeValidator,
   cha: attributeValidator,
   dex: attributeValidator,
@@ -120,6 +120,8 @@ export const attributesValidator = z.object({
   reach: z.number().int().optional(),
   shield: z.number().int().optional(),
   bluespace: z.number().int().optional(),
+  trii: z.number().int().optional(),
+  max_trii: z.number().int().optional(),
   free_hands: z.number().int().optional(),
   carrying_capacity: z.number().int().optional(),
   alert: z.number().int().optional(),
@@ -171,9 +173,19 @@ export const attributesValidator = z.object({
   whip_dmg: z.number().int().optional(),
 });
 
-export const attributeNameValidator = attributesValidator.keyof();
+export const attributeNameValidator = z
+  .string()
+  .min(1)
+  .max(NAME_MAX)
+  .toLowerCase()
+  .regex(/^\w+$/u, "Contains no spaces. Use '_' instead.");
+export const attributeValValidator = z.number().int();
+export const attributesValidator = builtInAttributesValidator.catchall(
+  attributeValValidator
+);
+
 export const validAttributes = Object.keys(
-  attributeNameValidator.Values
+  builtInAttributesValidator.keyof().Values
 ) as EntityAttribute[];
 
 // COG CREATION FIELDS
@@ -258,6 +270,22 @@ export const partialEntityValidator = fullEntityValidator
   });
 
 // USES
+
+export const itemFieldsValidator = z.object({
+  attr: z.string().max(NAME_MAX).optional(),
+  category: z.string().max(NAME_MAX).optional(),
+  courses: z.string().max(NAME_MAX).optional(),
+  dmg: z.string().max(NAME_MAX).optional(),
+  range: z.string().max(NAME_MAX).optional(),
+  special: z.string().max(ITEM_MAX).optional(),
+  weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
+  dc_cost: z.number().int().optional(),
+  in_storage: z.boolean().optional(),
+  not_evadable: z.boolean().optional(),
+});
+export const weaponFieldsWithOptionalLabel = itemFieldsValidator.extend({
+  label: z.string().max(NAME_MAX).optional(),
+});
 
 export const useAttrMapValidator = z.record(
   attributeNameValidator,
@@ -405,6 +433,7 @@ export const usesValidator = z.object({
   expose_combat_stats: useExposeCombatStats.optional(),
   inputs: useInputs.optional(),
   criteria_benefits: useCriteriaBenefitResults.optional(),
+  weapons: weaponFieldsWithOptionalLabel.array().optional(),
 });
 
 // ABILITIES
@@ -478,18 +507,6 @@ export const fullAbilityValidator = abilityValidator.extend({
 
 // ITEMS
 
-export const itemFieldsValidator = z.object({
-  attr: z.string().max(NAME_MAX).optional(),
-  category: z.string().max(NAME_MAX).optional(),
-  courses: z.string().max(NAME_MAX).optional(),
-  dmg: z.string().max(NAME_MAX).optional(),
-  range: z.string().max(NAME_MAX).optional(),
-  special: z.string().max(ITEM_MAX).optional(),
-  weapon_type: z.string().max(NAME_MAX).optional(), // TODO: replace with enum?
-  dc_cost: z.number().int().optional(),
-  in_storage: z.boolean().optional(),
-});
-
 export const ITEM_TYPE_EQUIPMENT = "equipment";
 export const ITEM_TYPE_CONSUMABLE = "consumable";
 export const ITEM_TYPE_CONTAINER = "container";
@@ -543,7 +560,7 @@ export const shopItemValidator = itemFieldsValidator.extend({
 // CHANGELOG
 
 export const attributeChangelogValidator = z.object({
-  attr: attributesValidator.keyof(),
+  attr: attributeNameValidator,
   msg: z.string().max(CHANGELOG_MAX),
   prev: z.number().optional().nullable(),
 });
@@ -783,14 +800,13 @@ export type UpdatedEntityAttribute = {
   items?: EntityItem[];
 };
 
-export type UpdatedEntityAttributes = {
-  [attr in EntityAttribute]?: UpdatedEntityAttribute;
-};
+export type UpdatedEntityAttributes = Partial<
+  Record<string, UpdatedEntityAttribute>
+>;
 
 export type DiceToggle = {
   attr?: EntityAttribute;
-  end?: string;
-  diceNumberAdjust?: number;
+  setting: DiceSettings;
   default?: boolean; // currently not really supported
 };
 export type DiceToggles = {

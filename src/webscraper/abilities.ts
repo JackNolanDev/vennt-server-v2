@@ -327,13 +327,15 @@ export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
         break;
       } catch (err: unknown) {
         if (err instanceof AxiosError) {
-          console.log(`Errored with ${err.name} with message ${err.message} while fetching ${url}. Sleeping and trying again`);
+          console.log(
+            `Errored with ${err.name} with message ${err.message} while fetching ${url}. Sleeping and trying again`
+          );
           // exponential back off
           await sleep(Math.pow(2, errCount) * 2000);
         }
         errCount++;
       }
-    } 
+    }
   }
   console.log("complete web scrape abilities");
   return { paths, abilities };
