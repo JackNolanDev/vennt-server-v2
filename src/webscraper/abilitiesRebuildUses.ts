@@ -1,11 +1,12 @@
 import { PathsAndAbilities } from "../utils/types";
-import { ABILITY_USES } from "./abilitiesUses";
+import { ABILITY_USES } from "./abilitiesUses/uses";
 
 export const rebuildAbilityUses = (
   abilities: PathsAndAbilities
 ): PathsAndAbilities => {
   abilities.abilities.forEach((ability) => {
     if (ABILITY_USES[ability.name]) {
+      console.log(`rebuildUses: Updating ${ability.name}`)
       ability.uses = ABILITY_USES[ability.name];
     }
   });

@@ -10,8 +10,8 @@ import {
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import { cleanQuotes, sleep } from "./webscraperUtils";
-import { ABILITY_USES, REPEATABLE_SIGNIFIERS } from "./abilitiesUses";
 import { addProgrammaticUses } from "./abilitiesProgrammaticUses";
+import { REPEATABLE_SIGNIFIERS, ABILITY_USES } from "./abilitiesUses/uses";
 
 const LIST_OF_PATHS = "https://vennt.fandom.com/wiki/List_of_Paths";
 const BASE_URL = "https://vennt.fandom.com";
