@@ -10,4 +10,27 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
       }
     },
   },
+  "Raw Energy": {
+    weapons: [
+      {
+        category: "Arcane",
+        dmg: "1d6",
+        label: "0 MP",
+      },
+      {
+        category: "Arcane",
+        dmg: "1d6+spi",
+        label: "1 MP",
+      },
+      {
+        category: "Arcane",
+        dmg: "3d6+spi",
+        label: "3 MP",
+      },
+    ],
+    check: {
+      attr: "str",
+      bonus: "+3",
+    },
+  },
 }

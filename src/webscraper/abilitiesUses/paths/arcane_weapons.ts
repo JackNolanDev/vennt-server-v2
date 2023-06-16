@@ -30,8 +30,8 @@ export const ARCANE_WEAPONS_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcane_acc: "arcane_acc + free_hands - 1",
-        arcane_dmg: "arcane_dmg + (5 * free_hands) - 5",
+        arcane_dmg: "arcane_dmg + free_hands - 1",
+        arcane_acc: "arcane_acc + (5 * free_hands) - 5",
       },
     },
   },
@@ -39,8 +39,8 @@ export const ARCANE_WEAPONS_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcane_acc: "arcane_acc + free_hands",
-        arcane_dmg: "arcane_dmg + (5 * free_hands)",
+        arcane_dmg: "arcane_dmg + free_hands",
+        arcane_acc: "arcane_acc + (5 * free_hands)",
       },
     },
   },
@@ -48,8 +48,8 @@ export const ARCANE_WEAPONS_USES: Record<string, UsesMap> = {
     adjust: {
       time: "permanent",
       attr: {
-        arcane_acc: "arcane_acc + free_hands",
-        arcane_dmg: "arcane_dmg + (5 * free_hands)",
+        arcane_dmg: "arcane_dmg + free_hands",
+        arcane_acc: "arcane_acc + (5 * free_hands)",
       },
     },
   },
