@@ -3,7 +3,7 @@ import { z } from "zod";
 export const NAME_MAX = 100;
 export const PASSWORD_MIN = 6;
 export const PASSWORD_MAX = 2_000;
-export const ABILITY_MAX = 6_000;
+export const ABILITY_MAX = 7_000;
 export const ABILITY_PREREQ_MAX = 200;
 export const ITEM_MAX = 2_000;
 export const COMMENT_MAX = 2_000;
@@ -822,3 +822,8 @@ export type DiceCommands = {
 export type ConsolidatedItem = FullEntityItem & {
   ids: string[];
 };
+
+export type PathTree = Record<
+  string,
+  { children: PathTree; abilities: string[] }
+>;

@@ -47,6 +47,7 @@ const parseSimplePathLine = (
 const parsePathLine: Record<string, (text: string, path: PathDetails) => void> =
   {
     "Requirements:": parseSimplePathLine("reqs"),
+    "Prerequisite:": parseSimplePathLine("reqs"),
     "Path Completion Bonus:": parseSimplePathLine("completionBonus"),
   };
 
