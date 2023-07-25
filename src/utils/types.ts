@@ -301,7 +301,8 @@ export const useHealValidator = z.object({
 });
 export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
-  attr: useAttrMapValidator,
+  attr: useAttrMapValidator.optional(),
+  dice: z.record(attributeNameValidator, diceSettingsValidator).optional(),
 });
 export const criteriaFieldOperator = z.enum([
   "equals",
@@ -798,6 +799,7 @@ export type UpdatedEntityAttribute = {
   val: number;
   reason?: string[];
   items?: EntityItem[];
+  dice?: DiceSettings;
 };
 
 export type UpdatedEntityAttributes = Partial<

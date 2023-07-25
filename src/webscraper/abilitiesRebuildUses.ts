@@ -6,7 +6,7 @@ export const rebuildAbilityUses = (
 ): PathsAndAbilities => {
   abilities.abilities.forEach((ability) => {
     if (ABILITY_USES[ability.name]) {
-      console.log(`rebuildUses: Updating ${ability.name}`)
+      console.log(`rebuildUses: Updating ${ability.name}`);
       ability.uses = ABILITY_USES[ability.name];
     }
   });

@@ -9,4 +9,4 @@ export const HEROIC_ARCANA_USES: Record<string, UsesMap> = {
       },
     },
   },
-}
+};

@@ -53,4 +53,4 @@ export const ARCANE_WEAPONS_USES: Record<string, UsesMap> = {
       },
     },
   },
-}
+};

@@ -2,7 +2,7 @@ import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
 import { EntityItemType, ShopItem } from "../utils/types";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
-import { parseBulk, parseCourses, parseSP } from "./webscraperUtils";
+import { parseBulk, parseSP } from "./webscraperUtils";
 
 const EQUIPMENT_URL = "https://vennt.fandom.com/wiki/Equipment";
 const CONSUMABLE_URL = "https://vennt.fandom.com/wiki/Consumables";
@@ -371,14 +371,14 @@ const getArmor = (page: string): ShopItem[] => {
             case 1:
               armorValue = `Armor Value: ${text}`;
               parsedArmor = parseInt(text);
-              if (!isNaN(parsedArmor) && item.uses && item.uses.adjust) {
+              if (!isNaN(parsedArmor) && item.uses && item.uses.adjust?.attr) {
                 item.uses.adjust.attr.armor = parsedArmor;
               }
               break;
             case 2:
               item.desc = `${armorValue}, Burden: ${text}`;
               parsedBurden = parseInt(text);
-              if (!isNaN(parsedBurden) && item.uses && item.uses.adjust) {
+              if (!isNaN(parsedBurden) && item.uses && item.uses.adjust?.attr) {
                 item.uses.adjust.attr.burden = parsedBurden;
               }
               break;
@@ -422,21 +422,25 @@ const getArmor = (page: string): ShopItem[] => {
             case 1:
               shieldBonus = `Shield Bonus: ${text}`;
               parsedShield = parseInt(text);
-              if (!isNaN(parsedShield) && item.uses && item.uses.adjust) {
+              if (!isNaN(parsedShield) && item.uses && item.uses.adjust?.attr) {
                 item.uses.adjust.attr.shield = parsedShield;
               }
               break;
             case 2:
               item.special = `Hands Required to Equip: ${text}`;
               parsedHandsUsed = parseInt(text);
-              if (!isNaN(parsedHandsUsed) && item.uses && item.uses.adjust) {
+              if (
+                !isNaN(parsedHandsUsed) &&
+                item.uses &&
+                item.uses.adjust?.attr
+              ) {
                 item.uses.adjust.attr.free_hands = -parsedHandsUsed;
               }
               break;
             case 3:
               item.desc = `${shieldBonus}, Burden: ${text}`;
               parsedBurden = parseInt(text);
-              if (!isNaN(parsedBurden) && item.uses && item.uses.adjust) {
+              if (!isNaN(parsedBurden) && item.uses && item.uses.adjust?.attr) {
                 item.uses.adjust.attr.burden = parsedBurden;
               }
               break;

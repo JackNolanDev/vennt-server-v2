@@ -9,6 +9,7 @@ import { GIFTED_MAGICIAN_USES } from "./paths/gifted_magician";
 import { HEROIC_ARCANA_USES } from "./paths/heroic_arcana";
 import { LIGHTNING_ARCANA_USES } from "./paths/lightning_arcana";
 import { MAGICIAN_USES } from "./paths/magician";
+import { MAGUS_USES } from "./paths/magus";
 import { NECROMANCY_ARCANA_USES } from "./paths/necromancy_arcana";
 import { SPELLCASTER_USES } from "./paths/spellcaster";
 import { SPELLSWORD_USES } from "./paths/spellsword";
@@ -35,6 +36,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...HEROIC_ARCANA_USES,
   ...LIGHTNING_ARCANA_USES,
   ...MAGICIAN_USES,
+  ...MAGUS_USES,
   ...NECROMANCY_ARCANA_USES,
   ...SPELLCASTER_USES,
   ...SPELLSWORD_USES,

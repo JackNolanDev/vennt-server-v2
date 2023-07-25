@@ -7,7 +7,7 @@ export const TINKER_USES: Record<string, UsesMap> = {
       time: "permanent",
       attr: {
         bluespace: "bluespace + (int * int)",
-      }
+      },
     },
   },
-}
+};

@@ -7,4 +7,10 @@ export const FIGHTER_USES: Record<string, UsesMap> = {
       bonus: "+3",
     },
   },
-}
+  "Take a Breather": {
+    roll: { dice: "1d6+str", attr: "vim", heal: { mp: 1 } },
+  },
+  "Great Initiative": {
+    adjust: { time: "permanent", attr: { init: 4 } },
+  },
+};

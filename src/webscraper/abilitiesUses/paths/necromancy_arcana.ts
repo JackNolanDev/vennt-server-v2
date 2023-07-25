@@ -8,4 +8,4 @@ export const NECROMANCY_ARCANA_USES: Record<string, UsesMap> = {
       { category: "Arcane", dmg: "3d6+9" },
     ],
   },
-}
+};

@@ -157,4 +157,4 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
       },
     ],
   },
-}
+};

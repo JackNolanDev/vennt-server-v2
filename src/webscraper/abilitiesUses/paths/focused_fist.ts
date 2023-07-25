@@ -8,7 +8,7 @@ export const FOCUSED_FIST_USES: Record<string, UsesMap> = {
       attr: {
         trii: 0,
         max_trii: "max_trii + spi + wis",
-      }
+      },
     },
   },
-}
+};

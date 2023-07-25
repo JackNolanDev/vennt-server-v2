@@ -21,4 +21,4 @@ export const UNIVERSALIST_ARCANA_USES: Record<string, UsesMap> = {
   "Missile Barrage": {
     weapons: [{ category: "Arcane", dmg: "1d6+spi" }],
   },
-}
+};

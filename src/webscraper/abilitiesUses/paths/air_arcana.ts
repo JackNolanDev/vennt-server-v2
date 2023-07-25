@@ -8,4 +8,4 @@ export const AIR_ARCANA_USES: Record<string, UsesMap> = {
       { category: "Arcane", dmg: "4d6" },
     ],
   },
-}
+};

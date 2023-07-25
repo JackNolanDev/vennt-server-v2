@@ -26,4 +26,4 @@ export const ARCANE_DUELIST_USES: Record<string, UsesMap> = {
       },
     ],
   },
-}
+};

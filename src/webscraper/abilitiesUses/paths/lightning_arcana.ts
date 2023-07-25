@@ -22,4 +22,4 @@ export const LIGHTNING_ARCANA_USES: Record<string, UsesMap> = {
       { category: "Arcane", dmg: "3d6+9+spi" },
     ],
   },
-}
+};

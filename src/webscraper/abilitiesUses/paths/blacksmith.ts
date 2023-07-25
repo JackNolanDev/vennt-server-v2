@@ -8,4 +8,4 @@ export const BLACKSMITH_USES: Record<string, UsesMap> = {
       attr: { junk: 0 }, // should make the attribute appear
     },
   },
-}
+};

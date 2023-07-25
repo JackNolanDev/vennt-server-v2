@@ -77,4 +77,4 @@ export const SPELLCASTER_USES: Record<string, UsesMap> = {
       },
     ],
   },
-}
+};

@@ -7,7 +7,7 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
       time: "permanent",
       attr: {
         casting: "casting + spi - burden",
-      }
+      },
     },
   },
   "Raw Energy": {
@@ -33,4 +33,4 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
       bonus: "+3",
     },
   },
-}
+};

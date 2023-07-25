@@ -1,7 +1,7 @@
 import { UsesMap } from "../../../utils/types";
 
-export const SPELLSWORD_USES: Record<string, UsesMap> = {
-  "Spell Hand I: Spellsword": {
+export const MAGUS_USES: Record<string, UsesMap> = {
+  "Spell Hand I: Magus": {
     criteria_benefits: [
       {
         criteria: {
@@ -12,7 +12,7 @@ export const SPELLSWORD_USES: Record<string, UsesMap> = {
           },
           right: {
             type: "const",
-            const: "1",
+            const: "2",
           },
           operator: "gte",
         },
@@ -20,13 +20,40 @@ export const SPELLSWORD_USES: Record<string, UsesMap> = {
           time: "permanent",
           attr: {
             casting: 1,
-            arcane_dmg: 1,
+          },
+        },
+        check: {
+          attr: "casting",
+          bonus: "+1",
+        },
+      },
+    ],
+  },
+  "Spell Hand II: Magus": {
+    criteria_benefits: [
+      {
+        criteria: {
+          type: "comp",
+          left: {
+            type: "attr",
+            attr: "free_hands",
+          },
+          right: {
+            type: "const",
+            const: "2",
+          },
+          operator: "gte",
+        },
+        adjust: {
+          time: "permanent",
+          attr: {
+            casting: 1,
           },
         },
       },
     ],
   },
-  "Spell Hand II: Spellsword": {
+  "Spell Hand III: Magus": {
     criteria_benefits: [
       {
         criteria: {
@@ -37,7 +64,7 @@ export const SPELLSWORD_USES: Record<string, UsesMap> = {
           },
           right: {
             type: "const",
-            const: "1",
+            const: "2",
           },
           operator: "gte",
         },
@@ -45,7 +72,6 @@ export const SPELLSWORD_USES: Record<string, UsesMap> = {
           time: "permanent",
           attr: {
             casting: 1,
-            arcane_dmg: 1,
           },
         },
       },
