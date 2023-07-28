@@ -2,6 +2,7 @@ import { UsesMap } from "../../utils/types";
 import { AIR_ARCANA_USES } from "./paths/air_arcana";
 import { ARCANE_DUELIST_USES } from "./paths/arcane_duelist";
 import { ARCANE_WEAPONS_USES } from "./paths/arcane_weapons";
+import { BEGINNER_USES } from "./paths/beginner";
 import { BLACKSMITH_USES } from "./paths/blacksmith";
 import { FIGHTER_USES } from "./paths/fighter";
 import { FOCUSED_FIST_USES } from "./paths/focused_fist";
@@ -29,6 +30,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...AIR_ARCANA_USES,
   ...ARCANE_DUELIST_USES,
   ...ARCANE_WEAPONS_USES,
+  ...BEGINNER_USES,
   ...BLACKSMITH_USES,
   ...FIGHTER_USES,
   ...FOCUSED_FIST_USES,

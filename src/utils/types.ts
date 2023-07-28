@@ -41,6 +41,10 @@ export const ATTRIBUTES_SET = new Set<EntityAttribute>(ATTRIBUTES);
 
 export const idValidator = z.string().uuid();
 export const nameValidator = z.string().min(1).max(NAME_MAX);
+export const equationValidator = z.union([
+  z.number().int(),
+  z.string().min(1).max(NAME_MAX),
+]);
 
 // ACCOUNT FIELDS
 
@@ -124,7 +128,8 @@ export const builtInAttributesValidator = z.object({
   max_trii: z.number().int().optional(),
   free_hands: z.number().int().optional(),
   carrying_capacity: z.number().int().optional(),
-  alert: z.number().int().optional(),
+  alerts: z.number().int().optional(),
+  max_alerts: z.number().int().optional(),
   recovery_shock: z.number().int().optional(),
   acc: z.number().int().optional(),
   dmg: z.number().int().optional(),
@@ -232,7 +237,7 @@ export const diceSettingsValidator = z.object({
   flow: z.number().int().optional(),
   ebb: z.number().int().optional(),
   otherToggles: diceOtherTogglesValidator.optional(),
-  adjust: z.union([z.number().int(), z.string().max(NAME_MAX)]).optional(),
+  adjust: equationValidator.optional(),
   count: z.number().optional(),
   sides: z.number().optional(),
 });
@@ -289,7 +294,7 @@ export const weaponFieldsWithOptionalLabel = itemFieldsValidator.extend({
 
 export const useAttrMapValidator = z.record(
   attributeNameValidator,
-  z.union([z.number().int(), z.string().min(1).max(NAME_MAX)])
+  equationValidator
 );
 export const useRollValidator = z.object({
   dice: z.string().max(NAME_MAX),
@@ -387,7 +392,7 @@ export const useCriteriaValidator = z.union([
 ]);
 export type UseCriteria = z.infer<typeof useCriteriaValidator>;
 export const useAdjustAbilityCostValidator = z.object({
-  adjust_cost: z.union([z.number().int(), z.string().min(1).max(NAME_MAX)]),
+  adjust_cost: equationValidator,
 });
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX).optional(),
@@ -402,9 +407,12 @@ export const useCriteriaBenefit = z.object({
   check: useCheckValidator.optional(),
 });
 export const useCriteriaBenefitResults = useCriteriaBenefit.array();
-export const useRadioInputBase = z.object({
+export const useInputBase = z.object({
+  key: z.string().min(1).max(NAME_MAX),
+  label: z.string().min(1).max(NAME_MAX).optional(),
+});
+export const useRadioInputBase = useInputBase.extend({
   type: z.literal("radio"),
-  key: z.string().min(1),
 });
 export type UseRadioInput = z.infer<typeof useRadioInputBase> & {
   choices: Record<string, UseInputs>;
@@ -417,12 +425,18 @@ export const useRadioInput: z.ZodType<UseRadioInput> = useRadioInputBase.extend(
     ),
   }
 );
-export const useTextInput = z.object({
+export const useTextInput = useInputBase.extend({
   type: z.literal("text"),
-  key: z.string().min(1),
 });
 export type UseTextInput = z.infer<typeof useTextInput>;
-export const useInput = useRadioInput.or(useTextInput);
+export const useNumberInput = useInputBase.extend({
+  type: z.literal("number"),
+  min: equationValidator.optional(),
+  max: equationValidator.optional(),
+  default: equationValidator.optional(),
+});
+export type UseNumberInput = z.infer<typeof useNumberInput>;
+export const useInput = z.union([useRadioInput, useTextInput, useNumberInput]);
 export const useInputs = useInput.array();
 export type UseInputs = z.infer<typeof useInputs>;
 export const usesValidator = z.object({
