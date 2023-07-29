@@ -119,7 +119,6 @@ export const builtInAttributesValidator = z.object({
   burden: z.number().int().optional(),
   casting: z.number().int().optional(),
   L: z.number().int().optional(),
-  X: z.number().int().optional(),
   radius: z.number().optional(),
   reach: z.number().int().optional(),
   shield: z.number().int().optional(),
@@ -176,6 +175,20 @@ export const builtInAttributesValidator = z.object({
   unarmed_dmg: z.number().int().optional(),
   whip_acc: z.number().int().optional(),
   whip_dmg: z.number().int().optional(),
+  // DAMAGE RESISTANCE
+  fall_damage_resistance: z.number().int().optional(),
+  vim_damage_resistance: z.number().int().optional(),
+  burn_damage_resistance: z.number().int().optional(),
+  bleed_damage_resistance: z.number().int().optional(),
+  stun_damage_resistance: z.number().int().optional(),
+  paralysis_damage_resistance: z.number().int().optional(),
+  attribute_damage_resistance: z.number().int().optional(),
+  galvanic_damage_resistance: z.number().int().optional(),
+  magical_damage_resistance: z.number().int().optional(),
+  physical_damage_resistance: z.number().int().optional(),
+  piercing_damage_resistance: z.number().int().optional(),
+  slashing_damage_resistance: z.number().int().optional(),
+  bludgeoning_damage_resistance: z.number().int().optional(),
 });
 
 export const attributeNameValidator = z
@@ -813,6 +826,7 @@ export type UpdatedEntityAttribute = {
   val: number;
   reason?: string[];
   items?: EntityItem[];
+  abilities?: EntityAbility[];
   dice?: DiceSettings;
 };
 
