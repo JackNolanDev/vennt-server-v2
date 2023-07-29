@@ -411,6 +411,7 @@ export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX).optional(),
   attr: attributeNameValidator,
   dice_settings: diceSettingsValidator.optional(),
+  label: z.string().min(1).max(NAME_MAX).optional(),
 });
 export const useExposeCombatStats = attributeNameValidator.array();
 export const useCriteriaBenefit = z.object({
@@ -838,6 +839,7 @@ export type DiceToggle = {
   attr?: EntityAttribute;
   setting: DiceSettings;
   default?: boolean; // currently not really supported
+  label?: string;
 };
 export type DiceToggles = {
   [key: string]: DiceToggle;

@@ -49,6 +49,7 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
     check: {
       attr: "str",
       bonus: "+3",
+      label: "Raw Energy Bonus (Pay 1 MP)"
     },
   },
   "Replenish": { heal: { attr: { mp: 2 } } },

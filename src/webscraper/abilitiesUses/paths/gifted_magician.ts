@@ -112,6 +112,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
         check: {
           attr: "casting",
           bonus: "+1",
+          label: "Is for a Prestige path"
         },
       },
       {
@@ -153,6 +154,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
         check: {
           attr: "casting",
           bonus: "+3",
+          label: "Is for your Archmage path"
         },
       },
     ],

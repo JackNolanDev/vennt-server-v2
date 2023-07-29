@@ -25,6 +25,7 @@ export const MAGUS_USES: Record<string, UsesMap> = {
         check: {
           attr: "casting",
           bonus: "+1",
+          label: "When at least 3m from all allies"
         },
       },
     ],
