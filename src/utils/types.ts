@@ -132,6 +132,10 @@ export const builtInAttributesValidator = z.object({
   recovery_shock: z.number().int().optional(),
   acc: z.number().int().optional(),
   dmg: z.number().int().optional(),
+  actions: combatStatValidator.optional(),
+  reactions: combatStatValidator.optional(),
+  actions_on_turn: z.number().int().optional(),
+  reactions_on_turn: z.number().int().optional(),
   // WEAPON SPECIFIC BONUSES
   aggressive_acc: z.number().int().optional(),
   aggressive_dmg: z.number().int().optional(),
@@ -189,6 +193,20 @@ export const builtInAttributesValidator = z.object({
   piercing_damage_resistance: z.number().int().optional(),
   slashing_damage_resistance: z.number().int().optional(),
   bludgeoning_damage_resistance: z.number().int().optional(),
+  // SPECIAL DAMAGE
+  burning: combatStatValidator.optional(),
+  bleeding: combatStatValidator.optional(),
+  paralysis: combatStatValidator.optional(),
+  stun: combatStatValidator.optional(),
+  agi_dmg: combatStatValidator.optional(),
+  cha_dmg: combatStatValidator.optional(),
+  dex_dmg: combatStatValidator.optional(),
+  int_dmg: combatStatValidator.optional(),
+  per_dmg: combatStatValidator.optional(),
+  spi_dmg: combatStatValidator.optional(),
+  str_dmg: combatStatValidator.optional(),
+  tek_dmg: combatStatValidator.optional(),
+  wis_dmg: combatStatValidator.optional(),
 });
 
 export const attributeNameValidator = z
@@ -265,6 +283,7 @@ export const otherAttributesValidator = z.object({
   cog_type: z.string().max(NAME_MAX).optional(),
   cog_creation_options: cogCreateOptionsValidator.optional(),
   dice_settings: diceSettingsValidator.optional(),
+  in_combat: z.boolean().optional(),
 });
 
 export const entityValidator = z.object({

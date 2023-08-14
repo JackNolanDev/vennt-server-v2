@@ -6,22 +6,13 @@ export const ARCANE_WEAPONS_USES: Record<string, UsesMap> = {
       {
         criteria: {
           type: "comp",
-          left: {
-            type: "attr",
-            attr: "free_hands",
-          },
-          right: {
-            type: "const",
-            const: "1",
-          },
+          left: { type: "attr", attr: "free_hands" },
+          right: { type: "const", const: "1" },
           operator: "gte",
         },
         adjust: {
           time: "permanent",
-          attr: {
-            arcane_acc: 5,
-            arcane_dmg: 1,
-          },
+          attr: { arcane_acc: 5, arcane_dmg: 1 },
         },
       },
     ],
