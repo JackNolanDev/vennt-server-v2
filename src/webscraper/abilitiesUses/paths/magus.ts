@@ -6,25 +6,15 @@ export const MAGUS_USES: Record<string, UsesMap> = {
       {
         criteria: {
           type: "comp",
-          left: {
-            type: "attr",
-            attr: "free_hands",
-          },
-          right: {
-            type: "const",
-            const: "2",
-          },
+          left: { type: "attr", attr: "free_hands" },
+          right: { type: "const", const: "2" },
           operator: "gte",
         },
-        adjust: {
-          time: "permanent",
-          attr: {
-            casting: 1,
-          },
-        },
+        adjust: { time: "permanent", attr: { casting: 1 } },
         check: {
           attr: "casting",
           bonus: "+1",
+          label: "When at least 3m from all allies",
         },
       },
     ],
@@ -34,22 +24,11 @@ export const MAGUS_USES: Record<string, UsesMap> = {
       {
         criteria: {
           type: "comp",
-          left: {
-            type: "attr",
-            attr: "free_hands",
-          },
-          right: {
-            type: "const",
-            const: "2",
-          },
+          left: { type: "attr", attr: "free_hands" },
+          right: { type: "const", const: "2" },
           operator: "gte",
         },
-        adjust: {
-          time: "permanent",
-          attr: {
-            casting: 1,
-          },
-        },
+        adjust: { time: "permanent", attr: { casting: 1 } },
       },
     ],
   },
@@ -58,22 +37,11 @@ export const MAGUS_USES: Record<string, UsesMap> = {
       {
         criteria: {
           type: "comp",
-          left: {
-            type: "attr",
-            attr: "free_hands",
-          },
-          right: {
-            type: "const",
-            const: "2",
-          },
+          left: { type: "attr", attr: "free_hands" },
+          right: { type: "const", const: "2" },
           operator: "gte",
         },
-        adjust: {
-          time: "permanent",
-          attr: {
-            casting: 1,
-          },
-        },
+        adjust: { time: "permanent", attr: { casting: 1 } },
       },
     ],
   },

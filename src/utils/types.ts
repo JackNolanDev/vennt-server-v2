@@ -41,6 +41,10 @@ export const ATTRIBUTES_SET = new Set<EntityAttribute>(ATTRIBUTES);
 
 export const idValidator = z.string().uuid();
 export const nameValidator = z.string().min(1).max(NAME_MAX);
+export const equationValidator = z.union([
+  z.number().int(),
+  z.string().min(1).max(NAME_MAX),
+]);
 
 // ACCOUNT FIELDS
 
@@ -115,7 +119,6 @@ export const builtInAttributesValidator = z.object({
   burden: z.number().int().optional(),
   casting: z.number().int().optional(),
   L: z.number().int().optional(),
-  X: z.number().int().optional(),
   radius: z.number().optional(),
   reach: z.number().int().optional(),
   shield: z.number().int().optional(),
@@ -124,10 +127,15 @@ export const builtInAttributesValidator = z.object({
   max_trii: z.number().int().optional(),
   free_hands: z.number().int().optional(),
   carrying_capacity: z.number().int().optional(),
-  alert: z.number().int().optional(),
+  alerts: z.number().int().optional(),
+  max_alerts: z.number().int().optional(),
   recovery_shock: z.number().int().optional(),
   acc: z.number().int().optional(),
   dmg: z.number().int().optional(),
+  actions: combatStatValidator.optional(),
+  reactions: combatStatValidator.optional(),
+  actions_on_turn: z.number().int().optional(),
+  reactions_on_turn: z.number().int().optional(),
   // WEAPON SPECIFIC BONUSES
   aggressive_acc: z.number().int().optional(),
   aggressive_dmg: z.number().int().optional(),
@@ -171,6 +179,34 @@ export const builtInAttributesValidator = z.object({
   unarmed_dmg: z.number().int().optional(),
   whip_acc: z.number().int().optional(),
   whip_dmg: z.number().int().optional(),
+  // DAMAGE RESISTANCE
+  fall_damage_resistance: z.number().int().optional(),
+  vim_damage_resistance: z.number().int().optional(),
+  burn_damage_resistance: z.number().int().optional(),
+  bleed_damage_resistance: z.number().int().optional(),
+  stun_damage_resistance: z.number().int().optional(),
+  paralysis_damage_resistance: z.number().int().optional(),
+  attribute_damage_resistance: z.number().int().optional(),
+  galvanic_damage_resistance: z.number().int().optional(),
+  magical_damage_resistance: z.number().int().optional(),
+  physical_damage_resistance: z.number().int().optional(),
+  piercing_damage_resistance: z.number().int().optional(),
+  slashing_damage_resistance: z.number().int().optional(),
+  bludgeoning_damage_resistance: z.number().int().optional(),
+  // SPECIAL DAMAGE
+  burning: combatStatValidator.optional(),
+  bleeding: combatStatValidator.optional(),
+  paralysis: combatStatValidator.optional(),
+  stun: combatStatValidator.optional(),
+  agi_dmg: combatStatValidator.optional(),
+  cha_dmg: combatStatValidator.optional(),
+  dex_dmg: combatStatValidator.optional(),
+  int_dmg: combatStatValidator.optional(),
+  per_dmg: combatStatValidator.optional(),
+  spi_dmg: combatStatValidator.optional(),
+  str_dmg: combatStatValidator.optional(),
+  tek_dmg: combatStatValidator.optional(),
+  wis_dmg: combatStatValidator.optional(),
 });
 
 export const attributeNameValidator = z
@@ -232,7 +268,7 @@ export const diceSettingsValidator = z.object({
   flow: z.number().int().optional(),
   ebb: z.number().int().optional(),
   otherToggles: diceOtherTogglesValidator.optional(),
-  adjust: z.union([z.number().int(), z.string().max(NAME_MAX)]).optional(),
+  adjust: equationValidator.optional(),
   count: z.number().optional(),
   sides: z.number().optional(),
 });
@@ -247,6 +283,7 @@ export const otherAttributesValidator = z.object({
   cog_type: z.string().max(NAME_MAX).optional(),
   cog_creation_options: cogCreateOptionsValidator.optional(),
   dice_settings: diceSettingsValidator.optional(),
+  in_combat: z.boolean().optional(),
 });
 
 export const entityValidator = z.object({
@@ -289,7 +326,7 @@ export const weaponFieldsWithOptionalLabel = itemFieldsValidator.extend({
 
 export const useAttrMapValidator = z.record(
   attributeNameValidator,
-  z.union([z.number().int(), z.string().min(1).max(NAME_MAX)])
+  equationValidator
 );
 export const useRollValidator = z.object({
   dice: z.string().max(NAME_MAX),
@@ -387,12 +424,13 @@ export const useCriteriaValidator = z.union([
 ]);
 export type UseCriteria = z.infer<typeof useCriteriaValidator>;
 export const useAdjustAbilityCostValidator = z.object({
-  adjust_cost: z.union([z.number().int(), z.string().min(1).max(NAME_MAX)]),
+  adjust_cost: equationValidator,
 });
 export const useCheckValidator = z.object({
   bonus: z.string().min(1).max(NAME_MAX).optional(),
   attr: attributeNameValidator,
   dice_settings: diceSettingsValidator.optional(),
+  label: z.string().min(1).max(NAME_MAX).optional(),
 });
 export const useExposeCombatStats = attributeNameValidator.array();
 export const useCriteriaBenefit = z.object({
@@ -402,9 +440,12 @@ export const useCriteriaBenefit = z.object({
   check: useCheckValidator.optional(),
 });
 export const useCriteriaBenefitResults = useCriteriaBenefit.array();
-export const useRadioInputBase = z.object({
+export const useInputBase = z.object({
+  key: z.string().min(1).max(NAME_MAX),
+  label: z.string().min(1).max(NAME_MAX).optional(),
+});
+export const useRadioInputBase = useInputBase.extend({
   type: z.literal("radio"),
-  key: z.string().min(1),
 });
 export type UseRadioInput = z.infer<typeof useRadioInputBase> & {
   choices: Record<string, UseInputs>;
@@ -417,12 +458,18 @@ export const useRadioInput: z.ZodType<UseRadioInput> = useRadioInputBase.extend(
     ),
   }
 );
-export const useTextInput = z.object({
+export const useTextInput = useInputBase.extend({
   type: z.literal("text"),
-  key: z.string().min(1),
 });
 export type UseTextInput = z.infer<typeof useTextInput>;
-export const useInput = useRadioInput.or(useTextInput);
+export const useNumberInput = useInputBase.extend({
+  type: z.literal("number"),
+  min: equationValidator.optional(),
+  max: equationValidator.optional(),
+  default: equationValidator.optional(),
+});
+export type UseNumberInput = z.infer<typeof useNumberInput>;
+export const useInput = z.union([useRadioInput, useTextInput, useNumberInput]);
 export const useInputs = useInput.array();
 export type UseInputs = z.infer<typeof useInputs>;
 export const usesValidator = z.object({
@@ -799,6 +846,7 @@ export type UpdatedEntityAttribute = {
   val: number;
   reason?: string[];
   items?: EntityItem[];
+  abilities?: EntityAbility[];
   dice?: DiceSettings;
 };
 
@@ -810,6 +858,7 @@ export type DiceToggle = {
   attr?: EntityAttribute;
   setting: DiceSettings;
   default?: boolean; // currently not really supported
+  label?: string;
 };
 export type DiceToggles = {
   [key: string]: DiceToggle;

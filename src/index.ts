@@ -24,7 +24,7 @@ if (process.env.WEBSITE_URL) {
 }
 app.use(cors({ origin: allowed_origins, credentials: true }));
 
-app.get("/ping", (req, res) => {
+app.get("/ping", (_req, res) => {
   res.send("pong");
 });
 app.use("/ability", abilityRoute);
@@ -35,4 +35,4 @@ app.use("/admin", adminRoute);
 
 console.log(`${isProd ? "Production" : "Local"} server started`);
 
-app.listen(process.env.PORT ?? 5000);
+app.listen(process.env.PORT ?? 5001);

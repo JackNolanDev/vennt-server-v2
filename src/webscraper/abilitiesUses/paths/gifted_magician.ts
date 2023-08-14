@@ -25,20 +25,11 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
           tests: [
             {
               type: "comp",
-              left: {
-                type: "key",
-                key: "prestige_selection",
-              },
-              right: {
-                type: "const",
-                const: "Jack",
-              },
+              left: { type: "key", key: "prestige_selection" },
+              right: { type: "const", const: "Jack" },
               operator: "equals",
             },
-            {
-              type: "special",
-              name: "isSpell",
-            },
+            { type: "special", name: "isSpell" },
           ],
         },
         adjust_ability_cost: { adjust_cost: -100 },
@@ -50,20 +41,11 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
           tests: [
             {
               type: "comp",
-              left: {
-                type: "key",
-                key: "prestige_selection",
-              },
-              right: {
-                type: "const",
-                const: "Hybrid",
-              },
+              left: { type: "key", key: "prestige_selection" },
+              right: { type: "const", const: "Hybrid" },
               operator: "equals",
             },
-            {
-              type: "special",
-              name: "isSpell",
-            },
+            { type: "special", name: "isSpell" },
             {
               type: "base",
               operator: "some",
@@ -74,10 +56,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
                     type: "ability_field",
                     path: ["custom_fields", "path"],
                   },
-                  right: {
-                    type: "key",
-                    key: "hybrid_arcane_1",
-                  },
+                  right: { type: "key", key: "hybrid_arcane_1" },
                   operator: "equals",
                 },
                 {
@@ -86,10 +65,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
                     type: "ability_field",
                     path: ["custom_fields", "path"],
                   },
-                  right: {
-                    type: "key",
-                    key: "hybrid_arcane_2",
-                  },
+                  right: { type: "key", key: "hybrid_arcane_2" },
                   operator: "equals",
                 },
                 {
@@ -98,10 +74,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
                     type: "ability_field",
                     path: ["custom_fields", "path"],
                   },
-                  right: {
-                    type: "key",
-                    key: "hybrid_arcane_3",
-                  },
+                  right: { type: "key", key: "hybrid_arcane_3" },
                   operator: "equals",
                 },
               ],
@@ -112,6 +85,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
         check: {
           attr: "casting",
           bonus: "+1",
+          label: "Is for a Prestige path",
         },
       },
       {
@@ -121,30 +95,15 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
           tests: [
             {
               type: "comp",
-              left: {
-                type: "key",
-                key: "prestige_selection",
-              },
-              right: {
-                type: "const",
-                const: "Archmage",
-              },
+              left: { type: "key", key: "prestige_selection" },
+              right: { type: "const", const: "Archmage" },
               operator: "equals",
             },
-            {
-              type: "special",
-              name: "isSpell",
-            },
+            { type: "special", name: "isSpell" },
             {
               type: "comp",
-              left: {
-                type: "ability_field",
-                path: ["custom_fields", "path"],
-              },
-              right: {
-                type: "key",
-                key: "archmage_arcana",
-              },
+              left: { type: "ability_field", path: ["custom_fields", "path"] },
+              right: { type: "key", key: "archmage_arcana" },
               operator: "equals",
             },
           ],
@@ -153,6 +112,7 @@ export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
         check: {
           attr: "casting",
           bonus: "+3",
+          label: "Is for your Archmage path",
         },
       },
     ],

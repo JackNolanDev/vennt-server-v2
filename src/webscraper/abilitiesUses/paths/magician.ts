@@ -1,13 +1,29 @@
 import { UsesMap } from "../../../utils/types";
 
 export const MAGICIAN_USES: Record<string, UsesMap> = {
+  "Defensive Aura": {
+    inputs: [
+      {
+        type: "number",
+        key: "mp_cost",
+        min: 0,
+        max: 2,
+        default: 0,
+      },
+    ],
+    heal: {
+      attr: {
+        alerts: 2,
+        actions: "3 - mp_cost",
+        mp: "-mp_cost",
+      },
+    },
+  },
   "Spell Training": {
     expose_combat_stats: ["casting"],
     adjust: {
       time: "permanent",
-      attr: {
-        casting: "casting + spi - burden",
-      },
+      attr: { casting: "casting + spi - burden" },
     },
   },
   "Raw Energy": {
@@ -31,6 +47,8 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
     check: {
       attr: "str",
       bonus: "+3",
+      label: "Raw Energy Bonus (Pay 1 MP)",
     },
   },
+  Replenish: { heal: { attr: { mp: 2 } } },
 };

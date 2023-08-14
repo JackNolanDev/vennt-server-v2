@@ -8,8 +8,8 @@ export const UNIVERSALIST_ARCANA_USES: Record<string, UsesMap> = {
     ],
   },
   "Arcane Thunder": {
-    inputs: [{ type: "text", key: "X" }],
-    weapons: [{ category: "Arcane", dmg: "Xd6 + 3*X" }],
+    inputs: [{ type: "number", key: "X", min: 3, max: 8 }],
+    weapons: [{ category: "Arcane", dmg: "(X)d6 + 3*X" }],
   },
   "Force Blast": {
     weapons: [

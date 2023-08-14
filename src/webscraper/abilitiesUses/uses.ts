@@ -2,6 +2,8 @@ import { UsesMap } from "../../utils/types";
 import { AIR_ARCANA_USES } from "./paths/air_arcana";
 import { ARCANE_DUELIST_USES } from "./paths/arcane_duelist";
 import { ARCANE_WEAPONS_USES } from "./paths/arcane_weapons";
+import { BARBARIAN_USES } from "./paths/barbarian";
+import { BEGINNER_USES } from "./paths/beginner";
 import { BLACKSMITH_USES } from "./paths/blacksmith";
 import { FIGHTER_USES } from "./paths/fighter";
 import { FOCUSED_FIST_USES } from "./paths/focused_fist";
@@ -10,6 +12,7 @@ import { HEROIC_ARCANA_USES } from "./paths/heroic_arcana";
 import { LIGHTNING_ARCANA_USES } from "./paths/lightning_arcana";
 import { MAGICIAN_USES } from "./paths/magician";
 import { MAGUS_USES } from "./paths/magus";
+import { NATURE_ARCANA_USES } from "./paths/nature_arcana";
 import { NECROMANCY_ARCANA_USES } from "./paths/necromancy_arcana";
 import { SPELLCASTER_USES } from "./paths/spellcaster";
 import { SPELLSWORD_USES } from "./paths/spellsword";
@@ -29,6 +32,8 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...AIR_ARCANA_USES,
   ...ARCANE_DUELIST_USES,
   ...ARCANE_WEAPONS_USES,
+  ...BARBARIAN_USES,
+  ...BEGINNER_USES,
   ...BLACKSMITH_USES,
   ...FIGHTER_USES,
   ...FOCUSED_FIST_USES,
@@ -37,6 +42,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...LIGHTNING_ARCANA_USES,
   ...MAGICIAN_USES,
   ...MAGUS_USES,
+  ...NATURE_ARCANA_USES,
   ...NECROMANCY_ARCANA_USES,
   ...SPELLCASTER_USES,
   ...SPELLSWORD_USES,

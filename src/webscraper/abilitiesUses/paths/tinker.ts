@@ -5,9 +5,7 @@ export const TINKER_USES: Record<string, UsesMap> = {
     expose_combat_stats: ["bluespace"],
     adjust: {
       time: "permanent",
-      attr: {
-        bluespace: "bluespace + (int * int)",
-      },
+      attr: { bluespace: "bluespace + (int * int)" },
     },
   },
 };

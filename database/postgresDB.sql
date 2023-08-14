@@ -1,5 +1,7 @@
 -- VENNT basic table definitions
 
+CREATE SCHEMA vennt;
+
 --------- META TABLES ---------
 
 -- accounts

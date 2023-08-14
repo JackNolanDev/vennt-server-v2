@@ -5,6 +5,7 @@ export const FIGHTER_USES: Record<string, UsesMap> = {
     check: {
       attr: "dex",
       bonus: "+3",
+      label: "Requires quick and/or quiet hand movements"
     },
   },
   "Take a Breather": {
