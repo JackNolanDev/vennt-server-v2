@@ -49,3 +49,16 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...TINKER_USES,
   ...UNIVERSALIST_ARCANA_USES,
 };
+
+/*
+Query examining most used but unsupported abilities
+
+SELECT COUNT(*), a.name
+FROM vennt.abilities a
+JOIN vennt.entities e ON a.entity_id = e.id
+WHERE a.uses IS NULL
+AND e.type = 'CHARACTER'
+GROUP BY a.name
+ORDER BY COUNT(*) DESC
+LIMIT 50;
+*/

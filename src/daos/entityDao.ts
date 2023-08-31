@@ -94,6 +94,8 @@ export const dbFetchCollectedEntity = async (
   const entity = await sqlFetchEntityById(pool, id);
   if (!entity.success) return entity;
   if (!entity.result.public && entity.result.owner !== user) {
+    // TODO: should check if user is in same campaign as this entity - maybe by passing in optional campaignId query param
+    // also, we should probably Promise.all so we can run everything async
     return FORBIDDEN_RESULT;
   }
 
@@ -106,6 +108,7 @@ export const dbFetchCollectedEntity = async (
   const text = await sqlFetchEntityTextByEntityId(
     pool,
     id,
+    // If user is GM, also set this to true
     entity.result.owner !== user
   );
   if (!text.success) return text;
