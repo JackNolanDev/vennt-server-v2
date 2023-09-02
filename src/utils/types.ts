@@ -40,6 +40,7 @@ export const ATTRIBUTES_SET = new Set<EntityAttribute>(ATTRIBUTES);
 // GENERAL FIELDS
 
 export const idValidator = z.string().uuid();
+export const optionalIdValidator = idValidator.optional();
 export const nameValidator = z.string().min(1).max(NAME_MAX);
 export const equationValidator = z.union([
   z.number().int(),

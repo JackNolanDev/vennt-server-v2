@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
 import { AccountInfo, CampaignRole, Result } from "./types";
-import { dbUserOwnsEntity } from "../daos/entityDao";
+import { dbUserCanEditEntity } from "../daos/entityDao";
 import {
   FORBIDDEN_RESULT,
   ResultError,
@@ -41,12 +41,16 @@ export const pushResponse = <T>(res: Response, result: Result<T>): void => {
 
 export const validateEditEntityPermission = async (
   account: AccountInfo,
-  entityId: string
+  entityId: string,
+  campaignId?: string
 ): Promise<void> => {
-  const check = await dbUserOwnsEntity(entityId, account.id);
+  if (account.role === "ADMIN") {
+    return;
+  }
+  const check = await dbUserCanEditEntity(account.id, entityId, campaignId);
   if (!check.success) {
     throw new ResultError(check);
-  } else if (!check.result && account.role !== "ADMIN") {
+  } else if (!check.result) {
     throw new ResultError(
       wrapErrorResult("Not allowed to edit this entity", 403)
     );

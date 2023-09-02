@@ -478,12 +478,13 @@ export const sqlInsertEntityText = async (
 export const sqlFetchEntityTextByEntityId = async (
   tx: TX,
   entityId: string,
-  onlyPublic?: boolean
+  publicOnly?: boolean
 ): Promise<Result<FullEntityText[]>> => {
+  const publicOnlyCheck = publicOnly ? "AND public = TRUE" : "";
   return parseList(
     await tx.query(
-      `SELECT ${ENTITY_TEXT_COLUMNS} FROM ${ENTITY_TEXT_TABLE} WHERE entity_id = $1 AND ($2 OR public = TRUE)`,
-      [entityId, !onlyPublic]
+      `SELECT ${ENTITY_TEXT_COLUMNS} FROM ${ENTITY_TEXT_TABLE} WHERE entity_id = $1 ${publicOnlyCheck}`,
+      [entityId]
     )
   );
 };
@@ -835,6 +836,36 @@ export const sqlFetchCampaignEntitiesByCampaignId = async (
       WHERE ce.campaign_id = $1 ${gmOnlyCheck}
     `,
       [campaignId]
+    )
+  );
+};
+
+export const sqlValidateAccountCanEditEntity = async (
+  tx: TX,
+  accountId: string,
+  entityId: string,
+  campaignId?: string
+): Promise<Result<boolean>> => {
+  let campaignCheck = "";
+  const args = [entityId, accountId];
+  if (campaignId) {
+    campaignCheck = `OR EXISTS (
+      SELECT 1
+      FROM ${CAMPAIGN_ENTITIES_TABLE} ce
+      JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ce.campaign_id
+      WHERE ce.entity_id = $1 AND cm.account_id = $2 AND cm.role = 'GM' AND ce.campaign_id = $3
+      LIMIT 1
+    )`;
+    args.push(campaignId);
+  }
+  return parseFirstVal(
+    await tx.query(
+      `SELECT EXISTS (
+      SELECT 1
+      FROM ${ENTITIES_TABLE} e
+      WHERE e.id = $1 AND e.owner = $2
+    ) ${campaignCheck} AS valid`,
+      args
     )
   );
 };

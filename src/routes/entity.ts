@@ -22,6 +22,7 @@ import {
   filterChangelogValidator,
   idValidator,
   itemValidator,
+  optionalIdValidator,
   partialEntityFluxValidator,
   partialEntityValidator,
 } from "../utils/types";
@@ -47,6 +48,7 @@ import {
 } from "../daos/entityTextDao";
 import { dbDeleteFlux, dbInsertFlux, dbUpdateFlux } from "../daos/fluxDao";
 import { validateAuthHeader, validateOptionalAuthHeader } from "../utils/jwt";
+import { ResultError } from "../utils/db";
 
 const addFullEntity = async (
   req: Request
@@ -66,29 +68,46 @@ const fetchCollectedEntity = async (
 ): Promise<Result<FullCollectedEntity>> => {
   const account = validateOptionalAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  return await dbFetchCollectedEntity(id, account?.id);
+  let publicOnly = true;
+  if (account) {
+    const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+    try {
+      await validateEditEntityPermission(account, id, campaignId);
+      publicOnly = false;
+    } catch (err: unknown) {
+      if (!(err instanceof ResultError)) {
+        throw err;
+      }
+    }
+  }
+  return await dbFetchCollectedEntity(id, publicOnly);
 };
 
 const updateEntity = async (req: Request): Promise<Result<FullEntity>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const body = partialEntityValidator.parse(req.body);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   return await dbUpdateEntity(id, account.id, body);
 };
 
 const deleteEntity = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  // PURPOSELY NOT INCLUDING CAMPAIGN
+  await validateEditEntityPermission(account, id);
   return await dbDeleteEntity(id);
 };
 
 const fetchCollectedEntityFull = async (
   req: Request
 ): Promise<Result<FullCollectedEntityWithChangelog>> => {
-  const account = validateOptionalAuthHeader(req);
+  const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  return await dbFetchCollectedEntityFull(id, account?.id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
+  return await dbFetchCollectedEntityFull(id);
 };
 
 const updateEntityAttributes = async (
@@ -97,22 +116,28 @@ const updateEntityAttributes = async (
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const body = adjustAttributesValidator.parse(req.body);
-  return await dbUpdateEntityAttributes(id, body, account.id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
+  return await dbUpdateEntityAttributes(id, body);
 };
 
 const filterChangelog = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
   const body = filterChangelogValidator.parse(req.body);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   return await dbFilterChangelog(id, body.attributes);
 };
 
 const getAttrChangelog = async (
   req: Request
 ): Promise<Result<FullEntityChangelog[]>> => {
+  const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const attr = attributeNameValidator.parse(req.params.attr);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   return await dbFetchChangelogByEntityIdAttribute(id, attr);
 };
 
@@ -121,7 +146,8 @@ const insertAbilities = async (
 ): Promise<Result<FullEntityAbility[]>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const abilities = abilityValidator.array().parse(req.body);
   return await dbInsertAbilities(id, abilities);
 };
@@ -129,7 +155,8 @@ const insertAbilities = async (
 const insertItems = async (req: Request): Promise<Result<FullEntityItem[]>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const items = itemValidator.array().parse(req.body);
   return await dbInsertItems(id, items);
 };
@@ -139,7 +166,8 @@ const insertEntityText = async (
 ): Promise<Result<FullEntityText>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const text = entityTextValidator.parse(req.body);
   return await dbInsertEntityText(id, text);
 };
@@ -147,7 +175,8 @@ const insertEntityText = async (
 const updateEntityText = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const key = entityTextKeyValidator.parse(req.params.key);
   const body = entityTextTextValidator.parse(req.body);
   return await dbUpdateEntityText(id, key, body.text);
@@ -158,7 +187,8 @@ const updateEntityTextPermission = async (
 ): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  // PURPOSELY NOT INCLUDING CAMPAIGN
+  await validateEditEntityPermission(account, id);
   const key = entityTextKeyValidator.parse(req.params.key);
   const permission = entityTextPermissionValidator.parse(req.body);
   return await dbUpdateEntityTextPermission(id, key, permission.public);
@@ -167,7 +197,8 @@ const updateEntityTextPermission = async (
 const deleteEntityText = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  // PURPOSELY NOT INCLUDING CAMPAIGN
+  await validateEditEntityPermission(account, id);
   const key = entityTextKeyValidator.parse(req.params.key);
   return await dbDeleteEntityText(id, key);
 };
@@ -175,17 +206,17 @@ const deleteEntityText = async (req: Request): Promise<Result<boolean>> => {
 const insertFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const flux = entityFluxValidator.parse(req.body);
   return await await dbInsertFlux(id, flux);
 };
 
-// TODO: I think the permission logic for update flux / delete flux is broken
-
 const updateFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const flux = partialEntityFluxValidator.parse(req.body);
   const fluxId = idValidator.parse(req.params.fluxId);
   return await dbUpdateFlux(flux, fluxId, id);
@@ -194,7 +225,8 @@ const updateFlux = async (req: Request): Promise<Result<FullEntityFlux>> => {
 const deleteFlux = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  validateEditEntityPermission(account, id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  await validateEditEntityPermission(account, id, campaignId);
   const fluxId = idValidator.parse(req.params.fluxId);
   return await dbDeleteFlux(fluxId, id);
 };
