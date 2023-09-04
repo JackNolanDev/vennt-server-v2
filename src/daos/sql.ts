@@ -9,6 +9,7 @@ import {
 import {
   AccountInfo,
   Campaign,
+  CampaignDesc,
   CampaignEntity,
   CampaignInvite,
   CampaignInviteWithDetails,
@@ -637,6 +638,18 @@ export const sqlFetchCampaignById = async (
   );
 };
 
+export const sqlUpdateCampaignDesc = async (
+  tx: TX,
+  campaignId: string,
+  { desc }: CampaignDesc
+): Promise<Result<boolean>> => {
+  await tx.query(`UPDATE ${CAMPAIGNS_TABLE} SET "desc" = $1 WHERE id = $2`, [
+    desc,
+    campaignId,
+  ]);
+  return wrapSuccessResult(true);
+};
+
 export const sqlListCampaignsForAccount = async (
   tx: TX,
   accountId: string
@@ -706,7 +719,7 @@ export const sqlFetchCampaignInvitesByRecipientId = async (
   );
 };
 
-// Allow account to delete the campaign if they are the recipient, or a GM on the relevant campaign
+// Allow account to delete the invite if they are the recipient, or a GM on the relevant campaign
 export const sqlDeleteCampaignInvite = async (
   tx: TX,
   inviteId: string,

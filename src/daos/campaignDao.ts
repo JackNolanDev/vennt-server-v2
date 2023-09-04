@@ -1,5 +1,6 @@
 import {
   AccountInfo,
+  CampaignDesc,
   CampaignEntity,
   CampaignInvite,
   CampaignInviteWithDetails,
@@ -25,6 +26,7 @@ import {
   sqlInsertCampaignMember,
   sqlInsertCampaignMemberFromInvite,
   sqlListCampaignsForAccount,
+  sqlUpdateCampaignDesc,
 } from "./sql";
 import pool from "../utils/pool";
 import {
@@ -92,6 +94,13 @@ export const dbFetchFullCampaignDetails = async (
     members,
     entities,
   });
+};
+
+export const dbUpdateCampaignDesc = async (
+  campaignId: string,
+  desc: CampaignDesc
+): Promise<Result<boolean>> => {
+  return await sqlUpdateCampaignDesc(pool, campaignId, desc);
 };
 
 export const dbInsertCampaignEntity = async (

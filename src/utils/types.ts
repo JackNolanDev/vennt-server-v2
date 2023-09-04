@@ -716,9 +716,11 @@ export const CAMPAIGN_ROLES = [
 ] as const;
 export const campaignRoleValidator = z.enum(CAMPAIGN_ROLES);
 
-export const postCampaignValidator = z.object({
-  name: nameValidator,
+export const campaignDescValidator = z.object({
   desc: z.string().max(COMMENT_MAX),
+});
+export const postCampaignValidator = campaignDescValidator.extend({
+  name: nameValidator,
 });
 
 export const campaignValidator = postCampaignValidator.extend({
@@ -895,6 +897,7 @@ export type PathDetails = z.infer<typeof pathDetailsValidator>;
 export type PathsAndAbilities = z.infer<typeof pathsAndAbilitiesValidator>;
 
 export type CampaignRole = z.infer<typeof campaignRoleValidator>;
+export type CampaignDesc = z.infer<typeof campaignDescValidator>;
 export type PostCampaign = z.infer<typeof postCampaignValidator>;
 export type Campaign = z.infer<typeof campaignValidator>;
 export type CampaignWithRole = z.infer<typeof campaignWithRoleValidator>;

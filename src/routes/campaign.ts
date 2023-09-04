@@ -1,6 +1,7 @@
 import express from "express";
 import type { Request } from "express";
 import {
+  validateAdminWriteCampaignPermission,
   validateEditEntityPermission,
   validateReadCampaignPermission,
   validateWriteCampaignPermission,
@@ -11,9 +12,11 @@ import {
   dbInsertCampaign,
   dbInsertCampaignEntity,
   dbListCampaigns,
+  dbUpdateCampaignDesc,
 } from "../daos/campaignDao";
 import { validateAuthHeader } from "../utils/jwt";
 import {
+  campaignDescValidator,
   idValidator,
   postCampaignEntityValidator,
   postCampaignValidator,
@@ -37,6 +40,14 @@ const fetchCampaignDetails = async (req: Request) => {
   return await dbFetchFullCampaignDetails(campaignId, role);
 };
 
+const putCampaignDesc = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const campaignId = idValidator.parse(req.params.id);
+  await validateAdminWriteCampaignPermission(account, campaignId);
+  const body = campaignDescValidator.parse(req.body);
+  return await dbUpdateCampaignDesc(campaignId, body);
+};
+
 const addEntityToCampaign = async (req: Request) => {
   const account = validateAuthHeader(req);
   const body = postCampaignEntityValidator.parse(req.body);
@@ -50,5 +61,6 @@ const router = express.Router();
 router.post("", wrapHandler(addCampaign));
 router.get("", wrapHandler(listCampaign));
 router.get("/:id", wrapHandler(fetchCampaignDetails));
+router.put("/:id/desc", wrapHandler(putCampaignDesc));
 router.post("/:id/entity", wrapHandler(addEntityToCampaign));
 export default router;
