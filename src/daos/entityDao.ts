@@ -3,7 +3,6 @@ import {
   wrapErrorResult,
   wrapSuccessResult,
   unwrapResultOrError,
-  ResultError,
   FORBIDDEN_RESULT,
 } from "../utils/db";
 import pool from "../utils/pool";
@@ -18,6 +17,7 @@ import {
   UncompleteCollectedEntityWithChangelog,
   PartialEntity,
   FullCollectedEntityWithChangelog,
+  CAMPAIGN_ROLE_GM,
 } from "../utils/types";
 import {
   sqlDeleteEntity,
@@ -25,6 +25,7 @@ import {
   sqlFetchChangelogByEntityId,
   sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
+  sqlFetchEntityPermissions,
   sqlFetchEntityTextByEntityId,
   sqlFetchFluxByEntityId,
   sqlFetchItemsByEntityId,
@@ -38,6 +39,7 @@ import {
   sqlListEntities,
   sqlUpdateEntity,
   sqlUpdateEntityAttributes,
+  sqlValidateAccountCanEditEntity,
 } from "./sql";
 
 export const dbInsertCollectedEntity = async (
@@ -89,45 +91,26 @@ export const dbListEntities = async (
 
 export const dbFetchCollectedEntity = async (
   id: string,
-  user?: string
+  publicOnly: boolean
 ): Promise<Result<FullCollectedEntity>> => {
-  const entity = await sqlFetchEntityById(pool, id);
-  if (!entity.success) return entity;
-  if (!entity.result.public && entity.result.owner !== user) {
-    return FORBIDDEN_RESULT;
-  }
+  const [entity, abilities, items, text, flux] = await Promise.all([
+    unwrapResultOrError(await sqlFetchEntityById(pool, id)),
+    unwrapResultOrError(await sqlFetchAbilitiesByEntityId(pool, id)),
+    unwrapResultOrError(await sqlFetchItemsByEntityId(pool, id)),
+    unwrapResultOrError(
+      await sqlFetchEntityTextByEntityId(pool, id, publicOnly)
+    ),
+    unwrapResultOrError(await sqlFetchFluxByEntityId(pool, id)),
+  ]);
 
-  const abilities = await sqlFetchAbilitiesByEntityId(pool, id);
-  if (!abilities.success) return abilities;
-
-  const items = await sqlFetchItemsByEntityId(pool, id);
-  if (!items.success) return items;
-
-  const text = await sqlFetchEntityTextByEntityId(
-    pool,
-    id,
-    entity.result.owner !== user
-  );
-  if (!text.success) return text;
-
-  const flux = await sqlFetchFluxByEntityId(pool, id);
-  if (!flux.success) return flux;
-
-  return wrapSuccessResult({
-    entity: entity.result,
-    abilities: abilities.result,
-    items: items.result,
-    text: text.result,
-    flux: flux.result,
-  });
+  return wrapSuccessResult({ entity, abilities, items, text, flux });
 };
 
 export const dbFetchCollectedEntityFull = async (
-  id: string,
-  user?: string
+  id: string
 ): Promise<Result<FullCollectedEntityWithChangelog>> => {
   const baseEntity = unwrapResultOrError(
-    await dbFetchCollectedEntity(id, user)
+    await dbFetchCollectedEntity(id, false)
   );
   const entityChangelog = unwrapResultOrError(
     await sqlFetchChangelogByEntityId(pool, id)
@@ -148,17 +131,51 @@ export const dbUserOwnsEntity = async (
   return wrapSuccessResult(entity.result.owner === owner);
 };
 
+export const dbUserCanEditEntity = async (
+  accountId: string,
+  entityId: string,
+  campaignId?: string
+): Promise<Result<boolean>> => {
+  return sqlValidateAccountCanEditEntity(pool, accountId, entityId, campaignId);
+};
+
+export const dbUserCanReadPublicOnlyFields = async (
+  entityId: string,
+  accountId?: string,
+  campaignId?: string
+): Promise<Result<boolean>> => {
+  const campaignParams =
+    accountId && campaignId ? { accountId, campaignId } : undefined;
+  const res = unwrapResultOrError(
+    await sqlFetchEntityPermissions(pool, entityId, campaignParams)
+  );
+  const entitySource = res.find((perm) => perm.source === "entities");
+  if (!entitySource) {
+    return FORBIDDEN_RESULT;
+  }
+  if (entitySource.result === accountId) {
+    return wrapSuccessResult(false);
+  }
+
+  if (campaignId) {
+    const campaignSource = res.find((perm) => perm.source === "campaigns");
+    if (campaignSource) {
+      return wrapSuccessResult(campaignSource.result !== CAMPAIGN_ROLE_GM);
+    }
+  }
+
+  if (entitySource.public) {
+    return wrapSuccessResult(true);
+  }
+  return FORBIDDEN_RESULT;
+};
+
 export const dbUpdateEntityAttributes = async (
   entityId: string,
-  request: UpdateEntityAttributes,
-  userId: string
+  request: UpdateEntityAttributes
 ): Promise<Result<FullEntity>> => {
   return handleTransaction(async (tx) => {
     const entity = unwrapResultOrError(await sqlFetchEntityById(tx, entityId));
-    if (entity.owner !== userId) {
-      throw new ResultError(FORBIDDEN_RESULT);
-    }
-
     let changelogRows: UncompleteEntityChangelog[] = [];
     if (request.message) {
       changelogRows = Object.keys(request.attributes).map((attrIn) => {
@@ -205,9 +222,6 @@ export const dbUpdateEntity = async (
     const currentEntity = unwrapResultOrError(
       await sqlFetchEntityById(tx, entityId)
     );
-    if (currentEntity.owner !== user) {
-      throw new ResultError(FORBIDDEN_RESULT);
-    }
     const updatedEntity = { ...currentEntity, ...partialEntity };
     return sqlUpdateEntity(tx, entityId, updatedEntity);
   });

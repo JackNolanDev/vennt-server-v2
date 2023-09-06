@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
-import { AccountInfo, Result } from "./types";
-import { dbUserOwnsEntity } from "../daos/entityDao";
+import { AccountInfo, CampaignRole, Result } from "./types";
+import { dbUserCanEditEntity } from "../daos/entityDao";
 import {
   FORBIDDEN_RESULT,
   ResultError,
@@ -9,6 +9,7 @@ import {
   wrapErrorResult,
 } from "./db";
 import { validateAuthHeader } from "./jwt";
+import { dbFetchCampaignRole } from "../daos/campaignDao";
 
 export const wrapHandler = <T>(
   handler: (req: Request) => Promise<Result<T>>
@@ -40,14 +41,58 @@ export const pushResponse = <T>(res: Response, result: Result<T>): void => {
 
 export const validateEditEntityPermission = async (
   account: AccountInfo,
-  entityId: string
+  entityId: string,
+  campaignId?: string
 ): Promise<void> => {
-  const check = await dbUserOwnsEntity(entityId, account.id);
+  if (account.role === "ADMIN") {
+    return;
+  }
+  const check = await dbUserCanEditEntity(account.id, entityId, campaignId);
   if (!check.success) {
     throw new ResultError(check);
-  } else if (!check.result && account.role !== "ADMIN") {
+  } else if (!check.result) {
     throw new ResultError(
       wrapErrorResult("Not allowed to edit this entity", 403)
+    );
+  }
+};
+
+export const validateReadCampaignPermission = async (
+  account: AccountInfo,
+  campaignId: string
+): Promise<CampaignRole> => {
+  const role = await dbFetchCampaignRole(campaignId, account.id);
+  if (!role.success) {
+    throw new ResultError(role);
+  } else if (!role.result && account.role !== "ADMIN") {
+    throw new ResultError(
+      wrapErrorResult("Not allowed to read this campaign", 403)
+    );
+  }
+  return role.result;
+};
+
+export const validateWriteCampaignPermission = async (
+  account: AccountInfo,
+  campaignId: string
+): Promise<CampaignRole> => {
+  const role = await validateReadCampaignPermission(account, campaignId);
+  if (role !== "GM" && role !== "PLAYER") {
+    throw new ResultError(
+      wrapErrorResult("Not allowed to edit this campaign", 403)
+    );
+  }
+  return role;
+};
+
+export const validateAdminWriteCampaignPermission = async (
+  account: AccountInfo,
+  campaignId: string
+): Promise<void> => {
+  const role = await validateReadCampaignPermission(account, campaignId);
+  if (role !== "GM") {
+    throw new ResultError(
+      wrapErrorResult("Not allowed to edit this campaign", 403)
     );
   }
 };

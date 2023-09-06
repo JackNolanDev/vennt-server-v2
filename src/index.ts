@@ -7,6 +7,8 @@ import authRoute from "./routes/auth";
 import entityRoute from "./routes/entity";
 import itemRoute from "./routes/item";
 import adminRoute from "./routes/admin";
+import campaignRoute from "./routes/campaign";
+import campaignInvitesRoute from "./routes/campaignInvites";
 
 dotEnv.config();
 
@@ -32,6 +34,8 @@ app.use("/auth", authRoute);
 app.use("/entity", entityRoute);
 app.use("/item", itemRoute);
 app.use("/admin", adminRoute);
+app.use("/campaign", campaignRoute);
+app.use("/campaign_invite", campaignInvitesRoute);
 
 console.log(`${isProd ? "Production" : "Local"} server started`);
 

@@ -7,6 +7,15 @@ import {
   wrapSuccessResult,
 } from "../utils/db";
 import {
+  AccountInfo,
+  Campaign,
+  CampaignDesc,
+  CampaignEntity,
+  CampaignInvite,
+  CampaignInviteWithDetails,
+  CampaignMember,
+  CampaignRole,
+  CampaignWithRole,
   EntityAbility,
   EntityAttribute,
   EntityAttributes,
@@ -18,6 +27,8 @@ import {
   FullEntityFlux,
   FullEntityItem,
   FullEntityText,
+  PostCampaign,
+  PostCampaignInvite,
   Result,
   UncompleteEntity,
   UncompleteEntityAbility,
@@ -29,12 +40,17 @@ import {
 
 export type TX = PoolClient | Pool;
 
+export const ACCOUNTS_TABLE = "vennt.accounts";
 export const ENTITIES_TABLE = "vennt.entities";
 export const ABILITIES_TABLE = "vennt.abilities";
 export const ATTRIBUTE_CHANGELOG_TABLE = "vennt.attribute_changelog";
 export const ITEMS_TABLE = "vennt.items";
 export const ENTITY_TEXT_TABLE = "vennt.entity_text";
 export const FLUX_TABLE = "vennt.flux";
+export const CAMPAIGNS_TABLE = "vennt.campaigns";
+export const CAMPAIGN_INVITES_TABLE = "vennt.campaign_invites";
+export const CAMPAIGN_MEMBERS_TABLE = "vennt.campaign_members";
+export const CAMPAIGN_ENTITIES_TABLE = "vennt.campaign_entities";
 
 export const INSERT_ENTITY_COLUMNS = `owner, name, "type", attributes, other_fields, "public"`;
 export const INSERT_ABILITY_COLUMNS = `entity_id, name, effect, custom_fields, uses, comment, active`;
@@ -54,6 +70,8 @@ export const ITEM_COLUMNS = `${ITEMS_TABLE}.id, ${ITEMS_TABLE}.entity_id, ${ITEM
 export const ENTITY_TEXT_COLUMNS = `${ENTITY_TEXT_TABLE}.id, ${ENTITY_TEXT_TABLE}.entity_id, ${ENTITY_TEXT_TABLE}.key, ${ENTITY_TEXT_TABLE}.text, \
   ${ENTITY_TEXT_TABLE}.public`;
 export const FLUX_COLUMNS = `${FLUX_TABLE}.id, ${FLUX_TABLE}.entity_id, ${FLUX_TABLE}.type, ${FLUX_TABLE}.text, ${FLUX_TABLE}.metadata`;
+export const CAMPAIGN_COLUMNS = `${CAMPAIGNS_TABLE}.id, ${CAMPAIGNS_TABLE}.name, ${CAMPAIGNS_TABLE}.in_combat, ${CAMPAIGNS_TABLE}.init_index, \
+  ${CAMPAIGNS_TABLE}.init_round, ${CAMPAIGNS_TABLE}.desc`;
 
 // ENTITIES
 
@@ -461,12 +479,13 @@ export const sqlInsertEntityText = async (
 export const sqlFetchEntityTextByEntityId = async (
   tx: TX,
   entityId: string,
-  onlyPublic?: boolean
+  publicOnly?: boolean
 ): Promise<Result<FullEntityText[]>> => {
+  const publicOnlyCheck = publicOnly ? "AND public = TRUE" : "";
   return parseList(
     await tx.query(
-      `SELECT ${ENTITY_TEXT_COLUMNS} FROM ${ENTITY_TEXT_TABLE} WHERE entity_id = $1 AND ($2 OR public = TRUE)`,
-      [entityId, !onlyPublic]
+      `SELECT ${ENTITY_TEXT_COLUMNS} FROM ${ENTITY_TEXT_TABLE} WHERE entity_id = $1 ${publicOnlyCheck}`,
+      [entityId]
     )
   );
 };
@@ -588,4 +607,315 @@ export const sqlDeleteFlux = async (
     entityId,
   ]);
   return wrapSuccessResult(true);
+};
+
+// CAMPAIGNS
+
+export const sqlInsertCampaign = async (
+  tx: TX,
+  campaign: PostCampaign
+): Promise<Result<Campaign>> => {
+  return parseFirst(
+    await tx.query(
+      `INSERT INTO ${CAMPAIGNS_TABLE} (name, "desc")
+      VALUES ($1, $2)
+      RETURNING ${CAMPAIGN_COLUMNS}`,
+      [campaign.name, campaign.desc]
+    ),
+    500
+  );
+};
+
+export const sqlFetchCampaignById = async (
+  tx: TX,
+  campaignId: string
+): Promise<Result<Campaign>> => {
+  return parseFirst(
+    await tx.query(
+      `SELECT ${CAMPAIGN_COLUMNS} FROM ${CAMPAIGNS_TABLE} WHERE id = $1`,
+      [campaignId]
+    )
+  );
+};
+
+export const sqlUpdateCampaignDesc = async (
+  tx: TX,
+  campaignId: string,
+  { desc }: CampaignDesc
+): Promise<Result<boolean>> => {
+  await tx.query(`UPDATE ${CAMPAIGNS_TABLE} SET "desc" = $1 WHERE id = $2`, [
+    desc,
+    campaignId,
+  ]);
+  return wrapSuccessResult(true);
+};
+
+export const sqlListCampaignsForAccount = async (
+  tx: TX,
+  accountId: string
+): Promise<Result<CampaignWithRole[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ${CAMPAIGN_COLUMNS}, cm.role
+      FROM ${CAMPAIGNS_TABLE}
+      JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ${CAMPAIGNS_TABLE}.id
+      WHERE cm.account_id = $1`,
+      [accountId]
+    )
+  );
+};
+
+export const sqlInsertCampaignInvite = async (
+  tx: TX,
+  invite: PostCampaignInvite,
+  from: AccountInfo
+): Promise<Result<CampaignInvite>> => {
+  return parseFirst(
+    await tx.query(
+      `INSERT INTO ${CAMPAIGN_INVITES_TABLE} (campaign_id, "from", "to", "role")
+      SELECT $1, $2, a.id, $3
+      FROM ${ACCOUNTS_TABLE} a
+      WHERE a.username = $4
+      RETURNING ${CAMPAIGN_INVITES_TABLE}.id, ${CAMPAIGN_INVITES_TABLE}.campaign_id, ${CAMPAIGN_INVITES_TABLE}.role, ${CAMPAIGN_INVITES_TABLE}.created,
+        $4 AS to, $5 AS from`,
+      [invite.campaign_id, from.id, invite.role, invite.to, from.username]
+    ),
+    500
+  );
+};
+
+export const sqlFetchCampaignInvitesByCampaignId = async (
+  tx: TX,
+  campaignId: string
+): Promise<Result<CampaignInvite[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ci.id, ci.campaign_id, ci.role, ci.created, af.username AS from, at.username AS to
+      FROM ${CAMPAIGN_INVITES_TABLE} ci
+      JOIN ${ACCOUNTS_TABLE} af ON af.id = ci.from
+      JOIN ${ACCOUNTS_TABLE} at ON at.id = ci.to
+      WHERE ci.campaign_id = $1
+    `,
+      [campaignId]
+    )
+  );
+};
+
+export const sqlFetchCampaignInvitesByRecipientId = async (
+  tx: TX,
+  recipientId: string,
+  recipientUsername: string
+): Promise<Result<CampaignInviteWithDetails[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ci.id, ci.campaign_id, ci.role, ci.created, a.username AS from, $2 AS to, c.name, c.desc
+      FROM ${CAMPAIGN_INVITES_TABLE} ci
+      JOIN ${ACCOUNTS_TABLE} a ON a.id = ci.from
+      JOIN ${CAMPAIGNS_TABLE} c ON c.id = ci.campaign_id
+      WHERE ci.to = $1
+    `,
+      [recipientId, recipientUsername]
+    )
+  );
+};
+
+// Allow account to delete the invite if they are the recipient, or a GM on the relevant campaign
+export const sqlDeleteCampaignInvite = async (
+  tx: TX,
+  inviteId: string,
+  accountId: string
+): Promise<Result<boolean>> => {
+  await tx.query(
+    `DELETE FROM ${CAMPAIGN_INVITES_TABLE}
+    WHERE id = $1
+    AND ("to" = $2 OR EXISTS (
+      SELECT *
+      FROM ${CAMPAIGN_MEMBERS_TABLE} cm
+      WHERE cm.campaign_id = ${CAMPAIGN_INVITES_TABLE}.campaign_id
+      AND cm.account_id = $2
+      AND cm.role = 'GM'
+    ))`,
+    [inviteId, accountId]
+  );
+  return wrapSuccessResult(true);
+};
+
+export const sqlInsertCampaignMember = async (
+  tx: TX,
+  campaignId: string,
+  accountId: string,
+  role: CampaignRole
+): Promise<Result<CampaignMember>> => {
+  return parseFirst(
+    await tx.query(
+      `WITH inserted_campaign_member as (
+        INSERT INTO ${CAMPAIGN_MEMBERS_TABLE} (campaign_id, account_id, "role")
+        VALUES ($1, $2, $3)
+        RETURNING *
+      )
+      SELECT inserted_campaign_member.*, ${ACCOUNTS_TABLE}.username
+      FROM inserted_campaign_member
+      JOIN ${ACCOUNTS_TABLE} ON ${ACCOUNTS_TABLE}.id = inserted_campaign_member.account_id`,
+      [campaignId, accountId, role]
+    ),
+    500
+  );
+};
+
+export const sqlInsertCampaignMemberFromInvite = async (
+  tx: TX,
+  inviteId: string,
+  accountId: string
+): Promise<Result<CampaignMember>> => {
+  return parseFirst(
+    await tx.query(
+      `WITH inserted_campaign_member as (
+        INSERT INTO ${CAMPAIGN_MEMBERS_TABLE} (campaign_id, account_id, "role")
+        SELECT ci.campaign_id, ci.to, ci.role
+        FROM ${CAMPAIGN_INVITES_TABLE} ci WHERE ci.id = $1 AND ci.to = $2
+        RETURNING ${CAMPAIGN_MEMBERS_TABLE}.*
+      )
+      SELECT icm.*, a.username
+      FROM inserted_campaign_member icm
+      JOIN ${ACCOUNTS_TABLE} a ON a.id = icm.account_id`,
+      [inviteId, accountId]
+    ),
+    500
+  );
+};
+
+export const sqlFetchCampaignMembersByCampaignId = async (
+  tx: TX,
+  campaignId: string
+): Promise<Result<CampaignMember[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT cm.id, cm.campaign_id, cm.account_id, a.username, cm.role
+      FROM ${CAMPAIGN_MEMBERS_TABLE} cm
+      JOIN ${ACCOUNTS_TABLE} a ON a.id = cm.account_id
+      WHERE cm.campaign_id = $1
+    `,
+      [campaignId]
+    )
+  );
+};
+
+export const sqlFetchCampaignRole = async (
+  tx: TX,
+  campaignId: string,
+  accountId: string
+): Promise<Result<CampaignRole>> => {
+  return parseFirstVal(
+    await tx.query(
+      `SELECT "role" FROM ${CAMPAIGN_MEMBERS_TABLE} WHERE campaign_id = $1 AND account_id = $2`,
+      [campaignId, accountId]
+    )
+  );
+};
+
+export const sqlInsertCampaignEntity = async (
+  tx: TX,
+  campaignId: string,
+  entityId: string,
+  gmOnly: boolean
+): Promise<Result<CampaignEntity>> => {
+  return parseFirst(
+    await tx.query(
+      `WITH inserted_campaign_entity as (
+        INSERT INTO ${CAMPAIGN_ENTITIES_TABLE} (campaign_id, entity_id, gm_only)
+        VALUES ($1, $2, $3)
+        RETURNING *
+      )
+      SELECT ice.entity_id, ice.gm_only, e.owner, e.name, e.type, e.attributes, e.other_fields
+      FROM inserted_campaign_entity ice
+      JOIN ${ENTITIES_TABLE} e ON e.id = ice.entity_id`,
+      [campaignId, entityId, gmOnly]
+    ),
+    500
+  );
+};
+
+export const sqlFetchCampaignEntitiesByCampaignId = async (
+  tx: TX,
+  campaignId: string,
+  includeGmOnly?: boolean
+): Promise<Result<CampaignEntity[]>> => {
+  const gmOnlyCheck = includeGmOnly ? "" : "AND ce.gm_only = FALSE";
+  return parseList(
+    await tx.query(
+      `SELECT ce.entity_id, ce.gm_only, e.owner, e.name, e.type, e.attributes, e.other_fields
+      FROM ${CAMPAIGN_ENTITIES_TABLE} ce
+      JOIN ${ENTITIES_TABLE} e ON e.id = ce.entity_id
+      WHERE ce.campaign_id = $1 ${gmOnlyCheck}
+    `,
+      [campaignId]
+    )
+  );
+};
+
+export const sqlValidateAccountCanEditEntity = async (
+  tx: TX,
+  accountId: string,
+  entityId: string,
+  campaignId?: string
+): Promise<Result<boolean>> => {
+  let campaignCheck = "";
+  const args = [entityId, accountId];
+  if (campaignId) {
+    campaignCheck = `OR EXISTS (
+      SELECT 1
+      FROM ${CAMPAIGN_ENTITIES_TABLE} ce
+      JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ce.campaign_id
+      WHERE ce.entity_id = $1 AND cm.account_id = $2 AND cm.role = 'GM' AND ce.campaign_id = $3
+    )`;
+    args.push(campaignId);
+  }
+  return parseFirstVal(
+    await tx.query(
+      `SELECT EXISTS (
+      SELECT 1
+      FROM ${ENTITIES_TABLE} e
+      WHERE e.id = $1 AND e.owner = $2
+    ) ${campaignCheck} AS valid`,
+      args
+    )
+  );
+};
+
+export type EntityPermissions =
+  | {
+      result: string;
+      public: boolean;
+      source: "entities";
+    }
+  | {
+      result: CampaignRole;
+      public: false;
+      source: "campaigns";
+    };
+export const sqlFetchEntityPermissions = async (
+  tx: TX,
+  entityId: string,
+  campaignParams?: { accountId: string; campaignId: string }
+): Promise<Result<EntityPermissions[]>> => {
+  let campaignCheck = "";
+  const args = [entityId];
+  if (campaignParams) {
+    const { accountId, campaignId } = campaignParams;
+    campaignCheck = `UNION 
+    SELECT cm.role as result, FALSE as public, 'campaigns' as source
+    FROM ${CAMPAIGN_ENTITIES_TABLE} ce
+    JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ce.campaign_id
+    WHERE ce.entity_id = $1 AND cm.account_id = $2 AND cm.campaign_id = $3`;
+    args.push(accountId, campaignId);
+  }
+  return parseList(
+    await tx.query(
+      `SELECT e.owner::text as result, e.public, 'entities' as source
+      FROM vennt.entities e
+      WHERE e.id = $1
+      ${campaignCheck}`,
+      args
+    )
+  );
 };

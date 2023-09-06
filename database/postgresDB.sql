@@ -79,7 +79,7 @@ CREATE TABLE vennt.entity_text (
 );
 CREATE UNIQUE INDEX entity_key_unique ON vennt.entity_text(entity_id uuid_ops,key text_ops);
 
--- entity_flux
+-- flux
 
 CREATE TABLE vennt.flux (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -95,11 +95,11 @@ CREATE TABLE vennt.flux (
 
 CREATE TABLE vennt.campaigns (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
-    owner uuid NOT NULL REFERENCES vennt.accounts(id),
+    name text NOT NULL UNIQUE,
     in_combat boolean NOT NULL DEFAULT false,
     init_index integer NOT NULL DEFAULT 0,
-    init_round integer NOT NULL DEFAULT 0
+    init_round integer NOT NULL DEFAULT 0,
+    "desc" text NOT NULL
 );
 
 -- campaign_invites
@@ -109,8 +109,10 @@ CREATE TABLE vennt.campaign_invites (
     campaign_id uuid NOT NULL REFERENCES vennt.campaigns(id) ON DELETE CASCADE,
     "from" uuid NOT NULL REFERENCES vennt.accounts(id) ON DELETE CASCADE,
     "to" uuid NOT NULL REFERENCES vennt.accounts(id) ON DELETE CASCADE,
+    role text NOT NULL DEFAULT 'SPECTATOR'::text,
     created timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
+CREATE UNIQUE INDEX campaign_to_unique ON vennt.campaign_invites(campaign_id uuid_ops,"to" uuid_ops);
 
 -- campaign_members
 
@@ -124,9 +126,12 @@ CREATE UNIQUE INDEX campaign_account_unique ON vennt.campaign_members(campaign_i
 
 -- campaign_entities
 
-CREATE TABLE vennt.campaign_entites (
+CREATE TABLE vennt.campaign_entities (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     campaign_id uuid NOT NULL REFERENCES vennt.campaigns(id) ON DELETE CASCADE,
     entity_id uuid NOT NULL REFERENCES vennt.entities(id) ON DELETE CASCADE,
     gm_only boolean NOT NULL DEFAULT false
 );
+
+-- Unique constraint on campaign_entities
+CREATE UNIQUE INDEX campaign_entity_unique ON vennt.campaign_entities(campaign_id uuid_ops,entity_id uuid_ops);

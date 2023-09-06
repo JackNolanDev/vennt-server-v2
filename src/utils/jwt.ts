@@ -32,10 +32,9 @@ export const validateToken = (token: string): AccountInfo => {
 };
 
 export const validateAuthHeader = (req: Request): AccountInfo => {
-  const auth = req.header("Authorization");
-  const token = auth?.split(" ")[1]; // token comes after first space
-  if (token) {
-    return validateToken(token);
+  const account = validateOptionalAuthHeader(req);
+  if (account) {
+    return account;
   }
   throw new ResultError(UNAUTHORIZED_RESULT);
 };
