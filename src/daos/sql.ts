@@ -677,7 +677,7 @@ export const sqlInsertCampaignInvite = async (
       FROM ${ACCOUNTS_TABLE} a
       WHERE a.username = $4
       RETURNING ${CAMPAIGN_INVITES_TABLE}.id, ${CAMPAIGN_INVITES_TABLE}.campaign_id, ${CAMPAIGN_INVITES_TABLE}.role, ${CAMPAIGN_INVITES_TABLE}.created,
-        $4 AS from, $5 AS to`,
+        $4 AS to, $5 AS from`,
       [invite.campaign_id, from.id, invite.role, invite.to, from.username]
     ),
     500
@@ -867,7 +867,6 @@ export const sqlValidateAccountCanEditEntity = async (
       FROM ${CAMPAIGN_ENTITIES_TABLE} ce
       JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ce.campaign_id
       WHERE ce.entity_id = $1 AND cm.account_id = $2 AND cm.role = 'GM' AND ce.campaign_id = $3
-      LIMIT 1
     )`;
     args.push(campaignId);
   }
@@ -878,6 +877,44 @@ export const sqlValidateAccountCanEditEntity = async (
       FROM ${ENTITIES_TABLE} e
       WHERE e.id = $1 AND e.owner = $2
     ) ${campaignCheck} AS valid`,
+      args
+    )
+  );
+};
+
+export type EntityPermissions =
+  | {
+      result: string;
+      public: boolean;
+      source: "entities";
+    }
+  | {
+      result: CampaignRole;
+      public: false;
+      source: "campaigns";
+    };
+export const sqlFetchEntityPermissions = async (
+  tx: TX,
+  entityId: string,
+  campaignParams?: { accountId: string; campaignId: string }
+): Promise<Result<EntityPermissions[]>> => {
+  let campaignCheck = "";
+  const args = [entityId];
+  if (campaignParams) {
+    const { accountId, campaignId } = campaignParams;
+    campaignCheck = `UNION 
+    SELECT cm.role as result, FALSE as public, 'campaigns' as source
+    FROM ${CAMPAIGN_ENTITIES_TABLE} ce
+    JOIN ${CAMPAIGN_MEMBERS_TABLE} cm ON cm.campaign_id = ce.campaign_id
+    WHERE ce.entity_id = $1 AND cm.account_id = $2 AND cm.campaign_id = $3`;
+    args.push(accountId, campaignId);
+  }
+  return parseList(
+    await tx.query(
+      `SELECT e.owner::text as result, e.public, 'entities' as source
+      FROM vennt.entities e
+      WHERE e.id = $1
+      ${campaignCheck}`,
       args
     )
   );

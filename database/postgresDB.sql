@@ -133,3 +133,5 @@ CREATE TABLE vennt.campaign_entities (
     gm_only boolean NOT NULL DEFAULT false
 );
 
+-- Unique constraint on campaign_entities
+CREATE UNIQUE INDEX campaign_entity_unique ON vennt.campaign_entities(campaign_id uuid_ops,entity_id uuid_ops);

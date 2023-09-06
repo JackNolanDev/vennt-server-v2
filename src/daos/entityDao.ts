@@ -3,7 +3,6 @@ import {
   wrapErrorResult,
   wrapSuccessResult,
   unwrapResultOrError,
-  ResultError,
   FORBIDDEN_RESULT,
 } from "../utils/db";
 import pool from "../utils/pool";
@@ -18,6 +17,7 @@ import {
   UncompleteCollectedEntityWithChangelog,
   PartialEntity,
   FullCollectedEntityWithChangelog,
+  CAMPAIGN_ROLE_GM,
 } from "../utils/types";
 import {
   sqlDeleteEntity,
@@ -25,6 +25,7 @@ import {
   sqlFetchChangelogByEntityId,
   sqlFetchChangelogByEntityIdAttribute,
   sqlFetchEntityById,
+  sqlFetchEntityPermissions,
   sqlFetchEntityTextByEntityId,
   sqlFetchFluxByEntityId,
   sqlFetchItemsByEntityId,
@@ -92,12 +93,8 @@ export const dbFetchCollectedEntity = async (
   id: string,
   publicOnly: boolean
 ): Promise<Result<FullCollectedEntity>> => {
-  const entity = unwrapResultOrError(await sqlFetchEntityById(pool, id));
-  if (!entity.public && publicOnly) {
-    return FORBIDDEN_RESULT;
-  }
-
-  const [abilities, items, text, flux] = await Promise.all([
+  const [entity, abilities, items, text, flux] = await Promise.all([
+    unwrapResultOrError(await sqlFetchEntityById(pool, id)),
     unwrapResultOrError(await sqlFetchAbilitiesByEntityId(pool, id)),
     unwrapResultOrError(await sqlFetchItemsByEntityId(pool, id)),
     unwrapResultOrError(
@@ -140,6 +137,37 @@ export const dbUserCanEditEntity = async (
   campaignId?: string
 ): Promise<Result<boolean>> => {
   return sqlValidateAccountCanEditEntity(pool, accountId, entityId, campaignId);
+};
+
+export const dbUserCanReadPublicOnlyFields = async (
+  entityId: string,
+  accountId?: string,
+  campaignId?: string
+): Promise<Result<boolean>> => {
+  const campaignParams =
+    accountId && campaignId ? { accountId, campaignId } : undefined;
+  const res = unwrapResultOrError(
+    await sqlFetchEntityPermissions(pool, entityId, campaignParams)
+  );
+  const entitySource = res.find((perm) => perm.source === "entities");
+  if (!entitySource) {
+    return FORBIDDEN_RESULT;
+  }
+  if (entitySource.result === accountId) {
+    return wrapSuccessResult(false);
+  }
+
+  if (campaignId) {
+    const campaignSource = res.find((perm) => perm.source === "campaigns");
+    if (campaignSource) {
+      return wrapSuccessResult(campaignSource.result !== CAMPAIGN_ROLE_GM);
+    }
+  }
+
+  if (entitySource.public) {
+    return wrapSuccessResult(true);
+  }
+  return FORBIDDEN_RESULT;
 };
 
 export const dbUpdateEntityAttributes = async (

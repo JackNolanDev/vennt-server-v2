@@ -37,6 +37,7 @@ import {
   dbListEntities,
   dbUpdateEntity,
   dbUpdateEntityAttributes,
+  dbUserCanReadPublicOnlyFields,
 } from "../daos/entityDao";
 import { dbInsertItems } from "../daos/itemDao";
 import { dbInsertAbilities } from "../daos/abilityDao";
@@ -48,7 +49,7 @@ import {
 } from "../daos/entityTextDao";
 import { dbDeleteFlux, dbInsertFlux, dbUpdateFlux } from "../daos/fluxDao";
 import { validateAuthHeader, validateOptionalAuthHeader } from "../utils/jwt";
-import { ResultError } from "../utils/db";
+import { unwrapResultOrError } from "../utils/db";
 
 const addFullEntity = async (
   req: Request
@@ -68,18 +69,10 @@ const fetchCollectedEntity = async (
 ): Promise<Result<FullCollectedEntity>> => {
   const account = validateOptionalAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  let publicOnly = true;
-  if (account) {
-    const campaignId = optionalIdValidator.parse(req.query.campaign_id);
-    try {
-      await validateEditEntityPermission(account, id, campaignId);
-      publicOnly = false;
-    } catch (err: unknown) {
-      if (!(err instanceof ResultError)) {
-        throw err;
-      }
-    }
-  }
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  const publicOnly = unwrapResultOrError(
+    await dbUserCanReadPublicOnlyFields(id, account?.id, campaignId)
+  );
   return await dbFetchCollectedEntity(id, publicOnly);
 };
 
