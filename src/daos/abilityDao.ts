@@ -13,10 +13,10 @@ import {
 } from "../utils/types";
 import {
   sqlDeleteAbility,
-  sqlFetchAbilityOwnerById,
-  sqlFetchAbilityWithOwnerById,
+  sqlFetchAbilityById,
   sqlInsertAbilities,
   sqlUpdateAbility,
+  sqlValidateAccountCanEditEntity,
 } from "./sql";
 
 export const dbInsertAbilities = (
@@ -29,13 +29,22 @@ export const dbInsertAbilities = (
 export const dbUpdateAbility = (
   partialAbility: PartialEntityAbility,
   abilityId: string,
-  owner: string
+  accountId: string,
+  campaignId?: string
 ): Promise<Result<FullEntityAbility>> => {
   return handleTransaction(async (tx) => {
     const currentAbility = unwrapResultOrError(
-      await sqlFetchAbilityWithOwnerById(tx, abilityId)
+      await sqlFetchAbilityById(tx, abilityId, true)
     );
-    if (currentAbility.owner !== owner) {
+    const permission = unwrapResultOrError(
+      await sqlValidateAccountCanEditEntity(
+        tx,
+        accountId,
+        currentAbility.entity_id,
+        campaignId
+      )
+    );
+    if (!permission) {
       throw new ResultError(FORBIDDEN_RESULT);
     }
     const updatedAbility = { ...currentAbility, ...partialAbility };
@@ -45,13 +54,22 @@ export const dbUpdateAbility = (
 
 export const dbDeleteAbility = (
   abilityId: string,
-  owner: string
+  accountId: string,
+  campaignId?: string
 ): Promise<Result<boolean>> => {
   return handleTransaction(async (tx) => {
-    const abilityOwner = unwrapResultOrError(
-      await sqlFetchAbilityOwnerById(tx, abilityId)
+    const ability = unwrapResultOrError(
+      await sqlFetchAbilityById(tx, abilityId, true)
     );
-    if (abilityOwner !== owner) {
+    const permission = unwrapResultOrError(
+      await sqlValidateAccountCanEditEntity(
+        tx,
+        accountId,
+        ability.entity_id,
+        campaignId
+      )
+    );
+    if (!permission) {
       throw new ResultError(FORBIDDEN_RESULT);
     }
     return sqlDeleteAbility(tx, abilityId);

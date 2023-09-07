@@ -82,13 +82,13 @@ const updateEntity = async (req: Request): Promise<Result<FullEntity>> => {
   const body = partialEntityValidator.parse(req.body);
   const campaignId = optionalIdValidator.parse(req.query.campaign_id);
   await validateEditEntityPermission(account, id, campaignId);
-  return await dbUpdateEntity(id, account.id, body);
+  return await dbUpdateEntity(id, body);
 };
 
 const deleteEntity = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  // PURPOSELY NOT INCLUDING CAMPAIGN
+  // PURPOSELY NOT INCLUDING CAMPAIGN IN VALIDATION
   await validateEditEntityPermission(account, id);
   return await dbDeleteEntity(id);
 };
@@ -180,7 +180,7 @@ const updateEntityTextPermission = async (
 ): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  // PURPOSELY NOT INCLUDING CAMPAIGN
+  // PURPOSELY NOT INCLUDING CAMPAIGN IN VALIDATION
   await validateEditEntityPermission(account, id);
   const key = entityTextKeyValidator.parse(req.params.key);
   const permission = entityTextPermissionValidator.parse(req.body);
@@ -190,7 +190,7 @@ const updateEntityTextPermission = async (
 const deleteEntityText = async (req: Request): Promise<Result<boolean>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  // PURPOSELY NOT INCLUDING CAMPAIGN
+  // PURPOSELY NOT INCLUDING CAMPAIGN IN VALIDATION
   await validateEditEntityPermission(account, id);
   const key = entityTextKeyValidator.parse(req.params.key);
   return await dbDeleteEntityText(id, key);

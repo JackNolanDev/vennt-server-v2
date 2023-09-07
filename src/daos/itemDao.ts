@@ -13,10 +13,10 @@ import {
 } from "../utils/types";
 import {
   sqlDeleteItem,
-  sqlFetchItemOwnerById,
-  sqlFetchItemWithOwnerById,
+  sqlFetchItemById,
   sqlInsertItems,
   sqlUpdateItem,
+  sqlValidateAccountCanEditEntity,
 } from "./sql";
 
 export const dbInsertItems = (
@@ -29,13 +29,22 @@ export const dbInsertItems = (
 export const dbUpdateItem = (
   partialItem: PartialEntityItem,
   itemId: string,
-  owner: string
+  accountId: string,
+  campaignId?: string
 ): Promise<Result<FullEntityItem>> => {
   return handleTransaction(async (tx) => {
     const currentItem = unwrapResultOrError(
-      await sqlFetchItemWithOwnerById(tx, itemId)
+      await sqlFetchItemById(tx, itemId, true)
     );
-    if (currentItem.owner !== owner) {
+    const permission = unwrapResultOrError(
+      await sqlValidateAccountCanEditEntity(
+        tx,
+        accountId,
+        currentItem.entity_id,
+        campaignId
+      )
+    );
+    if (!permission) {
       throw new ResultError(FORBIDDEN_RESULT);
     }
     const newItem = { ...currentItem, ...partialItem };
@@ -45,13 +54,20 @@ export const dbUpdateItem = (
 
 export const dbDeleteItem = (
   itemId: string,
-  owner: string
+  accountId: string,
+  campaignId?: string
 ): Promise<Result<boolean>> => {
   return handleTransaction(async (tx) => {
-    const itemOwner = unwrapResultOrError(
-      await sqlFetchItemOwnerById(tx, itemId)
+    const item = unwrapResultOrError(await sqlFetchItemById(tx, itemId, true));
+    const permission = unwrapResultOrError(
+      await sqlValidateAccountCanEditEntity(
+        tx,
+        accountId,
+        item.entity_id,
+        campaignId
+      )
     );
-    if (itemOwner !== owner) {
+    if (!permission) {
       throw new ResultError(FORBIDDEN_RESULT);
     }
     return sqlDeleteItem(tx, itemId);

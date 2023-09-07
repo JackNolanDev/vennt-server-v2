@@ -112,11 +112,13 @@ export const sqlListEntities = async (
 
 export const sqlFetchEntityById = async (
   tx: TX,
-  entityId: string
+  entityId: string,
+  forUpdate?: boolean
 ): Promise<Result<FullEntity>> => {
+  const readLock = forUpdate ? "FOR UPDATE" : "";
   return parseFirst(
     await tx.query(
-      `SELECT ${ENTITY_COLUMNS} FROM ${ENTITIES_TABLE} WHERE id = $1`,
+      `SELECT ${ENTITY_COLUMNS} FROM ${ENTITIES_TABLE} WHERE id = $1 ${readLock}`,
       [entityId]
     )
   );
@@ -212,29 +214,15 @@ export const sqlFetchAbilitiesByEntityId = async (
   );
 };
 
-export const sqlFetchAbilityWithOwnerById = async (
+export const sqlFetchAbilityById = async (
   tx: TX,
-  abilityId: string
-): Promise<Result<FullEntityAbility & { owner: string }>> => {
+  abilityId: string,
+  forUpdate?: boolean
+): Promise<Result<FullEntityAbility>> => {
+  const readLock = forUpdate ? "FOR UPDATE" : "";
   return parseFirst(
     await tx.query(
-      `SELECT ${ABILITY_COLUMNS}, ${ENTITIES_TABLE}.owner
-      FROM ${ABILITIES_TABLE} JOIN ${ENTITIES_TABLE} ON ${ABILITIES_TABLE}.entity_id = ${ENTITIES_TABLE}.id
-      WHERE ${ABILITIES_TABLE}.id = $1`,
-      [abilityId]
-    )
-  );
-};
-
-export const sqlFetchAbilityOwnerById = async (
-  tx: TX,
-  abilityId: string
-): Promise<Result<string>> => {
-  return parseFirstVal(
-    await tx.query(
-      `SELECT ${ENTITIES_TABLE}.owner
-      FROM ${ABILITIES_TABLE} JOIN ${ENTITIES_TABLE} ON ${ABILITIES_TABLE}.entity_id = ${ENTITIES_TABLE}.id
-      WHERE ${ABILITIES_TABLE}.id = $1`,
+      `SELECT ${ABILITY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE id = $1 ${readLock}`,
       [abilityId]
     )
   );
@@ -391,29 +379,15 @@ export const sqlFetchItemsByEntityId = async (
   );
 };
 
-export const sqlFetchItemWithOwnerById = async (
+export const sqlFetchItemById = async (
   tx: TX,
-  itemId: string
-): Promise<Result<FullEntityItem & { owner: string }>> => {
+  itemId: string,
+  forUpdate?: boolean
+): Promise<Result<FullEntityItem>> => {
+  const readLock = forUpdate ? "FOR UPDATE" : "";
   return parseFirst(
     await tx.query(
-      `SELECT ${ITEM_COLUMNS}, ${ENTITIES_TABLE}.owner
-      FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
-      WHERE ${ITEMS_TABLE}.id = $1`,
-      [itemId]
-    )
-  );
-};
-
-export const sqlFetchItemOwnerById = async (
-  tx: TX,
-  itemId: string
-): Promise<Result<string>> => {
-  return parseFirstVal(
-    await tx.query(
-      `SELECT ${ENTITIES_TABLE}.owner
-      FROM ${ITEMS_TABLE} JOIN ${ENTITIES_TABLE} ON ${ITEMS_TABLE}.entity_id = ${ENTITIES_TABLE}.id
-      WHERE ${ITEMS_TABLE}.id = $1`,
+      `SELECT ${ITEM_COLUMNS} FROM ${ITEMS_TABLE} WHERE id = $1 ${readLock}`,
       [itemId]
     )
   );

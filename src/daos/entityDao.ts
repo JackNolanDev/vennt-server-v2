@@ -215,12 +215,11 @@ export const dbFetchChangelogByEntityIdAttribute = async (
 
 export const dbUpdateEntity = async (
   entityId: string,
-  user: string,
   partialEntity: PartialEntity
 ): Promise<Result<FullEntity>> => {
   return handleTransaction(async (tx) => {
     const currentEntity = unwrapResultOrError(
-      await sqlFetchEntityById(tx, entityId)
+      await sqlFetchEntityById(tx, entityId, true)
     );
     const updatedEntity = { ...currentEntity, ...partialEntity };
     return sqlUpdateEntity(tx, entityId, updatedEntity);

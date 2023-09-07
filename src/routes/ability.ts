@@ -1,6 +1,10 @@
 import express from "express";
 import type { Request } from "express";
-import { idValidator, partialAbilityValidator } from "../utils/types";
+import {
+  idValidator,
+  optionalIdValidator,
+  partialAbilityValidator,
+} from "../utils/types";
 import { dbDeleteAbility, dbUpdateAbility } from "../daos/abilityDao";
 import { validateAuthHeader } from "../utils/jwt";
 import { wrapHandler } from "../utils/express";
@@ -9,13 +13,15 @@ const updateAbility = async (req: Request) => {
   const account = validateAuthHeader(req);
   const body = partialAbilityValidator.parse(req.body);
   const id = idValidator.parse(req.params.id);
-  return await dbUpdateAbility(body, id, account.id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  return await dbUpdateAbility(body, id, account.id, campaignId);
 };
 
 const deleteAbility = async (req: Request) => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
-  return await dbDeleteAbility(id, account.id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  return await dbDeleteAbility(id, account.id, campaignId);
 };
 
 const router = express.Router();
