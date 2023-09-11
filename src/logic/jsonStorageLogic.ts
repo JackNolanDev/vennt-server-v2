@@ -64,7 +64,8 @@ const handleUpdateAbilitiesForwardCompatible = async (): Promise<
   );
   const newAbilities = await fetchAbilities();
   const abilities = mergeAbilities(oldAbilities, newAbilities);
-  return dbUpsertJSONDocument(ABILITIES_KEY, abilities);
+  const updatedAbilities = rebuildAbilityUses(abilities);
+  return dbUpsertJSONDocument(ABILITIES_KEY, updatedAbilities);
 };
 
 export const handleRebuildUses = async (

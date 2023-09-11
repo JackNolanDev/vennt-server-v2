@@ -1,38 +1,36 @@
 import {
-  AccountInfo,
   CampaignDesc,
   CampaignEntity,
-  CampaignInvite,
-  CampaignInviteWithDetails,
   CampaignRole,
   CampaignWithRole,
   FullCampaignDetails,
   PostCampaign,
   PostCampaignEntity,
-  PostCampaignInvite,
   Result,
 } from "../utils/types";
 import {
-  sqlDeleteCampaignInvite,
   sqlFetchCampaignById,
   sqlFetchCampaignEntitiesByCampaignId,
   sqlFetchCampaignInvitesByCampaignId,
-  sqlFetchCampaignInvitesByRecipientId,
   sqlFetchCampaignMembersByCampaignId,
   sqlFetchCampaignRole,
   sqlInsertCampaign,
   sqlInsertCampaignEntity,
-  sqlInsertCampaignInvite,
   sqlInsertCampaignMember,
-  sqlInsertCampaignMemberFromInvite,
   sqlListCampaignsForAccount,
+  sqlRemoveCampaignEntity,
+  sqlRemoveCampaignMember,
   sqlUpdateCampaignDesc,
+  sqlUpdateCampaignMemberRole,
+  sqlValidateCampaignHasGM,
 } from "./sql";
 import pool from "../utils/pool";
 import {
+  ResultError,
   UNAUTHORIZED_RESULT,
   handleTransaction,
   unwrapResultOrError,
+  wrapErrorResult,
   wrapSuccessResult,
 } from "../utils/db";
 
@@ -103,6 +101,49 @@ export const dbUpdateCampaignDesc = async (
   return await sqlUpdateCampaignDesc(pool, campaignId, desc);
 };
 
+export const dbUpdateCampaignMemberRole = async (
+  campaignId: string,
+  memberId: string,
+  newRole: CampaignRole
+) => {
+  return handleTransaction(async (tx) => {
+    const updatedRole = unwrapResultOrError(
+      await sqlUpdateCampaignMemberRole(tx, campaignId, memberId, newRole)
+    );
+    const hasGMs = unwrapResultOrError(
+      await sqlValidateCampaignHasGM(tx, campaignId)
+    );
+    if (!hasGMs) {
+      // throw to rollback transaction
+      throw new ResultError(
+        wrapErrorResult("This campaign needs at least 1 GM")
+      );
+    }
+    return wrapSuccessResult(updatedRole);
+  });
+};
+
+export const dbRemoveCampaignMember = async (
+  campaignId: string,
+  accountId: string
+) => {
+  return handleTransaction(async (tx) => {
+    const updatedRole = unwrapResultOrError(
+      await sqlRemoveCampaignMember(tx, campaignId, accountId)
+    );
+    const hasGMs = unwrapResultOrError(
+      await sqlValidateCampaignHasGM(tx, campaignId)
+    );
+    if (!hasGMs) {
+      // throw to rollback transaction
+      throw new ResultError(
+        wrapErrorResult("This campaign needs at least 1 GM")
+      );
+    }
+    return wrapSuccessResult(updatedRole);
+  });
+};
+
 export const dbInsertCampaignEntity = async (
   campaignId: string,
   campaignEntity: PostCampaignEntity,
@@ -119,36 +160,9 @@ export const dbInsertCampaignEntity = async (
   );
 };
 
-export const dbInsertCampaignInvite = async (
-  invite: PostCampaignInvite,
-  from: AccountInfo
-): Promise<Result<CampaignInvite>> => {
-  return sqlInsertCampaignInvite(pool, invite, from);
-};
-
-export const dbListCampaignInvites = async (
-  account: AccountInfo
-): Promise<Result<CampaignInviteWithDetails[]>> => {
-  return await sqlFetchCampaignInvitesByRecipientId(
-    pool,
-    account.id,
-    account.username
-  );
-};
-
-export const dbAcceptCampaignInvite = async (
-  inviteId: string,
-  accountId: string
+export const dbRemoveCampaignEntity = async (
+  campaignId: string,
+  entityId: string
 ): Promise<Result<boolean>> => {
-  return handleTransaction(async (tx) => {
-    await sqlInsertCampaignMemberFromInvite(tx, inviteId, accountId);
-    return sqlDeleteCampaignInvite(tx, inviteId, accountId);
-  });
-};
-
-export const dbDeclineCampaignInvite = async (
-  inviteId: string,
-  accountId: string
-): Promise<Result<boolean>> => {
-  return sqlDeleteCampaignInvite(pool, inviteId, accountId);
+  return sqlRemoveCampaignEntity(pool, campaignId, entityId);
 };

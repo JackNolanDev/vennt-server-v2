@@ -8,6 +8,7 @@ import {
 } from "../utils/db";
 import {
   AccountInfo,
+  CAMPAIGN_ROLE_GM,
   Campaign,
   CampaignDesc,
   CampaignEntity,
@@ -787,6 +788,47 @@ export const sqlFetchCampaignRole = async (
   );
 };
 
+export const sqlValidateCampaignHasGM = async (
+  tx: TX,
+  campaignId: string
+): Promise<Result<boolean>> => {
+  return parseFirstVal(
+    await tx.query(
+      `SELECT EXISTS (SELECT id FROM ${CAMPAIGN_MEMBERS_TABLE} WHERE campaign_id = $1 AND "role" = $2)`,
+      [campaignId, CAMPAIGN_ROLE_GM]
+    )
+  );
+};
+
+export const sqlUpdateCampaignMemberRole = async (
+  tx: TX,
+  campaignId: string,
+  accountId: string,
+  role: CampaignRole
+): Promise<Result<CampaignRole>> => {
+  return parseFirstVal(
+    await tx.query(
+      `UPDATE ${CAMPAIGN_MEMBERS_TABLE}
+      SET "role" = $1
+      WHERE campaign_id = $2 AND account_id = $3
+      RETURNING "role"`,
+      [role, campaignId, accountId]
+    )
+  );
+};
+
+export const sqlRemoveCampaignMember = async (
+  tx: TX,
+  campaignId: string,
+  accountId: string
+): Promise<Result<boolean>> => {
+  await tx.query(
+    `DELETE FROM ${CAMPAIGN_MEMBERS_TABLE} WHERE campaign_id = $1 AND account_id = $2`,
+    [campaignId, accountId]
+  );
+  return wrapSuccessResult(true);
+};
+
 export const sqlInsertCampaignEntity = async (
   tx: TX,
   campaignId: string,
@@ -825,6 +867,18 @@ export const sqlFetchCampaignEntitiesByCampaignId = async (
       [campaignId]
     )
   );
+};
+
+export const sqlRemoveCampaignEntity = async (
+  tx: TX,
+  campaignId: string,
+  entityId: string
+): Promise<Result<boolean>> => {
+  await tx.query(
+    `DELETE FROM ${CAMPAIGN_ENTITIES_TABLE} WHERE campaign_id = $1 AND entity_id = $2`,
+    [campaignId, entityId]
+  );
+  return wrapSuccessResult(true);
 };
 
 export const sqlValidateAccountCanEditEntity = async (

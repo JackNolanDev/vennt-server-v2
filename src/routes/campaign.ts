@@ -12,11 +12,16 @@ import {
   dbInsertCampaign,
   dbInsertCampaignEntity,
   dbListCampaigns,
+  dbRemoveCampaignEntity,
+  dbRemoveCampaignMember,
   dbUpdateCampaignDesc,
+  dbUpdateCampaignMemberRole,
 } from "../daos/campaignDao";
 import { validateAuthHeader } from "../utils/jwt";
 import {
+  CAMPAIGN_ROLE_GM,
   campaignDescValidator,
+  campaignRoleValidator,
   idValidator,
   postCampaignEntityValidator,
   postCampaignValidator,
@@ -57,10 +62,41 @@ const addEntityToCampaign = async (req: Request) => {
   return await dbInsertCampaignEntity(campaignId, body, role);
 };
 
+const deleteCampaignEntity = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const campaignId = idValidator.parse(req.params.id);
+  const entityId = idValidator.parse(req.params.entityId);
+  const role = await validateWriteCampaignPermission(account, campaignId);
+  if (role !== CAMPAIGN_ROLE_GM) {
+    await validateEditEntityPermission(account, entityId);
+  }
+  return await dbRemoveCampaignEntity(campaignId, entityId);
+};
+
+const updateCampaignMemberRole = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const campaignId = idValidator.parse(req.params.id);
+  const memberId = idValidator.parse(req.params.memberId);
+  const newRole = campaignRoleValidator.parse(req.body);
+  await validateAdminWriteCampaignPermission(account, campaignId);
+  return await dbUpdateCampaignMemberRole(campaignId, memberId, newRole);
+};
+
+const deleteCampaignMember = async (req: Request) => {
+  const account = validateAuthHeader(req);
+  const campaignId = idValidator.parse(req.params.id);
+  const memberId = idValidator.parse(req.params.memberId);
+  await validateAdminWriteCampaignPermission(account, campaignId);
+  return await dbRemoveCampaignMember(campaignId, memberId);
+};
+
 const router = express.Router();
 router.post("", wrapHandler(addCampaign));
 router.get("", wrapHandler(listCampaign));
 router.get("/:id", wrapHandler(fetchCampaignDetails));
 router.put("/:id/desc", wrapHandler(putCampaignDesc));
 router.post("/:id/entity", wrapHandler(addEntityToCampaign));
+router.delete("/:id/entity/:entityId", wrapHandler(deleteCampaignEntity));
+router.put("/:id/member/:memberId/role", wrapHandler(updateCampaignMemberRole));
+router.delete("/:id/member/:memberId", wrapHandler(deleteCampaignMember));
 export default router;

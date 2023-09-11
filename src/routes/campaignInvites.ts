@@ -9,7 +9,7 @@ import {
   dbDeclineCampaignInvite,
   dbInsertCampaignInvite,
   dbListCampaignInvites,
-} from "../daos/campaignDao";
+} from "../daos/campaignInviteDao";
 import { validateAuthHeader } from "../utils/jwt";
 import { idValidator, postCampaignInviteValidator } from "../utils/types";
 
