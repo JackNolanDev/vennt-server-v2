@@ -107,4 +107,8 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
   Crowbar: {
     check: { bonus: "+1", attr: "str" },
   },
+  "Wheelchair, Combat": {
+    adjust: { time: "permanent", attr: { free_hands: 1 } },
+  },
+  "Wrench, Multipurpose": { check: { bonus: "+2", attr: "tek" } },
 };

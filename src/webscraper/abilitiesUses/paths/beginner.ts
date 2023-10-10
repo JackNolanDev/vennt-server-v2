@@ -2,10 +2,10 @@ import { UsesMap } from "../../../utils/types";
 
 export const BEGINNER_USES: Record<string, UsesMap> = {
   "Repairman's Ratchet": {
-    weapons: [{ category: "Tinkertech", dmg: "1d6+6" }],
+    weapons: [{ category: "Aggressive", dmg: "1d6+6", attr: "tek" }],
   },
   "All-In-One Ratchet": {
-    weapons: [{ category: "Tinkertech", dmg: "1d6+6" }],
+    weapons: [{ category: "Aggressive", dmg: "1d6+6", attr: "tek" }],
   },
   "Small Creature": {
     adjust: { time: "permanent", attr: { str: -2, agi: 1, dex: 1, speed: -2 } },

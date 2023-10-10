@@ -487,6 +487,32 @@ export const usesValidator = z.object({
 
 // ABILITIES
 
+export const RED_HIGHLIGHT = "red";
+export const DARK_RED_HIGHLIGHT = "dark_red";
+export const ORANGE_HIGHLIGHT = "orange";
+export const DARK_ORANGE_HIGHLIGHT = "dark_orange";
+export const GREEN_HIGHLIGHT = "green";
+export const DARK_GREEN_HIGHLIGHT = "dark_green";
+export const BLUE_HIGHLIGHT = "blue";
+export const DARK_BLUE_HIGHLIGHT = "dark_blue";
+export const GRAY_HIGHLIGHT = "gray";
+export const DARK_GRAY_HIGHLIGHT = "dark_gray";
+export const HIGHLIGHT_COLORS = [
+  RED_HIGHLIGHT,
+  DARK_RED_HIGHLIGHT,
+  ORANGE_HIGHLIGHT,
+  DARK_ORANGE_HIGHLIGHT,
+  GREEN_HIGHLIGHT,
+  DARK_GREEN_HIGHLIGHT,
+  BLUE_HIGHLIGHT,
+  DARK_BLUE_HIGHLIGHT,
+  GRAY_HIGHLIGHT,
+  DARK_GRAY_HIGHLIGHT,
+] as const;
+
+export const highlightValidator = z.enum(HIGHLIGHT_COLORS);
+export type HighlightColor = z.infer<typeof highlightValidator>;
+
 export const abilityCostNumberValidator = z.object({
   mp: z.number().int().optional(),
   vim: z.number().int().optional(),
@@ -530,6 +556,8 @@ export const abilityFieldsValidator = abilityFieldsValidatorStrings.extend({
   repeatable: z.boolean().optional(),
   times_taken: z.number().int().min(0).optional(),
   keys: z.record(z.string().min(1), z.string().min(1)).optional(),
+  stars: z.number().int().optional(),
+  highlight: highlightValidator.optional(),
 });
 
 export const abilityFieldsNameValidator = abilityFieldsValidator.keyof();
@@ -970,3 +998,55 @@ export type PathTree = Record<
   string,
   { children: PathTree; abilities: string[] }
 >;
+
+export enum DamageType {
+  PHYSICAL = "physical",
+  MAGICAL = "magical",
+  GALVANIC = "galvanic",
+  PIERCING = "piercing",
+  SLASHING = "slashing",
+  BLUDGEONING = "bludgeoning",
+  VIM = "vim",
+  BURN = "burn",
+  BLEED = "bleed",
+  STUN = "stun",
+  PARALYSIS = "paralysis",
+  ATTRIBUTE = "attribute",
+  FALL = "fall",
+}
+
+export const NORMAL_DAMAGES = [
+  DamageType.BLUDGEONING,
+  DamageType.GALVANIC,
+  DamageType.MAGICAL,
+  DamageType.PHYSICAL,
+  DamageType.PIERCING,
+  DamageType.SLASHING,
+];
+export const PHYSICAL_SUB_DAMAGES = [
+  DamageType.BLUDGEONING,
+  DamageType.PIERCING,
+  DamageType.SLASHING,
+];
+
+export interface AttackDamage {
+  damage: number;
+  type: DamageType;
+  attribute?: EntityAttribute;
+}
+
+export interface AttackDetails {
+  accuracy: number;
+  damages: AttackDamage[];
+  numberOfAttacks?: number;
+}
+
+export interface AttackResponse {
+  alerts: number;
+  dodge?: boolean;
+  block?: boolean;
+  inHolyShield?: boolean;
+  hasShieldBlock?: boolean;
+  hasImprovedShieldBlock?: boolean;
+  hasEnhancedBlock?: boolean;
+}

@@ -17,6 +17,8 @@ const specialBulkMap: Record<string, number> = {
   "Tinker's Kit": 5,
   Ornithopter: 5,
   "Fighter Candy": 0,
+  Wheelchair: 20,
+  "Wheelchair, Combat": 20,
 };
 
 const defaultWeapons: ShopItem[] = [
