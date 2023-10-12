@@ -476,6 +476,7 @@ export type UseInputs = z.infer<typeof useInputs>;
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),
   heal: useHealValidator.optional(),
+  optional_heal: useHealValidator.optional(),
   adjust: useAdjustValidator.optional(),
   adjust_ability_cost: useAdjustAbilityCostValidator.optional(),
   check: useCheckValidator.optional(),

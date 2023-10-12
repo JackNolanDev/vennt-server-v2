@@ -51,4 +51,5 @@ export const MAGICIAN_USES: Record<string, UsesMap> = {
     },
   },
   Replenish: { heal: { attr: { mp: 2 } } },
+  "Minor Cure": { optional_heal: { attr: { hp: "spi" } } },
 };
