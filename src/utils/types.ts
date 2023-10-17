@@ -277,6 +277,16 @@ export const diceSettingsValidator = z.object({
 export type DiceOtherToggles = z.infer<typeof diceOtherTogglesValidator>;
 export type DiceSettings = z.infer<typeof diceSettingsValidator>;
 
+export const disabledActionsValidator = z.record(
+  z.string().max(NAME_MAX),
+  z.array(
+    z.object({
+      msg: z.string().max(CHANGELOG_MAX),
+      icon: z.string().max(NAME_MAX).optional(),
+    })
+  )
+);
+
 // non-number attributes go here
 export const otherAttributesValidator = z.object({
   gift: giftValidator.optional(),
@@ -285,6 +295,7 @@ export const otherAttributesValidator = z.object({
   cog_creation_options: cogCreateOptionsValidator.optional(),
   dice_settings: diceSettingsValidator.optional(),
   in_combat: z.boolean().optional(),
+  disabled_actions: disabledActionsValidator.optional(),
 });
 
 export const entityValidator = z.object({
@@ -863,6 +874,7 @@ export type EntityType = z.infer<typeof entityTypeValidator>;
 export type EntityAttributes = z.infer<typeof attributesValidator>;
 export type EntityAttribute = z.infer<typeof attributeNameValidator>;
 export type BaseEntityAttribute = z.infer<typeof baseAttributeFieldValidator>;
+export type DisabledActions = z.infer<typeof disabledActionsValidator>;
 export type EntityFields = z.infer<typeof otherAttributesValidator>;
 export type UncompleteEntity = z.infer<typeof entityValidator>;
 export type FullEntity = z.infer<typeof fullEntityValidator>;
