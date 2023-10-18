@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
-import { EntityItemType, ShopItem } from "../utils/types";
+import { EntityItemType, ITEM_TYPE_EQUIPMENT, ShopItem } from "../utils/types";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
 import { parseBulk, parseSP } from "./webscraperUtils";
 
@@ -19,6 +19,27 @@ const specialBulkMap: Record<string, number> = {
   "Fighter Candy": 0,
   Wheelchair: 20,
   "Wheelchair, Combat": 20,
+  "Mystic Jezail": 2,
+};
+
+const itemTypeOverride: Record<string, EntityItemType> = {
+  "Lockpick set": ITEM_TYPE_EQUIPMENT,
+  "Lockpick set, Improved": ITEM_TYPE_EQUIPMENT,
+};
+
+const addSpecialItemDetails = (item: ShopItem): void => {
+  if (!item.name) {
+    return;
+  }
+  if (specialBulkMap[item.name]) {
+    item.bulk = specialBulkMap[item.name];
+  }
+  if (itemTypeOverride[item.name]) {
+    item.type = itemTypeOverride[item.name];
+  }
+  if (SHOP_ITEM_USES[item.name]) {
+    item.uses = SHOP_ITEM_USES[item.name];
+  }
 };
 
 const defaultWeapons: ShopItem[] = [
@@ -226,6 +247,9 @@ const getAdvancedWeapons = (
         }
       }
     });
+    if (specialBulkMap[weapon.name] !== undefined) {
+      weapon.bulk = specialBulkMap[weapon.name];
+    }
     const compiledWeapon: ShopItem = { ...fullWeapon, ...weapon };
     delete compiledWeapon.examples;
     weapons.push(compiledWeapon);
@@ -601,9 +625,7 @@ export const fetchShopItems = async (
 
   // add custom uses
   items.forEach((item) => {
-    if (item.name && SHOP_ITEM_USES[item.name]) {
-      item.uses = SHOP_ITEM_USES[item.name];
-    }
+    addSpecialItemDetails(item);
   });
 
   console.log("complete web scrape shop items");

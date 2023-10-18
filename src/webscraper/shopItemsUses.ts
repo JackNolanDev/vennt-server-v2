@@ -89,8 +89,15 @@ export const SHOP_ITEM_USES: Record<string, UsesMap> = {
       attr: { armor: 2 },
     },
   },
+  "Lockpick set": {
+    check: {
+      bonus: "+2",
+      attr: "dex",
+      label: "Check made to open lock. Breaks on failure!",
+    },
+  },
   "Lockpick set, Improved": {
-    check: { bonus: "+3", attr: "dex" },
+    check: { bonus: "+4", attr: "dex", label: "Check made to open lock" },
   },
   Spyglass: {
     check: { bonus: "+(2*tek)", attr: "per" },

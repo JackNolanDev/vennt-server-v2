@@ -3,14 +3,14 @@ import { UsesMap } from "../../../utils/types";
 export const FIGHTER_USES: Record<string, UsesMap> = {
   Roll: {
     heal: { attr: { alerts: 1 } },
-    check: { attr: "agi", bonus: "+3", label: "Roll (costs addition 2 Vim)" },
+    check: { attr: "agi", bonus: "+3", label: "Costs addition 2 Vim" },
   },
   "Ninja Roll": {
     heal: { attr: { alerts: 2 } },
     check: {
       attr: "agi",
       bonus: "+6",
-      label: "Ninja Roll (costs addition 2 Vim)",
+      label: "Costs addition 2 Vim",
     },
   },
   "Easy Target": { adjust: { time: "encounter", attr: { armor: 2 } } },
@@ -29,6 +29,6 @@ export const FIGHTER_USES: Record<string, UsesMap> = {
   "Great Initiative": {
     adjust: { time: "permanent", attr: { init: 4 } },
   },
-  "Center Self": { heal: { attr: { hp: "hp + 3 + wis", alerts: 1 } } },
+  "Center Self": { heal: { attr: { hp: "3 + wis", alerts: 1 } } },
   Instinct: { heal: { attr: { reaction: 1 } } },
 };

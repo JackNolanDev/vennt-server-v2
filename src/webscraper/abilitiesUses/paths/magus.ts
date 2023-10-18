@@ -1,6 +1,7 @@
 import { UsesMap } from "../../../utils/types";
 
 export const MAGUS_USES: Record<string, UsesMap> = {
+  "Arcane Exertion": { heal: { attr: { mp: "int+str" } } },
   "Spell Hand I: Magus": {
     criteria_benefits: [
       {
@@ -42,6 +43,20 @@ export const MAGUS_USES: Record<string, UsesMap> = {
           operator: "gte",
         },
         adjust: { time: "permanent", attr: { casting: 1 } },
+      },
+    ],
+  },
+  "Confidence of the Magus": {
+    optional_heal: [
+      {
+        attr: { mp: 1 },
+        label:
+          "On Successful Regular Cast Spell, gain 1 temp MP, must be used by the end of your turn",
+      },
+      {
+        attr: { mp: 2 },
+        label:
+          "On Successful Double Cast Spell, gain 2 temp MP, must be used by the end of your turn",
       },
     ],
   },

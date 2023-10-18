@@ -137,6 +137,7 @@ export const builtInAttributesValidator = z.object({
   reactions: combatStatValidator.optional(),
   actions_on_turn: z.number().int().optional(),
   reactions_on_turn: z.number().int().optional(),
+  heroic_creativity_bonus: z.number().int().optional(),
   // WEAPON SPECIFIC BONUSES
   aggressive_acc: z.number().int().optional(),
   aggressive_dmg: z.number().int().optional(),
@@ -268,6 +269,7 @@ export const diceSettingsValidator = z.object({
   end: z.string().max(NAME_MAX).optional(),
   flow: z.number().int().optional(),
   ebb: z.number().int().optional(),
+  heroic_creativity_bonus: z.number().int().optional(),
   otherToggles: diceOtherTogglesValidator.optional(),
   adjust: equationValidator.optional(),
   count: z.number().optional(),
@@ -347,6 +349,9 @@ export const useRollValidator = z.object({
 });
 export const useHealValidator = z.object({
   attr: useAttrMapValidator,
+});
+export const useOptionalHealValidator = useHealValidator.extend({
+  label: z.string().min(1).max(NAME_MAX).optional(),
 });
 export const useAdjustValidator = z.object({
   time: z.enum(["turn", "encounter", "rest", "permanent"]),
@@ -487,7 +492,7 @@ export type UseInputs = z.infer<typeof useInputs>;
 export const usesValidator = z.object({
   roll: useRollValidator.optional(),
   heal: useHealValidator.optional(),
-  optional_heal: useHealValidator.optional(),
+  optional_heal: useOptionalHealValidator.array().optional(),
   adjust: useAdjustValidator.optional(),
   adjust_ability_cost: useAdjustAbilityCostValidator.optional(),
   check: useCheckValidator.optional(),
@@ -1062,4 +1067,7 @@ export interface AttackResponse {
   hasShieldBlock?: boolean;
   hasImprovedShieldBlock?: boolean;
   hasEnhancedBlock?: boolean;
+  hasShieldMaster?: boolean;
+  hasDiamondBlock?: boolean;
+  hasNotAScratch?: boolean;
 }
