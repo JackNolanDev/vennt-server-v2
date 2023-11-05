@@ -37,9 +37,9 @@ app.use("/admin", adminRoute);
 app.use("/campaign", campaignRoute);
 app.use("/campaign_invite", campaignInvitesRoute);
 
-// @ts-expect-error Bun is defined by Bun runtime
 console.log(
   `${isProd ? "Production" : "Local"} server started using bun version: ${
+    // @ts-expect-error Bun is defined by Bun runtime
     Bun.version
   }`
 );
