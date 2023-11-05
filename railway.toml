@@ -1,8 +1,8 @@
 [build]
 builder = "NIXPACKS"
+buildCommand = "bun upgrade"
 
 [deploy]
-startCommand = "bun upgrade && bun run start"
 numReplicas = 1
 sleepApplication = false
 restartPolicyType = "ON_FAILURE"
