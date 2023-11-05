@@ -1,6 +1,6 @@
 [build]
 builder = "NIXPACKS"
-nixpacksVersion = "1.18.0"
+nixpkgsArchive = 'a3c637e0abe5e459370fe5cde53496ed2ec301ed'
 
 [deploy]
 numReplicas = 1
