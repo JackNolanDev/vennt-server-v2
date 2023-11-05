@@ -1,3 +1,6 @@
+[phases.setup]
+nixPkgs = ['...', 'unzip']
+
 [build]
 builder = "NIXPACKS"
 buildCommand = "bun upgrade"
