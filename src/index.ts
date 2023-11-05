@@ -39,4 +39,6 @@ app.use("/campaign_invite", campaignInvitesRoute);
 
 console.log(`${isProd ? "Production" : "Local"} server started`);
 
+console.log(`website url: ${process.env.WEBSITE_URL}`);
+
 app.listen(process.env.PORT ?? 5001);

@@ -3,17 +3,14 @@
 A rebuild of the original Vennt backend server in TS with a Mongo database
 
 Requirements:
-`node, pnpm`
+`bun`
 
 ### Useful commands
 
 Start dev server:
-`pnpm run dev`
+`bun run dev`
 
-Production build:
-`pnpm run build`
-
-Start server:
+Start prod server:
 `pnpm run start`
 
 ### Environment variables
