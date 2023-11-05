@@ -1,6 +1,8 @@
+[phases.setup]
+nixpkgsArchive = 'a3c637e0abe5e459370fe5cde53496ed2ec301ed'
+
 [build]
 builder = "NIXPACKS"
-nixpkgsArchive = 'a3c637e0abe5e459370fe5cde53496ed2ec301ed'
 
 [deploy]
 numReplicas = 1
