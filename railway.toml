@@ -1,4 +1,4 @@
-[phases.setup]
+[build.nixpacksPlan.phases.setup]
 nixPkgs = ['...', 'unzip']
 
 [build]
