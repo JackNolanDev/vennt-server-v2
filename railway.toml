@@ -1,10 +1,9 @@
-[phases.setup]
-nixpkgsArchive = 'a3c637e0abe5e459370fe5cde53496ed2ec301ed'
-
 [build]
 builder = "NIXPACKS"
+buildCommand = "echo building!"
 
 [deploy]
+startCommand = "echo starting!"
 numReplicas = 1
 sleepApplication = false
 restartPolicyType = "ON_FAILURE"
