@@ -37,8 +37,11 @@ app.use("/admin", adminRoute);
 app.use("/campaign", campaignRoute);
 app.use("/campaign_invite", campaignInvitesRoute);
 
-console.log(`${isProd ? "Production" : "Local"} server started`);
-
-console.log(`website url: ${process.env.WEBSITE_URL}`);
+// @ts-expect-error Bun is defined by Bun runtime
+console.log(
+  `${isProd ? "Production" : "Local"} server started using bun version: ${
+    Bun.version
+  }`
+);
 
 app.listen(process.env.PORT ?? 5001);
