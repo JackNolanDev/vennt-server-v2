@@ -11,7 +11,7 @@ import {
   dbListCampaignInvites,
 } from "../daos/campaignInviteDao";
 import { validateAuthHeader } from "../utils/jwt";
-import { idValidator, postCampaignInviteValidator } from "../utils/types";
+import { idValidator, postCampaignInviteValidator } from "vennt-library";
 
 const addCampaignInvite = async (req: Request) => {
   const account = validateAuthHeader(req);

@@ -1,5 +1,5 @@
 import { PutBucketCorsCommand, S3Client } from "@aws-sdk/client-s3";
-import { Result } from "./types";
+import { Result } from "vennt-library";
 import { wrapErrorResult, wrapSuccessResult } from "./db";
 
 export const getS3Client = (): Result<S3Client> => {

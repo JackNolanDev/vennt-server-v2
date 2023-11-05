@@ -1,16 +1,16 @@
 import {
+  FullEntityAbility,
+  PartialEntityAbility,
+  Result,
+  UncompleteEntityAbility,
+} from "vennt-library";
+import {
   FORBIDDEN_RESULT,
   ResultError,
   handleTransaction,
   unwrapResultOrError,
 } from "../utils/db";
 import pool from "../utils/pool";
-import {
-  FullEntityAbility,
-  PartialEntityAbility,
-  Result,
-  UncompleteEntityAbility,
-} from "../utils/types";
 import {
   sqlDeleteAbility,
   sqlFetchAbilityById,

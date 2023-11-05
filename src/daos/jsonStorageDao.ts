@@ -1,4 +1,4 @@
-import { JsonStorageKey, Result } from "../utils/types";
+import { JsonStorageKey, Result } from "vennt-library";
 import { ResultError, wrapErrorResult, wrapSuccessResult } from "../utils/db";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getS3Client } from "../utils/s3";

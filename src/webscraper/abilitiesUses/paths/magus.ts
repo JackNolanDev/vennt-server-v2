@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const MAGUS_USES: Record<string, UsesMap> = {
   "Arcane Exertion": { heal: { attr: { mp: "int+str" } } },

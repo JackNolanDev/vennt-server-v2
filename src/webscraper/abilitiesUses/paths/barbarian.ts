@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const BARBARIAN_USES: Record<string, UsesMap> = {
   "Tough Skin": { adjust: { time: "permanent", attr: { armor: 2 } } },

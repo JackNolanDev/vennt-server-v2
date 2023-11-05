@@ -18,7 +18,7 @@ import {
   PartialEntity,
   FullCollectedEntityWithChangelog,
   CAMPAIGN_ROLE_GM,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlDeleteEntity,
   sqlFetchAbilitiesByEntityId,

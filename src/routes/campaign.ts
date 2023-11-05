@@ -25,7 +25,7 @@ import {
   idValidator,
   postCampaignEntityValidator,
   postCampaignValidator,
-} from "../utils/types";
+} from "vennt-library";
 
 const addCampaign = async (req: Request) => {
   const account = validateAuthHeader(req);

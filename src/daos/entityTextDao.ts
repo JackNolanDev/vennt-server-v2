@@ -5,7 +5,7 @@ import {
   FullEntityText,
   Result,
   UncompleteEntityText,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlDeleteEntityText,
   sqlInsertEntityText,

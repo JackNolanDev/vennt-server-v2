@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const BLACK_USES: Record<string, UsesMap> = {
   Mundane: {

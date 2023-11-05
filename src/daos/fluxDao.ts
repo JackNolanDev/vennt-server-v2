@@ -9,7 +9,7 @@ import {
   PartialEntityFlux,
   Result,
   UncompleteEntityFlux,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlDeleteFlux,
   sqlFetchFluxById,

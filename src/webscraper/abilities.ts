@@ -6,7 +6,7 @@ import {
   PathDetails,
   PathsAndAbilities as PathsAndAbilities,
   UncompleteEntityAbility,
-} from "../utils/types";
+} from "vennt-library";
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
 import { cleanQuotes, sleep } from "./webscraperUtils";

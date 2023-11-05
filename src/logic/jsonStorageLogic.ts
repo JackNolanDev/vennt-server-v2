@@ -12,7 +12,7 @@ import {
   SHOP_ITEMS_KEY,
   ShopItem,
   WEAPON_TYPES_KEY,
-} from "../utils/types";
+} from "vennt-library";
 import { fetchAbilities } from "../webscraper/abilities";
 import { rebuildAbilityUses } from "../webscraper/abilitiesRebuildUses";
 import { fetchShopItems } from "../webscraper/shopItems";

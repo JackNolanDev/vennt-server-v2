@@ -1,4 +1,4 @@
-import { UsesMap } from "../../utils/types";
+import { UsesMap } from "vennt-library";
 import { AIR_ARCANA_USES } from "./paths/air_arcana";
 import { ARCANE_DUELIST_USES } from "./paths/arcane_duelist";
 import { ARCANE_WEAPONS_USES } from "./paths/arcane_weapons";

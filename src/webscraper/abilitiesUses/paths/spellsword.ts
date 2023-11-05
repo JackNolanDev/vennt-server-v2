@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const SPELLSWORD_USES: Record<string, UsesMap> = {
   "Spell Hand I: Spellsword": {

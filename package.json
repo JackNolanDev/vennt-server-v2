@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "New backend server for the Vennt website",
   "main": "index.ts",
+  "type": "module",
   "scripts": {
-    "build": "pnpm tsc",
-    "start": "node dist/index.js",
-    "dev": "concurrently \"pnpm tsc --watch\" \"nodemon -q dist/index.js\"",
-    "lint": "npx prettier -w .",
+    "start": "bun run src/index.ts",
+    "dev": "bun --watch src/index.ts",
+    "lint": "bun x prettier -w .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,6 +25,7 @@
     "jsonwebtoken": "^9.0.0",
     "node-html-markdown": "^1.3.0",
     "pg": "^8.10.0",
+    "vennt-library": "https://github.com/JackNolanDev/vennt-library#3e6acd6e9730f12f6f1fb83bd51bfb753096ac2e",
     "zod": "^3.21.4"
   },
   "devDependencies": {
@@ -43,6 +44,7 @@
     "eslint-plugin-n": "^15.7.0",
     "nodemon": "^2.0.22",
     "prettier": "^2.8.8",
-    "typescript": "^4.9.5"
+    "typescript": "^5.0.0",
+    "bun-types": "latest"
   }
 }

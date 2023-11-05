@@ -1,4 +1,4 @@
-import { PathsAndAbilities } from "../utils/types";
+import { PathsAndAbilities } from "vennt-library";
 import { ABILITY_USES } from "./abilitiesUses/uses";
 
 export const rebuildAbilityUses = (

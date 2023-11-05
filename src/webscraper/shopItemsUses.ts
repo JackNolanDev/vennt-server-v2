@@ -1,4 +1,4 @@
-import { UsesMap } from "../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const SHOP_ITEM_USES: Record<string, UsesMap> = {
   "Elixir of Energy": {

@@ -5,7 +5,7 @@ import {
   Result,
   loginRequestValidator,
   signupRequestValidator,
-} from "../utils/types";
+} from "vennt-library";
 import { createAccount, verifyPassword } from "../daos/authDao";
 import { wrapHandler } from "../utils/express";
 import { generateToken } from "../utils/jwt";

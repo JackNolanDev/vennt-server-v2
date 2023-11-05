@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const HEROIC_ARCANA_USES: Record<string, UsesMap> = {
   "Dauntless Dashing": {

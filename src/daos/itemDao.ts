@@ -10,7 +10,7 @@ import {
   PartialEntityItem,
   Result,
   UncompleteEntityItem,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlDeleteItem,
   sqlFetchItemById,

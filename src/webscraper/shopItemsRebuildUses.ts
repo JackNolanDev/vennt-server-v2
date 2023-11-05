@@ -1,4 +1,4 @@
-import { ShopItem } from "../utils/types";
+import { ShopItem } from "vennt-library";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
 
 /**

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
-import { EntityItemType, ITEM_TYPE_EQUIPMENT, ShopItem } from "../utils/types";
+import { EntityItemType, ITEM_TYPE_EQUIPMENT, ShopItem } from "vennt-library";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
 import { parseBulk, parseSP } from "./webscraperUtils";
 

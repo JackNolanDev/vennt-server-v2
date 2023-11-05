@@ -1,7 +1,4 @@
-import {
-  UncompleteEntityAbility,
-  attributeNameValidator,
-} from "../utils/types";
+import { UncompleteEntityAbility, attributeNameValidator } from "vennt-library";
 
 export const addProgrammaticUses = (ability: UncompleteEntityAbility): void => {
   handleWeaponAbilities(ability);

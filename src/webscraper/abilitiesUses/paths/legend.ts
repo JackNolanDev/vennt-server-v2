@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const LEGEND_USES: Record<string, UsesMap> = {
   "Legendary Action": {

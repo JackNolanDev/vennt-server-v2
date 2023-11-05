@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const RECRUIT_USES: Record<string, UsesMap> = {
   Brawn: {
@@ -18,7 +18,7 @@ export const RECRUIT_USES: Record<string, UsesMap> = {
         unarmed_dmg: 3,
         whip_dmg: 3,
       },
-      dice: { attr: { end: "+3" } },
+      dice: { str: { end: "+3" } },
     },
   },
   "Guard Up": { adjust: { time: "turn", attr: { armor: 6 } } },

@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const SAVANT_USES: Record<string, UsesMap> = {
   "Well-Read": { adjust: { time: "permanent", dice: { int: { end: "+2" } } } },

@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const GIFTED_MAGICIAN_USES: Record<string, UsesMap> = {
   "Mage Prestige": {

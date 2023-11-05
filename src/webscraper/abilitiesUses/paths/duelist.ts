@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const DUELIST_USES: Record<string, UsesMap> = {
   "Fast Feet I": { adjust: { time: "permanent", attr: { speed: 1 } } },

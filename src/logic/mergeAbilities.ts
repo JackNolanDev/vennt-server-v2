@@ -2,7 +2,7 @@ import {
   PathDetails,
   PathsAndAbilities,
   UncompleteEntityAbility,
-} from "../utils/types";
+} from "vennt-library";
 
 const corePaths = [
   "Path of the Beginner",

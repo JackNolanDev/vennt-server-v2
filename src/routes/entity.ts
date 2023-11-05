@@ -25,7 +25,7 @@ import {
   optionalIdValidator,
   partialEntityFluxValidator,
   partialEntityValidator,
-} from "../utils/types";
+} from "vennt-library";
 import { validateEditEntityPermission, wrapHandler } from "../utils/express";
 import {
   dbDeleteEntity,

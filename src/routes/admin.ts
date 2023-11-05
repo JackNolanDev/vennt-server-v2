@@ -1,6 +1,6 @@
 import express from "express";
 import type { Request } from "express";
-import { Result, jsonStorageKeyValidator } from "../utils/types";
+import { Result, jsonStorageKeyValidator } from "vennt-library";
 import { validateAdmin, wrapHandler } from "../utils/express";
 import { JSON_STORAGE_BUCKET } from "../daos/jsonStorageDao";
 import {

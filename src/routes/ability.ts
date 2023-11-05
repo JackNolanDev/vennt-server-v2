@@ -4,7 +4,7 @@ import {
   idValidator,
   optionalIdValidator,
   partialAbilityValidator,
-} from "../utils/types";
+} from "vennt-library";
 import { dbDeleteAbility, dbUpdateAbility } from "../daos/abilityDao";
 import { validateAuthHeader } from "../utils/jwt";
 import { wrapHandler } from "../utils/express";

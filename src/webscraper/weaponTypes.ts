@@ -1,6 +1,6 @@
 import axios from "axios";
 import { load } from "cheerio";
-import { ShopItem } from "../utils/types";
+import { ShopItem } from "vennt-library";
 import { parseAttr, parseBulk, parseSP } from "./webscraperUtils";
 
 const WEAPONS_URL = "https://vennt.fandom.com/wiki/Weapons";

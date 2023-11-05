@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const FOCUSED_FIST_USES: Record<string, UsesMap> = {
   "Trii of Life": {

@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const MAGICIAN_USES: Record<string, UsesMap> = {
   "Defensive Aura": {

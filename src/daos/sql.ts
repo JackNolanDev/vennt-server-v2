@@ -37,7 +37,7 @@ import {
   UncompleteEntityFlux,
   UncompleteEntityItem,
   UncompleteEntityText,
-} from "../utils/types";
+} from "vennt-library";
 
 export type TX = PoolClient | Pool;
 

@@ -6,7 +6,7 @@ import {
   Result,
   CampaignInvite,
   CampaignInviteWithDetails,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlInsertCampaignInvite,
   sqlFetchCampaignInvitesByRecipientId,

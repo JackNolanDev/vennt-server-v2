@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const LIGHTNING_ARCANA_USES: Record<string, UsesMap> = {
   "Thunder Strike": {

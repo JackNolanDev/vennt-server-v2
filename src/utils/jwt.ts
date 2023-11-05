@@ -1,5 +1,5 @@
 import { ResultError, UNAUTHORIZED_RESULT } from "./db";
-import { AccountInfo, accountInfoValidator } from "./types";
+import { AccountInfo, accountInfoValidator } from "vennt-library";
 import { JwtPayload, sign, verify } from "jsonwebtoken";
 import type { Request } from "express";
 

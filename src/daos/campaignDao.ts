@@ -7,7 +7,7 @@ import {
   PostCampaign,
   PostCampaignEntity,
   Result,
-} from "../utils/types";
+} from "vennt-library";
 import {
   sqlFetchCampaignById,
   sqlFetchCampaignEntitiesByCampaignId,

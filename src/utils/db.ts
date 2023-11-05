@@ -1,6 +1,6 @@
 import { PoolClient, QueryResult } from "pg";
 import pool from "./pool";
-import { ErrorResult, Result, SuccessResult } from "./types";
+import { ErrorResult, Result, SuccessResult } from "vennt-library";
 
 export const parseFirst = <T>(
   queryRes: QueryResult,

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { ZodError } from "zod";
-import { AccountInfo, CampaignRole, Result } from "./types";
+import { AccountInfo, CampaignRole, Result } from "vennt-library";
 import { dbUserCanEditEntity } from "../daos/entityDao";
 import {
   FORBIDDEN_RESULT,

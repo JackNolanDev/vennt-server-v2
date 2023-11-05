@@ -135,3 +135,6 @@ CREATE TABLE vennt.campaign_entities (
 
 -- Unique constraint on campaign_entities
 CREATE UNIQUE INDEX campaign_entity_unique ON vennt.campaign_entities(campaign_id uuid_ops,entity_id uuid_ops);
+
+-- Add computed_attributes column to the entities table for cached result of rules engine
+ALTER TABLE "vennt"."entities" ADD COLUMN "computed_attributes" jsonb;

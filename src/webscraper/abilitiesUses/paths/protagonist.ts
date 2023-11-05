@@ -1,4 +1,4 @@
-import { UsesMap } from "../../../utils/types";
+import { UsesMap } from "vennt-library";
 
 export const PROTAGONIST_USES: Record<string, UsesMap> = {
   "Heroic Flourish": { adjust: { time: "permanent", attr: { max_hero: -3 } } },
