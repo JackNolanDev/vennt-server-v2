@@ -9,6 +9,8 @@ import {
   FullEntityFlux,
   FullEntityItem,
   FullEntityText,
+  PostAbilitiesResponse,
+  PostItemsResponse,
   Result,
   abilityValidator,
   adjustAttributesValidator,
@@ -136,7 +138,7 @@ const getAttrChangelog = async (
 
 const insertAbilities = async (
   req: Request
-): Promise<Result<FullEntityAbility[]>> => {
+): Promise<Result<PostAbilitiesResponse>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const campaignId = optionalIdValidator.parse(req.query.campaign_id);
@@ -145,7 +147,7 @@ const insertAbilities = async (
   return await dbInsertAbilities(id, abilities);
 };
 
-const insertItems = async (req: Request): Promise<Result<FullEntityItem[]>> => {
+const insertItems = async (req: Request): Promise<Result<PostItemsResponse>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const campaignId = optionalIdValidator.parse(req.query.campaign_id);

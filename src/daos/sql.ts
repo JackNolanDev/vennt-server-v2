@@ -17,6 +17,7 @@ import {
   CampaignMember,
   CampaignRole,
   CampaignWithRole,
+  ComputedAttributes,
   EntityAbility,
   EntityAttribute,
   EntityAttributes,
@@ -32,10 +33,8 @@ import {
   PostCampaignInvite,
   Result,
   UncompleteEntity,
-  UncompleteEntityAbility,
   UncompleteEntityChangelog,
   UncompleteEntityFlux,
-  UncompleteEntityItem,
   UncompleteEntityText,
 } from "vennt-library";
 
@@ -53,15 +52,15 @@ export const CAMPAIGN_INVITES_TABLE = "vennt.campaign_invites";
 export const CAMPAIGN_MEMBERS_TABLE = "vennt.campaign_members";
 export const CAMPAIGN_ENTITIES_TABLE = "vennt.campaign_entities";
 
-export const INSERT_ENTITY_COLUMNS = `owner, name, "type", attributes, other_fields, "public"`;
-export const INSERT_ABILITY_COLUMNS = `entity_id, name, effect, custom_fields, uses, comment, active`;
+export const INSERT_ENTITY_COLUMNS = `owner, name, "type", attributes, other_fields, "public", computed_attributes`;
+export const INSERT_ABILITY_COLUMNS = `id, entity_id, name, effect, custom_fields, uses, comment, active`;
 export const INSERT_CHANGELOG_COLUMNS = `entity_id, attr, msg, prev`;
-export const INSERT_ITEM_COLUMNS = `entity_id, name, bulk, "desc", "type", custom_fields, uses, comment, active`;
+export const INSERT_ITEM_COLUMNS = `id, entity_id, name, bulk, "desc", "type", custom_fields, uses, comment, active`;
 export const INSERT_ENTITY_TEXT_COLUMNS = `entity_id, "key", "text", "public"`;
 export const INSERT_FLUX_COLUMNS = `entity_id, "type", "text", metadata`;
 
 export const ENTITY_COLUMNS = `${ENTITIES_TABLE}.id, ${ENTITIES_TABLE}.owner, ${ENTITIES_TABLE}.name, ${ENTITIES_TABLE}.type, \
-  ${ENTITIES_TABLE}.attributes, ${ENTITIES_TABLE}.other_fields, ${ENTITIES_TABLE}.public`;
+  ${ENTITIES_TABLE}.attributes, ${ENTITIES_TABLE}.other_fields, ${ENTITIES_TABLE}.public, ${ENTITIES_TABLE}.computed_attributes`;
 export const ABILITY_COLUMNS = `${ABILITIES_TABLE}.id, ${ABILITIES_TABLE}.entity_id, ${ABILITIES_TABLE}.name, ${ABILITIES_TABLE}.effect, \
   ${ABILITIES_TABLE}.custom_fields, ${ABILITIES_TABLE}.uses, ${ABILITIES_TABLE}.comment, ${ABILITIES_TABLE}.active`;
 export const CHANGELOG_COLUMNS = `${ATTRIBUTE_CHANGELOG_TABLE}.id, ${ATTRIBUTE_CHANGELOG_TABLE}.entity_id, ${ATTRIBUTE_CHANGELOG_TABLE}.attr, \
@@ -79,12 +78,12 @@ export const CAMPAIGN_COLUMNS = `${CAMPAIGNS_TABLE}.id, ${CAMPAIGNS_TABLE}.name,
 export const sqlInsertEntity = async (
   tx: TX,
   owner: string,
-  entity: UncompleteEntity
+  entity: UncompleteEntity & { computed_attributes: ComputedAttributes }
 ): Promise<Result<FullEntity>> => {
   return parseFirst(
     await tx.query(
       `INSERT INTO ${ENTITIES_TABLE} (${INSERT_ENTITY_COLUMNS})
-      VALUES ($1, $2, $3, $4, $5, $6)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING ${ENTITY_COLUMNS}`,
       [
         owner,
@@ -93,6 +92,7 @@ export const sqlInsertEntity = async (
         entity.attributes,
         entity.other_fields,
         entity.public,
+        entity.computed_attributes,
       ]
     ),
     500
@@ -128,12 +128,16 @@ export const sqlFetchEntityById = async (
 export const sqlUpdateEntityAttributes = async (
   tx: TX,
   entityId: string,
-  attributes: EntityAttributes
+  attributes: EntityAttributes,
+  computedAttributes?: ComputedAttributes | null
 ): Promise<Result<FullEntity>> => {
+  const updateComputedAttributes = computedAttributes
+    ? ", computed_attributes = $3"
+    : "";
   return parseFirst(
     await tx.query(
-      `UPDATE ${ENTITIES_TABLE} SET attributes = $1 WHERE id = $2 RETURNING ${ENTITY_COLUMNS}`,
-      [attributes, entityId]
+      `UPDATE ${ENTITIES_TABLE} SET attributes = $1 ${updateComputedAttributes} WHERE id = $2 RETURNING ${ENTITY_COLUMNS}`,
+      [attributes, entityId, computedAttributes]
     ),
     500
   );
@@ -142,12 +146,17 @@ export const sqlUpdateEntityAttributes = async (
 export const sqlUpdateEntity = async (
   tx: TX,
   entityId: string,
-  entity: FullEntity
+  entity: FullEntity,
+  computedAttributes?: ComputedAttributes | null
 ): Promise<Result<FullEntity>> => {
+  const updateComputedAttributes = computedAttributes
+    ? ", computed_attributes = $8"
+    : "";
   return parseFirst(
     await tx.query(
       `UPDATE ${ENTITIES_TABLE}
       SET owner = $1, name = $2, "type" = $3, attributes = $4, other_fields = $5, "public" = $6
+      ${updateComputedAttributes}
       WHERE id = $7
       RETURNING ${ENTITY_COLUMNS}`,
       [
@@ -158,11 +167,19 @@ export const sqlUpdateEntity = async (
         entity.other_fields,
         entity.public,
         entityId,
+        computedAttributes,
       ]
     ),
     500
   );
 };
+
+export const sqlUpdateEntityComputedAttributes = async (tx: TX, entityId: string, computedAttributes: ComputedAttributes): Promise<Result<ComputedAttributes>> => {
+  return parseFirstVal(
+    await tx.query(`UPDATE ${ENTITIES_TABLE} SET computed_attributes = $1 WHERE id = $2 RETURNING computed_attributes`,
+    [computedAttributes, entityId]
+      ))
+}
 
 export const sqlDeleteEntity = async (
   tx: TX,
@@ -176,14 +193,14 @@ export const sqlDeleteEntity = async (
 
 export const sqlInsertAbilities = async (
   tx: TX,
-  entityId: string,
-  abilities: UncompleteEntityAbility[]
+  abilities: FullEntityAbility[]
 ): Promise<Result<FullEntityAbility[]>> => {
   if (abilities.length === 0) {
     return wrapSuccessResult([]);
   }
   const abilityRows = abilities.map((ability) => [
-    entityId,
+    ability.id,
+    ability.entity_id,
     ability.name,
     ability.effect,
     ability.custom_fields,
@@ -210,6 +227,18 @@ export const sqlFetchAbilitiesByEntityId = async (
   return parseList(
     await tx.query(
       `SELECT ${ABILITY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1`,
+      [entityId]
+    )
+  );
+};
+
+export const sqlFetchFunctionalAbilitiesByEntityId = async (
+  tx: TX,
+  entityId: string
+): Promise<Result<FullEntityAbility[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ${ABILITY_COLUMNS} FROM ${ABILITIES_TABLE} WHERE entity_id = $1 AND uses IS NOT NULL`,
       [entityId]
     )
   );
@@ -339,14 +368,14 @@ export const sqlFilterChangelog = async (
 
 export const sqlInsertItems = async (
   tx: TX,
-  entityId: string,
-  items: UncompleteEntityItem[]
+  items: FullEntityItem[]
 ): Promise<Result<FullEntityItem[]>> => {
   if (items.length === 0) {
     return wrapSuccessResult([]);
   }
   const itemRows = items.map((item) => [
-    entityId,
+    item.id,
+    item.entity_id,
     item.name,
     item.bulk,
     item.desc,
@@ -375,6 +404,18 @@ export const sqlFetchItemsByEntityId = async (
   return parseList(
     await tx.query(
       `SELECT ${ITEM_COLUMNS} FROM ${ITEMS_TABLE} WHERE entity_id = $1`,
+      [entityId]
+    )
+  );
+};
+
+export const sqlFetchFunctionalItemsByEntityId = async (
+  tx: TX,
+  entityId: string
+): Promise<Result<FullEntityItem[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ${ITEM_COLUMNS} FROM ${ITEMS_TABLE} WHERE entity_id = $1 AND uses IS NOT NULL`,
       [entityId]
     )
   );

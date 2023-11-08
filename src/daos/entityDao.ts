@@ -18,8 +18,15 @@ import {
   PartialEntity,
   FullCollectedEntityWithChangelog,
   CAMPAIGN_ROLE_GM,
+  skimDownEntity,
+  CollectedEntity,
+  computeAttributes,
+  ComputedAttributes,
+  FullEntityAbility,
+  FullEntityItem,
 } from "vennt-library";
 import {
+  TX,
   sqlDeleteEntity,
   sqlFetchAbilitiesByEntityId,
   sqlFetchChangelogByEntityId,
@@ -28,6 +35,8 @@ import {
   sqlFetchEntityPermissions,
   sqlFetchEntityTextByEntityId,
   sqlFetchFluxByEntityId,
+  sqlFetchFunctionalAbilitiesByEntityId,
+  sqlFetchFunctionalItemsByEntityId,
   sqlFetchItemsByEntityId,
   sqlFilterChangelog,
   sqlInsertAbilities,
@@ -41,6 +50,11 @@ import {
   sqlUpdateEntityAttributes,
   sqlValidateAccountCanEditEntity,
 } from "./sql";
+import {
+  fetchEntityFromCache,
+  updateEntityInCache,
+} from "../logic/functionalEntityCache";
+import { randomUUID } from "crypto";
 
 export const dbInsertCollectedEntity = async (
   collected: UncompleteCollectedEntityWithChangelog,
@@ -53,24 +67,28 @@ export const dbInsertCollectedEntity = async (
   ) {
     return wrapErrorResult("trying to insert too much on initial insert", 400);
   }
+  const computedAttributes = computeAttributes(collected);
   return handleTransaction(async (tx) => {
     const entity = unwrapResultOrError(
-      await sqlInsertEntity(tx, owner, collected.entity)
+      await sqlInsertEntity(tx, owner, {
+        ...collected.entity,
+        computed_attributes: computedAttributes,
+      })
     );
     const abilities = unwrapResultOrError(
-      await sqlInsertAbilities(tx, entity.id, collected.abilities)
-    );
-    unwrapResultOrError(
-      await sqlInsertChangelog(tx, entity.id, collected.changelog)
+      await sqlInsertAbilities(tx, collected.abilities.map((ability): FullEntityAbility => ({...ability, entity_id: entity.id, id: randomUUID()})))
     );
     const items = unwrapResultOrError(
-      await sqlInsertItems(tx, entity.id, collected.items)
+      await sqlInsertItems(tx, collected.items.map((item): FullEntityItem => ({...item, entity_id: entity.id, id: randomUUID()})))
     );
     const text = unwrapResultOrError(
       await sqlInsertEntityText(tx, entity.id, collected.text)
     );
     const flux = unwrapResultOrError(
       await sqlInsertFlux(tx, entity.id, collected.flux)
+    );
+    unwrapResultOrError(
+      await sqlInsertChangelog(tx, entity.id, collected.changelog)
     );
 
     return wrapSuccessResult({
@@ -119,6 +137,22 @@ export const dbFetchCollectedEntityFull = async (
     ...baseEntity,
     changelog: entityChangelog,
   });
+};
+
+export const dbFetchCollectedEntityFunctional = async (
+  id: string,
+  tx?: TX
+): Promise<Result<CollectedEntity>> => {
+  const db = tx ?? pool;
+  const [entity, abilities, items] = await Promise.all([
+    unwrapResultOrError(await sqlFetchEntityById(db, id)),
+    unwrapResultOrError(await sqlFetchFunctionalAbilitiesByEntityId(db, id)),
+    unwrapResultOrError(await sqlFetchFunctionalItemsByEntityId(db, id)),
+  ]);
+
+  return wrapSuccessResult(
+    skimDownEntity({ entity, abilities, items, text: [], flux: [] })
+  );
 };
 
 export const dbUserOwnsEntity = async (
@@ -175,7 +209,7 @@ export const dbUpdateEntityAttributes = async (
   request: UpdateEntityAttributes
 ): Promise<Result<FullEntity>> => {
   return handleTransaction(async (tx) => {
-    const entity = unwrapResultOrError(await sqlFetchEntityById(tx, entityId));
+    const cachedEntity = await fetchEntityFromCache(entityId, tx);
     let changelogRows: UncompleteEntityChangelog[] = [];
     if (request.message) {
       changelogRows = Object.keys(request.attributes).map((attrIn) => {
@@ -183,17 +217,29 @@ export const dbUpdateEntityAttributes = async (
         return {
           attr,
           msg: request.message ?? "",
-          prev: entity.attributes[attr],
+          prev: cachedEntity.entity.attributes[attr],
         };
       });
     }
 
-    entity.attributes = { ...entity.attributes, ...request.attributes };
+    const mergedAttributes = {
+      ...cachedEntity.entity.attributes,
+      ...request.attributes,
+    };
+
+    cachedEntity.entity.attributes = mergedAttributes;
+    updateEntityInCache(entityId, cachedEntity);
+    const computedAttributes = computeAttributes(cachedEntity);
 
     const updatedEntity = unwrapResultOrError(
-      await sqlUpdateEntityAttributes(tx, entity.id, entity.attributes)
+      await sqlUpdateEntityAttributes(
+        tx,
+        entityId,
+        mergedAttributes,
+        computedAttributes
+      )
     );
-    unwrapResultOrError(await sqlInsertChangelog(tx, entity.id, changelogRows));
+    unwrapResultOrError(await sqlInsertChangelog(tx, entityId, changelogRows));
 
     return wrapSuccessResult(updatedEntity);
   });
@@ -217,12 +263,26 @@ export const dbUpdateEntity = async (
   entityId: string,
   partialEntity: PartialEntity
 ): Promise<Result<FullEntity>> => {
+  const functionalKeys: Array<keyof PartialEntity> = ["attributes", "type"];
   return handleTransaction(async (tx) => {
+    let computedAttributes: ComputedAttributes | null = null;
+    if (functionalKeys.some((key) => key in partialEntity)) {
+      // functional change applied
+      const cachedEntity = await fetchEntityFromCache(entityId, tx);
+      if (partialEntity.attributes) {
+        cachedEntity.entity.attributes = partialEntity.attributes;
+      }
+      if (partialEntity.type) {
+        cachedEntity.entity.type = partialEntity.type;
+      }
+      updateEntityInCache(entityId, cachedEntity);
+      computedAttributes = computeAttributes(cachedEntity);
+    }
     const currentEntity = unwrapResultOrError(
       await sqlFetchEntityById(tx, entityId, true)
     );
     const updatedEntity = { ...currentEntity, ...partialEntity };
-    return sqlUpdateEntity(tx, entityId, updatedEntity);
+    return sqlUpdateEntity(tx, entityId, updatedEntity, computedAttributes);
   });
 };
 
