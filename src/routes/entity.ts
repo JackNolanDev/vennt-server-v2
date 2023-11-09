@@ -147,7 +147,9 @@ const insertAbilities = async (
   return await dbInsertAbilities(id, abilities);
 };
 
-const insertItems = async (req: Request): Promise<Result<PostItemsResponse>> => {
+const insertItems = async (
+  req: Request
+): Promise<Result<PostItemsResponse>> => {
   const account = validateAuthHeader(req);
   const id = idValidator.parse(req.params.id);
   const campaignId = optionalIdValidator.parse(req.query.campaign_id);

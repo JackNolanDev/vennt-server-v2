@@ -27,29 +27,49 @@ import {
   sqlValidateAccountCanEditEntity,
 } from "./sql";
 import { randomUUID } from "crypto";
-import { fetchEntityFromCache, updateEntityInCache } from "../logic/functionalEntityCache";
+import {
+  fetchEntityFromCache,
+  updateEntityInCache,
+} from "../logic/functionalEntityCache";
 
-export const dbInsertItems = async(
+export const dbInsertItems = async (
   entityId: string,
   items: UncompleteEntityItem[]
 ): Promise<Result<PostItemsResponse>> => {
   let computedAttributes: ComputedAttributes | undefined = undefined;
-  const fullItems = items.map((item): FullEntityItem => ({...item, entity_id: entityId, id: randomUUID()}))
+  const fullItems = items.map(
+    (item): FullEntityItem => ({
+      ...item,
+      entity_id: entityId,
+      id: randomUUID(),
+    })
+  );
   const newFunctionalItems = fullItems
     .filter((ability) => ability.uses)
     .map(skimDownItem) as FullEntityItem[];
   if (newFunctionalItems.length > 0) {
     const cachedEntity = await fetchEntityFromCache(entityId);
-    cachedEntity.items.push(...newFunctionalItems)
+    cachedEntity.items.push(...newFunctionalItems);
     updateEntityInCache(entityId, cachedEntity);
     computedAttributes = computeAttributes(cachedEntity);
   }
 
   const [insertedItems, updatedAttrs] = await Promise.all([
     unwrapResultOrError(await sqlInsertItems(pool, fullItems)),
-    computedAttributes ? unwrapResultOrError(await sqlUpdateEntityComputedAttributes(pool, entityId, computedAttributes)) : undefined
-  ])
-  return wrapSuccessResult({items: insertedItems, computed_attributes: updatedAttrs})
+    computedAttributes
+      ? unwrapResultOrError(
+          await sqlUpdateEntityComputedAttributes(
+            pool,
+            entityId,
+            computedAttributes
+          )
+        )
+      : undefined,
+  ]);
+  return wrapSuccessResult({
+    items: insertedItems,
+    computed_attributes: updatedAttrs,
+  });
 };
 
 export const dbUpdateItem = (
@@ -75,19 +95,44 @@ export const dbUpdateItem = (
     }
     const newItem = { ...currentItem, ...partialItem };
 
-    let updatedAttrs: ComputedAttributes | undefined = undefined
-    const functionalKeys: Array<keyof PartialEntityItem> = ["active", "custom_fields", "name", "type", "uses"];
-    if ((currentItem.uses || newItem.uses) && functionalKeys.some((key) => key in partialItem)) {
-      const cachedEntity = await fetchEntityFromCache(currentItem.entity_id, tx);
-      const newItems = cachedEntity.items.filter((ability) => (ability as FullEntityItem).id !== itemId).concat([skimDownItem(newItem)]);
+    let updatedAttrs: ComputedAttributes | undefined = undefined;
+    const functionalKeys: Array<keyof PartialEntityItem> = [
+      "active",
+      "custom_fields",
+      "name",
+      "type",
+      "uses",
+    ];
+    if (
+      (currentItem.uses || newItem.uses) &&
+      functionalKeys.some((key) => key in partialItem)
+    ) {
+      const cachedEntity = await fetchEntityFromCache(
+        currentItem.entity_id,
+        tx
+      );
+      const newItems = cachedEntity.items
+        .filter((ability) => (ability as FullEntityItem).id !== itemId)
+        .concat([skimDownItem(newItem)]);
       cachedEntity.items = newItems;
       updateEntityInCache(currentItem.entity_id, cachedEntity);
       const computedAttributes = computeAttributes(cachedEntity);
-      updatedAttrs = unwrapResultOrError( await sqlUpdateEntityComputedAttributes(tx, currentItem.entity_id, computedAttributes));
+      updatedAttrs = unwrapResultOrError(
+        await sqlUpdateEntityComputedAttributes(
+          tx,
+          currentItem.entity_id,
+          computedAttributes
+        )
+      );
     }
 
-    const updatedItem =  unwrapResultOrError(await sqlUpdateItem(tx, itemId, newItem));
-    return wrapSuccessResult({item: updatedItem, computed_attributes: updatedAttrs})
+    const updatedItem = unwrapResultOrError(
+      await sqlUpdateItem(tx, itemId, newItem)
+    );
+    return wrapSuccessResult({
+      item: updatedItem,
+      computed_attributes: updatedAttrs,
+    });
   });
 };
 
@@ -110,17 +155,25 @@ export const dbDeleteItem = (
       throw new ResultError(FORBIDDEN_RESULT);
     }
 
-    let updatedAttrs: ComputedAttributes | undefined = undefined
+    let updatedAttrs: ComputedAttributes | undefined = undefined;
     if (item.uses) {
       const cachedEntity = await fetchEntityFromCache(item.entity_id, tx);
-      const newItems = cachedEntity.items.filter((ability) => (ability as FullEntityItem).id !== itemId);
+      const newItems = cachedEntity.items.filter(
+        (ability) => (ability as FullEntityItem).id !== itemId
+      );
       cachedEntity.items = newItems;
       updateEntityInCache(item.entity_id, cachedEntity);
-    const computedAttributes = computeAttributes(cachedEntity);
-    updatedAttrs = unwrapResultOrError( await sqlUpdateEntityComputedAttributes(tx, item.entity_id, computedAttributes));
+      const computedAttributes = computeAttributes(cachedEntity);
+      updatedAttrs = unwrapResultOrError(
+        await sqlUpdateEntityComputedAttributes(
+          tx,
+          item.entity_id,
+          computedAttributes
+        )
+      );
     }
-    
-    await sqlDeleteItem(tx, itemId)
-    return wrapSuccessResult({computed_attributes: updatedAttrs});
+
+    await sqlDeleteItem(tx, itemId);
+    return wrapSuccessResult({ computed_attributes: updatedAttrs });
   });
 };

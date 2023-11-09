@@ -103,5 +103,6 @@ export const MAGUS_USES: Record<string, UsesMap> = {
           "On Successful Double Cast Spell, gain 2 temp MP, must be used by the end of your turn",
       },
     ],
+    hide_default_use_button: true,
   },
 };

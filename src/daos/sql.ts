@@ -174,12 +174,18 @@ export const sqlUpdateEntity = async (
   );
 };
 
-export const sqlUpdateEntityComputedAttributes = async (tx: TX, entityId: string, computedAttributes: ComputedAttributes): Promise<Result<ComputedAttributes>> => {
+export const sqlUpdateEntityComputedAttributes = async (
+  tx: TX,
+  entityId: string,
+  computedAttributes: ComputedAttributes
+): Promise<Result<ComputedAttributes>> => {
   return parseFirstVal(
-    await tx.query(`UPDATE ${ENTITIES_TABLE} SET computed_attributes = $1 WHERE id = $2 RETURNING computed_attributes`,
-    [computedAttributes, entityId]
-      ))
-}
+    await tx.query(
+      `UPDATE ${ENTITIES_TABLE} SET computed_attributes = $1 WHERE id = $2 RETURNING computed_attributes`,
+      [computedAttributes, entityId]
+    )
+  );
+};
 
 export const sqlDeleteEntity = async (
   tx: TX,

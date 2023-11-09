@@ -52,5 +52,6 @@ export const BEGINNER_USES: Record<string, UsesMap> = {
         label: "When you are the only character in a Scene",
       },
     ],
+    hide_default_use_button: true,
   },
 };

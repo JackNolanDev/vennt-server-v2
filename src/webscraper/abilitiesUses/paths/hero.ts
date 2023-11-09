@@ -27,6 +27,7 @@ export const HERO_USES: Record<string, UsesMap> = {
       { attr: { actions: 2 }, label: "Gain 2 Actions" },
       { attr: { reactions: 3 }, label: "Gain 3 Reactions" },
     ],
+    hide_default_use_button: true,
   },
   "Thief's Celerity": { adjust: { time: "permanent", attr: { agi: 1 } } },
   "Scientist's Curiosity": { adjust: { time: "permanent", attr: { wis: 1 } } },

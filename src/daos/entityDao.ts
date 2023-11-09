@@ -76,10 +76,28 @@ export const dbInsertCollectedEntity = async (
       })
     );
     const abilities = unwrapResultOrError(
-      await sqlInsertAbilities(tx, collected.abilities.map((ability): FullEntityAbility => ({...ability, entity_id: entity.id, id: randomUUID()})))
+      await sqlInsertAbilities(
+        tx,
+        collected.abilities.map(
+          (ability): FullEntityAbility => ({
+            ...ability,
+            entity_id: entity.id,
+            id: randomUUID(),
+          })
+        )
+      )
     );
     const items = unwrapResultOrError(
-      await sqlInsertItems(tx, collected.items.map((item): FullEntityItem => ({...item, entity_id: entity.id, id: randomUUID()})))
+      await sqlInsertItems(
+        tx,
+        collected.items.map(
+          (item): FullEntityItem => ({
+            ...item,
+            entity_id: entity.id,
+            id: randomUUID(),
+          })
+        )
+      )
     );
     const text = unwrapResultOrError(
       await sqlInsertEntityText(tx, entity.id, collected.text)
