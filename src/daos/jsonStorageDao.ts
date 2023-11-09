@@ -2,7 +2,6 @@ import { JsonStorageKey, Result } from "vennt-library";
 import { ResultError, wrapErrorResult, wrapSuccessResult } from "../utils/db";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getS3Client } from "../utils/s3";
-import axios from "axios";
 
 export const JSON_STORAGE_BUCKET = "json-storage";
 export const JSON_STORAGE_PUBLIC_URL =
@@ -30,14 +29,15 @@ export const dbUpsertJSONDocument = async (
 };
 
 export const dbGetJSONDocument = async <T>(key: JsonStorageKey): Promise<T> => {
-  const axiosResponse = await axios.get(`${JSON_STORAGE_PUBLIC_URL}/${key}`);
-  if (axiosResponse.status === 200) {
-    if (typeof axiosResponse.data === "object") {
-      return axiosResponse.data;
+  const fetchResponse = await fetch(`${JSON_STORAGE_PUBLIC_URL}/${key}`);
+  if (fetchResponse.status === 200) {
+    const json = await fetchResponse.json();
+    if (typeof json === "object") {
+      return json;
     }
     throw new ResultError(wrapErrorResult("invalid JSON in storage", 500));
   }
   throw new ResultError(
-    wrapErrorResult(axiosResponse.statusText, axiosResponse.status)
+    wrapErrorResult(fetchResponse.statusText, fetchResponse.status)
   );
 };

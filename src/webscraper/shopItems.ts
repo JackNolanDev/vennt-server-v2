@@ -1,8 +1,7 @@
-import axios from "axios";
 import { CheerioAPI, load } from "cheerio";
 import { EntityItemType, ITEM_TYPE_EQUIPMENT, ShopItem } from "vennt-library";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
-import { parseBulk, parseSP } from "./webscraperUtils";
+import { parseBulk, parseSP, sleep } from "./webscraperUtils";
 
 const EQUIPMENT_URL = "https://vennt.fandom.com/wiki/Equipment";
 const CONSUMABLE_URL = "https://vennt.fandom.com/wiki/Consumables";
@@ -490,129 +489,157 @@ export const fetchShopItems = async (
   weaponTypes: ShopItem[]
 ): Promise<ShopItem[]> => {
   console.log("starting to web scrape shop items");
-  const equipment = await axios.get(EQUIPMENT_URL).then((response) => {
-    const $ = load(response.data);
-    const mundaneBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(12) > tbody",
-      "equipment",
-      "Mundane Basic Equipment"
-    );
-    const unusualBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(14) > tbody",
-      "equipment",
-      "Unusual Basic Equipment"
-    );
-    const rareBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(16) > tbody",
-      "equipment",
-      "Rare Basic Equipment (Cannot be purchased)"
-    );
-    const mundaneCombat = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(19) > tbody",
-      "equipment",
-      "Mundane Combat Equipment",
-      "Combat"
-    );
-    const unusualCombat = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(20) > tbody",
-      "equipment",
-      "Unusual Combat Equipment",
-      "Combat"
-    );
-    return mundaneBasic.concat(
-      unusualBasic,
-      rareBasic,
-      mundaneCombat,
-      unusualCombat
-    );
-  });
-  const consumables = await axios.get(CONSUMABLE_URL).then((response) => {
-    const $ = load(response.data);
-    const mundaneBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(12) > tbody",
-      "consumable",
-      "Mundane Basic Consumables"
-    );
-    const unusualBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(13) > tbody",
-      "consumable",
-      "Unusual Basic Consumables"
-    );
-    const rareBasic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(14) > tbody",
-      "consumable",
-      "Rare Basic Consumables (Cannot be purchased)"
-    );
-    const mundaneHeroic = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(17) > tbody",
-      "consumable",
-      "Mundane Heroic Consumables",
-      "Heroism"
-    );
-    const mundaneDamage = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(20) > tbody",
-      "consumable",
-      "Mundane Damage Consumables",
-      "Damages"
-    );
-    const unusualDamage = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(22) > tbody",
-      "consumable",
-      "Unusual Damage Consumables",
-      "Damages"
-    );
-    const mundaneBaseCourse = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(27) > tbody",
-      "consumable",
-      "Mundane Base Course Consumables",
-      "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
-    );
-    const unusualBaseCourse = parseTable(
-      $,
-      "#mw-content-text > div > table:nth-child(28) > tbody",
-      "consumable",
-      "Unusual Base Course Consumables",
-      "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
-    );
-    return mundaneBasic.concat(
-      unusualBasic,
-      rareBasic,
-      mundaneHeroic,
-      mundaneDamage,
-      unusualDamage,
-      mundaneBaseCourse,
-      unusualBaseCourse
-    );
-  });
-  const containers = await axios.get(CONTAINER_URL).then((response) => {
-    return getContainers(response.data);
-  });
-  const advancedWeapons = await axios
-    .get(ADVANCED_WEAPONS_URL)
-    .then((response) => {
-      return getAdvancedWeapons(response.data, weaponTypes);
+  const equipment = await fetch(EQUIPMENT_URL)
+    .then((response) => response.text())
+    .then((text) => {
+      const $ = load(text);
+      const mundaneBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(12) > tbody",
+        "equipment",
+        "Mundane Basic Equipment"
+      );
+      const unusualBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(14) > tbody",
+        "equipment",
+        "Unusual Basic Equipment"
+      );
+      const rareBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(16) > tbody",
+        "equipment",
+        "Rare Basic Equipment (Cannot be purchased)"
+      );
+      const mundaneCombat = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(19) > tbody",
+        "equipment",
+        "Mundane Combat Equipment",
+        "Combat"
+      );
+      const unusualCombat = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(20) > tbody",
+        "equipment",
+        "Unusual Combat Equipment",
+        "Combat"
+      );
+      return mundaneBasic.concat(
+        unusualBasic,
+        rareBasic,
+        mundaneCombat,
+        unusualCombat
+      );
     });
-  const grenades = await axios.get(GRENADES_URL).then((response) => {
-    return getGrenades(response.data, weaponTypes);
-  });
-  const advancedAmmo = await axios.get(ADVANCED_AMMO_URL).then((response) => {
-    return getAdvancedAmmo(response.data);
-  });
-  const armor = await axios.get(ARMOR_URL).then((response) => {
-    return getArmor(response.data);
-  });
+  console.log("equipment done");
+
+  await sleep(2000);
+
+  const consumables = await fetch(CONSUMABLE_URL)
+    .then((response) => response.text())
+    .then((text) => {
+      const $ = load(text);
+      const mundaneBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(12) > tbody",
+        "consumable",
+        "Mundane Basic Consumables"
+      );
+      const unusualBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(13) > tbody",
+        "consumable",
+        "Unusual Basic Consumables"
+      );
+      const rareBasic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(14) > tbody",
+        "consumable",
+        "Rare Basic Consumables (Cannot be purchased)"
+      );
+      const mundaneHeroic = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(17) > tbody",
+        "consumable",
+        "Mundane Heroic Consumables",
+        "Heroism"
+      );
+      const mundaneDamage = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(20) > tbody",
+        "consumable",
+        "Mundane Damage Consumables",
+        "Damages"
+      );
+      const unusualDamage = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(22) > tbody",
+        "consumable",
+        "Unusual Damage Consumables",
+        "Damages"
+      );
+      const mundaneBaseCourse = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(27) > tbody",
+        "consumable",
+        "Mundane Base Course Consumables",
+        "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
+      );
+      const unusualBaseCourse = parseTable(
+        $,
+        "#mw-content-text > div > table:nth-child(28) > tbody",
+        "consumable",
+        "Unusual Base Course Consumables",
+        "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
+      );
+      return mundaneBasic.concat(
+        unusualBasic,
+        rareBasic,
+        mundaneHeroic,
+        mundaneDamage,
+        unusualDamage,
+        mundaneBaseCourse,
+        unusualBaseCourse
+      );
+    });
+  console.log("consumables done");
+
+  await sleep(2000);
+
+  const containers = await fetch(CONTAINER_URL)
+    .then((response) => response.text())
+    .then((text) => getContainers(text));
+  console.log("containers done");
+
+  await sleep(2000);
+
+  const advancedWeapons = await fetch(ADVANCED_WEAPONS_URL)
+    .then((response) => response.text())
+    .then((text) => getAdvancedWeapons(text, weaponTypes));
+  console.log("advanced weapons done");
+
+  await sleep(2000);
+
+  const grenades = await fetch(GRENADES_URL)
+    .then((response) => response.text())
+    .then((text) => getGrenades(text, weaponTypes));
+  console.log("grenades done");
+
+  await sleep(2000);
+
+  const advancedAmmo = await fetch(ADVANCED_AMMO_URL)
+    .then((response) => response.text())
+    .then((text) => getAdvancedAmmo(text));
+  console.log("ammo done");
+
+  await sleep(2000);
+
+  const armor = await fetch(ARMOR_URL)
+    .then((response) => response.text())
+    .then((text) => getArmor(text));
+  console.log("armor done");
+
   const items = equipment.concat(
     consumables,
     advancedAmmo,

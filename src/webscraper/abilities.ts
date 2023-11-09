@@ -1,4 +1,3 @@
-import axios, { AxiosError } from "axios";
 import {
   AbilityCostMapBoolean,
   AbilityCostMapNumber,
@@ -12,14 +11,18 @@ import { NodeHtmlMarkdown } from "node-html-markdown";
 import { cleanQuotes, sleep } from "./webscraperUtils";
 import { addProgrammaticUses } from "./abilitiesProgrammaticUses";
 import { REPEATABLE_SIGNIFIERS, ABILITY_USES } from "./abilitiesUses/uses";
+import { ResultError, throwErrorResult } from "../utils/db";
 
 const LIST_OF_PATHS = "https://vennt.fandom.com/wiki/List_of_Paths";
 const BASE_URL = "https://vennt.fandom.com";
 
+const FETCH_ERROR_START = "fetch: ";
+
 const fetchPathUrls = async (): Promise<Set<string>> => {
   const pathUrls = new Set<string>();
-  const page = await axios.get(LIST_OF_PATHS);
-  const $ = load(page.data);
+  const page = await fetch(LIST_OF_PATHS);
+  const pageText = await page.text();
+  const $ = load(pageText);
   const links = $("#mw-content-text a");
   links.each((_, el) => {
     if (
@@ -194,8 +197,12 @@ const parseAbilityPage = async (
   url: string,
   markdown: NodeHtmlMarkdown
 ): Promise<[PathDetails, UncompleteEntityAbility[]]> => {
-  const page = await axios.get(url);
-  const $ = load(page.data);
+  const page = await fetch(url);
+  if (!page.ok) {
+    throwErrorResult(`${FETCH_ERROR_START}${page.statusText}`, page.status);
+  }
+  const pageData = await page.text();
+  const $ = load(pageData);
   const pathName = cleanQuotes($("#firstHeading").first().text().trim());
   const pathDetails: PathDetails = { name: pathName, url, desc: "" };
   const abilities: UncompleteEntityAbility[] = [];
@@ -327,12 +334,14 @@ export const fetchAbilities = async (): Promise<PathsAndAbilities> => {
         await sleep(2000);
         break;
       } catch (err: unknown) {
-        if (err instanceof AxiosError) {
+        if (err instanceof ResultError) {
           console.log(
             `Errored with ${err.name} with message ${err.message} while fetching ${url}. Sleeping and trying again`
           );
           // exponential back off
           await sleep(Math.pow(2, errCount) * 2000);
+        } else {
+          throw err;
         }
         errCount++;
       }

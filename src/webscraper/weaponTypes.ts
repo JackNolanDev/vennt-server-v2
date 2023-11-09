@@ -1,4 +1,3 @@
-import axios from "axios";
 import { load } from "cheerio";
 import { ShopItem } from "vennt-library";
 import { parseAttr, parseBulk, parseSP } from "./webscraperUtils";
@@ -96,9 +95,9 @@ const addWeaponUses = (weapon: ShopItem): void => {
 
 export const fetchWeaponTypes = async () => {
   console.log("starting to web scrape weapon types");
-  const weaponTypes = await axios.get(WEAPONS_URL).then((response) => {
-    return getWeaponTypes(response.data);
-  });
+  const weaponTypes = await fetch(WEAPONS_URL)
+    .then((response) => response.text())
+    .then((text) => getWeaponTypes(text));
   console.log("complete web scrape weapon types");
   return weaponTypes;
 };
