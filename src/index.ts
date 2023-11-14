@@ -1,6 +1,6 @@
 import express from "express";
+import expressWS from "express-ws";
 import cors from "cors";
-import dotEnv from "dotenv";
 
 import abilityRoute from "./routes/ability";
 import authRoute from "./routes/auth";
@@ -9,13 +9,14 @@ import itemRoute from "./routes/item";
 import adminRoute from "./routes/admin";
 import campaignRoute from "./routes/campaign";
 import campaignInvitesRoute from "./routes/campaignInvites";
+import { campaignWSHandler } from "./routes/campaignWS";
 
-dotEnv.config();
+// dotEnv.config();
 
 const isProd = process.env.NODE_ENV === "production";
 
 // INIT EXPRESS & BODY PARSER
-const app = express();
+const { app } = expressWS(express());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,6 +37,9 @@ app.use("/item", itemRoute);
 app.use("/admin", adminRoute);
 app.use("/campaign", campaignRoute);
 app.use("/campaign_invite", campaignInvitesRoute);
+
+// WS handler
+app.ws("/campaign/:id/ws", campaignWSHandler);
 
 console.log(
   `${isProd ? "Production" : "Local"} server started using bun version: ${
