@@ -2,13 +2,18 @@ import { PutBucketCorsCommand, S3Client } from "@aws-sdk/client-s3";
 import { Result } from "vennt-library";
 import { wrapErrorResult, wrapSuccessResult } from "./db";
 
+let client: S3Client | null = null;
+
 export const getS3Client = (): Result<S3Client> => {
+  if (client) {
+    return wrapSuccessResult(client);
+  }
   if (
     process.env.R2_ACCOUNT_ID &&
     process.env.R2_ACCESS_KEY_ID &&
     process.env.R2_SECRET_ACCESS_KEY
   ) {
-    const client = new S3Client({
+    client = new S3Client({
       region: "auto",
       endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       credentials: {
