@@ -1,7 +1,9 @@
 import {
   AttributeValue,
+  DeleteItemCommand,
   PutItemCommand,
   QueryCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { ChatMessage, OLD_CHAT_TYPE, OldChatMessages } from "vennt-library";
 import { getDynamoClient } from "../utils/dynamo";
@@ -34,15 +36,17 @@ export const dbFetchChatMessages = async (
       "attribute_not_exists(#f) or sender = :accountId or #f = :accountId",
     ExpressionAttributeNames: { "#f": "for" },
     ScanIndexForward: false, // We want to fetch the most recent messages first
-    Limit: 100,
+    Limit: 30,
     ...(cursor && {
       ExclusiveStartKey: JSON.parse(Buffer.from(cursor, "base64").toString()),
     }),
   });
+
   const result = await getDynamoClient().send(command);
   if (result.$metadata.httpStatusCode !== 200 || result.Items === undefined) {
     throw new ResultError(wrapErrorResult("Dynamo query failed", 500));
   }
+
   return {
     type: OLD_CHAT_TYPE,
     message: result.Items.map((msg): ChatMessage => {
@@ -51,11 +55,59 @@ export const dbFetchChatMessages = async (
       return formatObjFromDynamo(msg) as ChatMessage;
     }),
     ...(result.LastEvaluatedKey && {
-      c: Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
+      cursor: Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
         "base64"
       ),
     }),
   };
+};
+
+export const dbUpdateChatMessage = async (
+  campaignId: string,
+  accountId: string,
+  messageId: string,
+  newMessage: string
+): Promise<ChatMessage> => {
+  const command = new UpdateItemCommand({
+    TableName: CAMPAIGN_CHAT_TABLE,
+    Key: { campaign_id: { S: campaignId }, id: { S: messageId } },
+    ExpressionAttributeValues: {
+      ":accountId": { S: accountId },
+      ":newMessage": { S: newMessage },
+      ":updated": { S: new Date().toISOString() },
+    },
+    // Only the user who sent the message may update it, for now
+    ConditionExpression: "sender = :accountId",
+    UpdateExpression: "SET message = :newMessage, updated = :updated",
+    ReturnValues: "ALL_NEW",
+    ReturnValuesOnConditionCheckFailure: "NONE",
+  });
+
+  const result = await getDynamoClient().send(command);
+
+  if (
+    result.$metadata.httpStatusCode !== 200 ||
+    result.Attributes === undefined
+  ) {
+    throw new ResultError(wrapErrorResult("Dynamo update failed", 500));
+  }
+  return formatObjFromDynamo(result.Attributes) as ChatMessage;
+};
+
+export const dbDeleteChatMessage = async (
+  campaignId: string,
+  accountId: string,
+  messageId: string
+) => {
+  const command = new DeleteItemCommand({
+    TableName: CAMPAIGN_CHAT_TABLE,
+    Key: { campaign_id: { S: campaignId }, id: { S: messageId } },
+    ExpressionAttributeValues: { ":accountId": { S: accountId } },
+    // Only the user who sent the message may delete it, for now
+    ConditionExpression: "sender = :accountId",
+  });
+
+  await getDynamoClient().send(command);
 };
 
 const formatObjForDynamo = (

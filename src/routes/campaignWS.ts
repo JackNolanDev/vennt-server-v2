@@ -3,7 +3,9 @@ import {
   AccountInfo,
   CONNECTION_AUTHORIZED_MSG,
   CampaignRole,
+  DELETE_CHAT_TYPE,
   REQUEST_CHAT_TYPE,
+  REQUEST_UPDATE_CHAT_TYPE,
   SEND_CHAT_TYPE,
   campaignWSMessageValidator,
   idValidator,
@@ -18,8 +20,10 @@ import {
 } from "../logic/campaignSubscriptions";
 import { dbFetchChatMessages } from "../daos/campaignChatDao";
 import {
+  handleDeleteChatMessage,
   handleNewChatMessage,
   handleOldChatMessagesRequest,
+  handleUpdateChatMessageRequest,
 } from "../logic/campaignChat";
 
 export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
@@ -72,7 +76,7 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
       } catch (err) {
         closeConnection();
       }
-    } else {
+    } else if (role !== "SPECTATOR") {
       try {
         const msg = campaignWSMessageValidator.parse(
           JSON.parse(buffer.toString())
@@ -83,6 +87,12 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
             break;
           case REQUEST_CHAT_TYPE:
             handleOldChatMessagesRequest(account.id, campaignId, msg);
+            break;
+          case REQUEST_UPDATE_CHAT_TYPE:
+            handleUpdateChatMessageRequest(account.id, campaignId, msg);
+            break;
+          case DELETE_CHAT_TYPE:
+            handleDeleteChatMessage(account.id, campaignId, msg);
             break;
         }
       } catch (err) {
