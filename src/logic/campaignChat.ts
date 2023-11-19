@@ -66,6 +66,7 @@ export const handleUpdateChatMessageRequest = async (
     id: fullChatMessage.id,
     message: fullChatMessage.message,
     updated: fullChatMessage.updated!,
+    request_id: request.request_id,
   };
   broadcastMessage(
     campaignId,

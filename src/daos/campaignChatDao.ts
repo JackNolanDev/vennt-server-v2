@@ -12,9 +12,10 @@ import { ResultError, wrapErrorResult } from "../utils/db";
 const CAMPAIGN_CHAT_TABLE = "campaign_chat";
 
 export const dbSaveChatMessage = (campaignId: string, message: ChatMessage) => {
+  const { request_id, ...baseMessage } = message; // do not save request_id in DB
   const command = new PutItemCommand({
     TableName: CAMPAIGN_CHAT_TABLE,
-    Item: formatObjForDynamo({ campaign_id: campaignId, ...message }),
+    Item: formatObjForDynamo({ campaign_id: campaignId, ...baseMessage }),
   });
   getDynamoClient().send(command);
 };
