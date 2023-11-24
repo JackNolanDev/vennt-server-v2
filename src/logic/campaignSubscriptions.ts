@@ -1,6 +1,9 @@
+import { CampaignRole } from "vennt-library";
+
 interface CampaignSubscription {
   connectionId: string;
   accountId: string;
+  role: CampaignRole;
   sendMsg: (msg: string) => void;
 }
 
@@ -39,12 +42,17 @@ export const broadcastToCampaign = (campaignId: string, msg: string) => {
   campaignSubscriptions[campaignId]?.forEach(({ sendMsg }) => sendMsg(msg));
 };
 
-export const broadcastToCampaignAccounts = (
-  campaignId: string,
-  msg: string,
-  accounts: string[]
-) => {
+export const broadcastToCampaignAccounts = (params: {
+  campaignId: string;
+  msg: string;
+  accounts?: string[];
+  roles?: CampaignRole[];
+}) => {
+  const { campaignId, msg, accounts, roles } = params;
   campaignSubscriptions[campaignId]
-    ?.filter(({ accountId }) => accounts.includes(accountId))
+    ?.filter(
+      ({ accountId, role }) =>
+        accounts?.includes(accountId) || roles?.includes(role)
+    )
     .forEach(({ sendMsg }) => sendMsg(msg));
 };

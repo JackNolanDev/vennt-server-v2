@@ -5,6 +5,7 @@ import {
   CampaignRole,
   DELETE_CHAT_TYPE,
   REQUEST_CHAT_TYPE,
+  REQUEST_DICE_ROLL_TYPE,
   REQUEST_UPDATE_CHAT_TYPE,
   SEND_CHAT_TYPE,
   campaignWSMessageValidator,
@@ -23,6 +24,7 @@ import {
   handleDeleteChatMessage,
   handleNewChatMessage,
   handleOldChatMessagesRequest,
+  handleRequestDiceRoll,
   handleUpdateChatMessageRequest,
 } from "../logic/campaignChat";
 
@@ -67,11 +69,16 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
         ws.send(CONNECTION_AUTHORIZED_MSG);
         subscribeToCampaign({
           accountId: account.id,
+          role,
           campaignId,
           connectionId,
           sendMsg: (msg) => ws.send(msg),
         });
-        const oldMessages = await dbFetchChatMessages(campaignId, account.id);
+        const oldMessages = await dbFetchChatMessages({
+          campaignId,
+          accountId: account.id,
+          isGm: role === "GM",
+        });
         ws.send(JSON.stringify(oldMessages));
       } catch (err) {
         closeConnection();
@@ -85,8 +92,11 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
           case SEND_CHAT_TYPE:
             handleNewChatMessage(account.id, campaignId, msg);
             break;
+          case REQUEST_DICE_ROLL_TYPE:
+            handleRequestDiceRoll(account.id, campaignId, msg);
+            break;
           case REQUEST_CHAT_TYPE:
-            handleOldChatMessagesRequest(account.id, campaignId, msg);
+            handleOldChatMessagesRequest(account.id, campaignId, role!, msg);
             break;
           case REQUEST_UPDATE_CHAT_TYPE:
             handleUpdateChatMessageRequest(account.id, campaignId, msg);

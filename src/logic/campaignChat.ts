@@ -1,9 +1,13 @@
 import { randomUUID } from "crypto";
 import {
   CHAT_TYPE,
+  CampaignRole,
   CampaignWSMessage,
   ChatMessage,
+  DICE_ROLL_RESULT_TYPE,
   DeleteChatMessage,
+  DiceRollResult,
+  RequestDiceRoll,
   RequestOldChatMessages,
   RequestUpdateChatMessage,
   SendChatMessage,
@@ -20,6 +24,7 @@ import {
   dbSaveChatMessage,
   dbUpdateChatMessage,
 } from "../daos/campaignChatDao";
+import { DiceRoll } from "@dice-roller/rpg-dice-roller";
 
 export const handleNewChatMessage = (
   accountId: string,
@@ -41,13 +46,43 @@ export const handleNewChatMessage = (
   dbSaveChatMessage(campaignId, newMessage);
 };
 
+export const handleRequestDiceRoll = (
+  accountId: string,
+  campaignId: string,
+  msg: RequestDiceRoll
+) => {
+  const result = JSON.stringify(new DiceRoll(msg.dice).toJSON());
+  const newMessage: DiceRollResult = {
+    ...msg,
+    type: DICE_ROLL_RESULT_TYPE,
+    sender: accountId,
+    id: randomUUID(),
+    time: new Date().toISOString(),
+    result,
+  };
+  if (msg.gm_only) {
+    broadcastMessage(campaignId, newMessage, [accountId], ["GM"]);
+  } else {
+    broadcastMessage(campaignId, newMessage);
+  }
+  dbSaveChatMessage(campaignId, newMessage);
+};
+
 export const handleOldChatMessagesRequest = async (
   accountId: string,
   campaignId: string,
+  role: CampaignRole,
   request: RequestOldChatMessages
 ) => {
-  const msg = await dbFetchChatMessages(campaignId, accountId, request.cursor);
-  broadcastMessage(campaignId, msg, [accountId]);
+  const msg = await dbFetchChatMessages({
+    accountId,
+    campaignId,
+    cursor: request.cursor,
+    isGm: role === "GM",
+  });
+  broadcastMessage(campaignId, { ...msg, request_id: request.request_id }, [
+    accountId,
+  ]);
 };
 
 export const handleUpdateChatMessageRequest = async (
@@ -100,11 +135,17 @@ const chatMessageAccounts = (
 const broadcastMessage = (
   campaignId: string,
   msg: CampaignWSMessage,
-  accounts?: string[]
+  accounts?: string[],
+  roles?: CampaignRole[]
 ) => {
   const stringMsg = JSON.stringify(msg);
-  if (accounts) {
-    broadcastToCampaignAccounts(campaignId, stringMsg, accounts);
+  if (accounts || roles) {
+    broadcastToCampaignAccounts({
+      campaignId,
+      msg: stringMsg,
+      accounts,
+      roles,
+    });
   } else {
     broadcastToCampaign(campaignId, stringMsg);
   }

@@ -5,13 +5,21 @@ import {
   QueryCommand,
   UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
-import { ChatMessage, OLD_CHAT_TYPE, OldChatMessages } from "vennt-library";
+import {
+  ChatMessage,
+  OLD_CHAT_TYPE,
+  OldChatMessages,
+  StoredMessage,
+} from "vennt-library";
 import { getDynamoClient } from "../utils/dynamo";
 import { ResultError, wrapErrorResult } from "../utils/db";
 
 const CAMPAIGN_CHAT_TABLE = "campaign_chat";
 
-export const dbSaveChatMessage = (campaignId: string, message: ChatMessage) => {
+export const dbSaveChatMessage = (
+  campaignId: string,
+  message: StoredMessage
+) => {
   const { request_id, ...baseMessage } = message; // do not save request_id in DB
   const command = new PutItemCommand({
     TableName: CAMPAIGN_CHAT_TABLE,
@@ -20,11 +28,14 @@ export const dbSaveChatMessage = (campaignId: string, message: ChatMessage) => {
   getDynamoClient().send(command);
 };
 
-export const dbFetchChatMessages = async (
-  campaignId: string,
-  accountId: string,
-  cursor?: string
-): Promise<OldChatMessages> => {
+export const dbFetchChatMessages = async (params: {
+  campaignId: string;
+  accountId: string;
+  cursor?: string;
+  isGm?: boolean;
+}): Promise<OldChatMessages> => {
+  const { campaignId, accountId, cursor, isGm } = params;
+  const block_gm_only = isGm ? "" : "attribute_not_exists(gm_only) and ";
   const command = new QueryCommand({
     TableName: CAMPAIGN_CHAT_TABLE,
     IndexName: "time-index",
@@ -33,8 +44,7 @@ export const dbFetchChatMessages = async (
       ":accountId": { S: accountId },
     },
     KeyConditionExpression: "campaign_id = :campaignId",
-    FilterExpression:
-      "attribute_not_exists(#f) or sender = :accountId or #f = :accountId",
+    FilterExpression: `${block_gm_only} (attribute_not_exists(#f) or sender = :accountId or #f = :accountId)`,
     ExpressionAttributeNames: { "#f": "for" },
     ScanIndexForward: false, // We want to fetch the most recent messages first
     Limit: 30,
@@ -50,10 +60,10 @@ export const dbFetchChatMessages = async (
 
   return {
     type: OLD_CHAT_TYPE,
-    message: result.Items.map((msg): ChatMessage => {
+    message: result.Items.map((msg): StoredMessage => {
       delete msg.campaign_id;
       // could pass through zod to validate row, I guess
-      return formatObjFromDynamo(msg) as ChatMessage;
+      return formatObjFromDynamo(msg) as StoredMessage;
     }),
     ...(result.LastEvaluatedKey && {
       cursor: Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString(
