@@ -134,10 +134,13 @@ export const sqlUpdateEntityAttributes = async (
   const updateComputedAttributes = computedAttributes
     ? ", computed_attributes = $3"
     : "";
+  const computedAttributesParams = computedAttributes
+    ? [computedAttributes]
+    : [];
   return parseFirst(
     await tx.query(
       `UPDATE ${ENTITIES_TABLE} SET attributes = $1 ${updateComputedAttributes} WHERE id = $2 RETURNING ${ENTITY_COLUMNS}`,
-      [attributes, entityId, computedAttributes]
+      [attributes, entityId, ...computedAttributesParams]
     ),
     500
   );
@@ -152,6 +155,9 @@ export const sqlUpdateEntity = async (
   const updateComputedAttributes = computedAttributes
     ? ", computed_attributes = $8"
     : "";
+  const computedAttributesParams = computedAttributes
+    ? [computedAttributes]
+    : [];
   return parseFirst(
     await tx.query(
       `UPDATE ${ENTITIES_TABLE}
@@ -167,7 +173,7 @@ export const sqlUpdateEntity = async (
         entity.other_fields,
         entity.public,
         entityId,
-        computedAttributes,
+        ...computedAttributesParams,
       ]
     ),
     500
