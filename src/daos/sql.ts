@@ -13,6 +13,7 @@ import {
   CampaignDesc,
   CampaignEntity,
   CampaignInvite,
+  CampaignInviteLink,
   CampaignInviteWithDetails,
   CampaignMember,
   CampaignRole,
@@ -31,6 +32,7 @@ import {
   FullEntityText,
   PostCampaign,
   PostCampaignInvite,
+  PostCampaignInviteLink,
   Result,
   UncompleteEntity,
   UncompleteEntityChangelog,
@@ -49,6 +51,7 @@ export const ENTITY_TEXT_TABLE = "vennt.entity_text";
 export const FLUX_TABLE = "vennt.flux";
 export const CAMPAIGNS_TABLE = "vennt.campaigns";
 export const CAMPAIGN_INVITES_TABLE = "vennt.campaign_invites";
+export const CAMPAIGN_INVITE_LINKS_TABLE = "vennt.campaign_invite_links";
 export const CAMPAIGN_MEMBERS_TABLE = "vennt.campaign_members";
 export const CAMPAIGN_ENTITIES_TABLE = "vennt.campaign_entities";
 
@@ -72,6 +75,8 @@ export const ENTITY_TEXT_COLUMNS = `${ENTITY_TEXT_TABLE}.id, ${ENTITY_TEXT_TABLE
 export const FLUX_COLUMNS = `${FLUX_TABLE}.id, ${FLUX_TABLE}.entity_id, ${FLUX_TABLE}.type, ${FLUX_TABLE}.text, ${FLUX_TABLE}.metadata`;
 export const CAMPAIGN_COLUMNS = `${CAMPAIGNS_TABLE}.id, ${CAMPAIGNS_TABLE}.name, ${CAMPAIGNS_TABLE}.in_combat, ${CAMPAIGNS_TABLE}.init_index, \
   ${CAMPAIGNS_TABLE}.init_round, ${CAMPAIGNS_TABLE}.desc`;
+export const CAMPAIGN_INVITE_LINKS_COLUMNS = `${CAMPAIGN_INVITE_LINKS_TABLE}.id, ${CAMPAIGN_INVITE_LINKS_TABLE}.campaign_id, \
+  ${CAMPAIGN_INVITE_LINKS_TABLE}.hash, ${CAMPAIGN_INVITE_LINKS_TABLE}.created, ${CAMPAIGN_INVITE_LINKS_TABLE}.expires`;
 
 // ENTITIES
 
@@ -764,6 +769,64 @@ export const sqlDeleteCampaignInvite = async (
       AND cm.role = 'GM'
     ))`,
     [inviteId, accountId]
+  );
+  return wrapSuccessResult(true);
+};
+
+export const sqlInsertCampaignInviteLink = async (
+  tx: TX,
+  invite: PostCampaignInviteLink
+): Promise<Result<CampaignInviteLink>> => {
+  return parseFirst(
+    await tx.query(
+      `INSERT INTO ${CAMPAIGN_INVITE_LINKS_TABLE} (campaign_id, "hash", expires)
+      VALUES ($1, $2, CURRENT_TIMESTAMP + interval '1' minute * $3)
+      RETURNING *`,
+      [invite.campaign_id, invite.hash, invite.minutes_to_expire]
+    )
+  );
+};
+
+export const sqlFetchCampaignInviteLinksByCampaignId = async (
+  tx: TX,
+  campaignId: string
+): Promise<Result<CampaignInviteLink[]>> => {
+  return parseList(
+    await tx.query(
+      `SELECT ${CAMPAIGN_INVITE_LINKS_COLUMNS}
+      FROM ${CAMPAIGN_INVITE_LINKS_TABLE}
+      WHERE campaign_id = $1 AND expires > CURRENT_TIMESTAMP`,
+      [campaignId]
+    )
+  );
+};
+
+export const sqlFetchCampaignByCampaignInviteLink = async (
+  tx: TX,
+  hash: string
+): Promise<Result<Campaign>> => {
+  return parseFirst(
+    await tx.query(
+      `SELECT ${CAMPAIGN_COLUMNS}
+      FROM ${CAMPAIGNS_TABLE}
+      WHERE id = (
+        SELECT campaign_id
+        FROM ${CAMPAIGN_INVITE_LINKS_TABLE}
+        WHERE hash = $1 AND expires > CURRENT_TIMESTAMP
+      )`,
+      [hash]
+    )
+  );
+};
+
+export const sqlDeleteCampaignInviteLink = async (
+  tx: TX,
+  campaignInviteLinkId: string,
+  campaignId: string
+): Promise<Result<boolean>> => {
+  await tx.query(
+    `DELETE FROM ${CAMPAIGN_INVITE_LINKS_TABLE} WHERE id = $1 AND campaign_id = $2`,
+    [campaignInviteLinkId, campaignId]
   );
   return wrapSuccessResult(true);
 };

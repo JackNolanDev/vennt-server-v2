@@ -11,6 +11,7 @@ import {
 import {
   sqlFetchCampaignById,
   sqlFetchCampaignEntitiesByCampaignId,
+  sqlFetchCampaignInviteLinksByCampaignId,
   sqlFetchCampaignInvitesByCampaignId,
   sqlFetchCampaignMembersByCampaignId,
   sqlFetchCampaignRole,
@@ -72,23 +73,30 @@ export const dbFetchFullCampaignDetails = async (
   role: CampaignRole
 ): Promise<Result<FullCampaignDetails>> => {
   const gmView = role === "GM";
-  const [campaign, invites, members, entities] = await Promise.all([
-    unwrapResultOrError(await sqlFetchCampaignById(pool, campaignId)),
-    gmView
-      ? unwrapResultOrError(
-          await sqlFetchCampaignInvitesByCampaignId(pool, campaignId)
-        )
-      : [],
-    unwrapResultOrError(
-      await sqlFetchCampaignMembersByCampaignId(pool, campaignId)
-    ),
-    unwrapResultOrError(
-      await sqlFetchCampaignEntitiesByCampaignId(pool, campaignId, gmView)
-    ),
-  ]);
+  const [campaign, invites, invite_links, members, entities] =
+    await Promise.all([
+      unwrapResultOrError(await sqlFetchCampaignById(pool, campaignId)),
+      gmView
+        ? unwrapResultOrError(
+            await sqlFetchCampaignInvitesByCampaignId(pool, campaignId)
+          )
+        : undefined,
+      gmView
+        ? unwrapResultOrError(
+            await sqlFetchCampaignInviteLinksByCampaignId(pool, campaignId)
+          )
+        : undefined,
+      unwrapResultOrError(
+        await sqlFetchCampaignMembersByCampaignId(pool, campaignId)
+      ),
+      unwrapResultOrError(
+        await sqlFetchCampaignEntitiesByCampaignId(pool, campaignId, gmView)
+      ),
+    ]);
   return wrapSuccessResult({
     campaign,
     invites,
+    invite_links,
     members,
     entities,
   });

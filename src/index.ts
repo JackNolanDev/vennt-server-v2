@@ -9,6 +9,7 @@ import itemRoute from "./routes/item";
 import adminRoute from "./routes/admin";
 import campaignRoute from "./routes/campaign";
 import campaignInvitesRoute from "./routes/campaignInvites";
+import campaignInviteLinksRoute from "./routes/campaignInviteLinks";
 import { campaignWSHandler } from "./routes/campaignWS";
 
 // dotEnv.config();
@@ -37,6 +38,7 @@ app.use("/item", itemRoute);
 app.use("/admin", adminRoute);
 app.use("/campaign", campaignRoute);
 app.use("/campaign_invite", campaignInvitesRoute);
+app.use("/campaign_invite_link", campaignInviteLinksRoute);
 
 // WS handler
 app.ws("/campaign/:id/ws", campaignWSHandler);

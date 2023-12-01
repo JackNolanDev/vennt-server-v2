@@ -21,6 +21,7 @@ import { validateAuthHeader } from "../utils/jwt";
 import {
   CAMPAIGN_ROLE_GM,
   campaignDescValidator,
+  campaignRoleObjectValidator,
   campaignRoleValidator,
   idValidator,
   postCampaignEntityValidator,
@@ -77,9 +78,9 @@ const updateCampaignMemberRole = async (req: Request) => {
   const account = validateAuthHeader(req);
   const campaignId = idValidator.parse(req.params.id);
   const memberId = idValidator.parse(req.params.memberId);
-  const newRole = campaignRoleValidator.parse(req.body);
+  const newRole = campaignRoleObjectValidator.parse(req.body);
   await validateAdminWriteCampaignPermission(account, campaignId);
-  return await dbUpdateCampaignMemberRole(campaignId, memberId, newRole);
+  return await dbUpdateCampaignMemberRole(campaignId, memberId, newRole.role);
 };
 
 const deleteCampaignMember = async (req: Request) => {

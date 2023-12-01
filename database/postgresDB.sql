@@ -138,3 +138,12 @@ CREATE UNIQUE INDEX campaign_entity_unique ON vennt.campaign_entities(campaign_i
 
 -- Add computed_attributes column to the entities table for cached result of rules engine
 ALTER TABLE "vennt"."entities" ADD COLUMN "computed_attributes" jsonb;
+
+-- campaign_invite_links
+CREATE TABLE vennt.campaign_invite_links (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    campaign_id uuid NOT NULL REFERENCES vennt.campaigns(id) ON DELETE CASCADE,
+    hash text NOT NULL UNIQUE,
+    created timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires timestamp without time zone NOT NULL
+);
