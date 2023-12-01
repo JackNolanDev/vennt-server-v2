@@ -27,6 +27,7 @@ import {
   handleRequestDiceRoll,
   handleUpdateChatMessageRequest,
 } from "../logic/campaignChat";
+import { validateEditEntityPermission } from "../utils/express";
 
 export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
   const connectionId = randomUUID();
@@ -34,6 +35,7 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
   let campaignId: string = "";
   let account: AccountInfo | null = null;
   let role: CampaignRole | null = null;
+  const validatedEntities = new Set<string>();
 
   const closeConnection = () => {
     ws.close();
@@ -42,6 +44,22 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
   const cleanupConnection = () => {
     unsubscribeFromCampaign(campaignId, connectionId);
     isConnected = false;
+  };
+
+  const canEditEntity = async (entityId: string): Promise<boolean> => {
+    if (validatedEntities.has(entityId)) {
+      return true;
+    }
+    if (!account) {
+      return false;
+    }
+    try {
+      await validateEditEntityPermission(account, entityId);
+      validatedEntities.add(entityId);
+      return true;
+    } catch (err) {
+      return false;
+    }
   };
 
   try {
@@ -90,9 +108,11 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
         );
         switch (msg.type) {
           case SEND_CHAT_TYPE:
+            if (msg.entity && !(await canEditEntity(msg.entity))) return;
             handleNewChatMessage(account.id, campaignId, msg);
             break;
           case REQUEST_DICE_ROLL_TYPE:
+            if (msg.entity && !(await canEditEntity(msg.entity))) return;
             handleRequestDiceRoll(account.id, campaignId, msg);
             break;
           case REQUEST_CHAT_TYPE:
