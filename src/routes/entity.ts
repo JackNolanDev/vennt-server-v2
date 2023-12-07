@@ -1,13 +1,12 @@
 import express from "express";
 import type { Request } from "express";
 import {
+  CAMPAIGN_ROLE_GM,
   FullCollectedEntity,
   FullCollectedEntityWithChangelog,
   FullEntity,
-  FullEntityAbility,
   FullEntityChangelog,
   FullEntityFlux,
-  FullEntityItem,
   FullEntityText,
   PostAbilitiesResponse,
   PostItemsResponse,
@@ -28,7 +27,11 @@ import {
   partialEntityFluxValidator,
   partialEntityValidator,
 } from "vennt-library";
-import { validateEditEntityPermission, wrapHandler } from "../utils/express";
+import {
+  validateEditEntityPermission,
+  validateWriteCampaignPermission,
+  wrapHandler,
+} from "../utils/express";
 import {
   dbDeleteEntity,
   dbFetchChangelogByEntityIdAttribute,
@@ -51,14 +54,23 @@ import {
 } from "../daos/entityTextDao";
 import { dbDeleteFlux, dbInsertFlux, dbUpdateFlux } from "../daos/fluxDao";
 import { validateAuthHeader, validateOptionalAuthHeader } from "../utils/jwt";
-import { unwrapResultOrError } from "../utils/db";
+import { ResultError, unwrapResultOrError, wrapErrorResult } from "../utils/db";
 
 const addFullEntity = async (
   req: Request
 ): Promise<Result<FullCollectedEntity>> => {
   const account = validateAuthHeader(req);
-  const body = collectedEntityWithChangelogValidator.parse(req.body);
-  return await dbInsertCollectedEntity(body, account.id);
+  const campaignId = optionalIdValidator.parse(req.query.campaign_id);
+  const newEntity = collectedEntityWithChangelogValidator.parse(req.body);
+  if (campaignId) {
+    const role = await validateWriteCampaignPermission(account, campaignId);
+    if (newEntity.entity.type === "COG" && role !== CAMPAIGN_ROLE_GM) {
+      throw new ResultError(
+        wrapErrorResult("Only GMs may insert new COGs into a campaign", 400)
+      );
+    }
+  }
+  return await dbInsertCollectedEntity(newEntity, account.id, campaignId);
 };
 
 const listEntities = async (req: Request): Promise<Result<FullEntity[]>> => {

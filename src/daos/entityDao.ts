@@ -40,6 +40,7 @@ import {
   sqlFetchItemsByEntityId,
   sqlFilterChangelog,
   sqlInsertAbilities,
+  sqlInsertCampaignEntity,
   sqlInsertChangelog,
   sqlInsertEntity,
   sqlInsertEntityText,
@@ -58,7 +59,8 @@ import { randomUUID } from "crypto";
 
 export const dbInsertCollectedEntity = async (
   collected: UncompleteCollectedEntityWithChangelog,
-  owner: string
+  owner: string,
+  campaignId?: string
 ): Promise<Result<FullCollectedEntity>> => {
   if (
     collected.abilities.length > 100 ||
@@ -108,6 +110,15 @@ export const dbInsertCollectedEntity = async (
     unwrapResultOrError(
       await sqlInsertChangelog(tx, entity.id, collected.changelog)
     );
+
+    if (campaignId) {
+      await sqlInsertCampaignEntity(
+        tx,
+        campaignId,
+        entity.id,
+        entity.type === "COG"
+      );
+    }
 
     return wrapSuccessResult({
       entity,

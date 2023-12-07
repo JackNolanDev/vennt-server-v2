@@ -26,7 +26,7 @@
     "jsonwebtoken": "^9.0.0",
     "node-html-markdown": "^1.3.0",
     "pg": "^8.10.0",
-    "vennt-library": "https://github.com/JackNolanDev/vennt-library#8bd642b4715083df8c505bcabe0cc70802659a84",
+    "vennt-library": "https://github.com/JackNolanDev/vennt-library#3fa4377052a8b399d52ab287ac651288f6293311",
     "zod": "^3.21.4"
   },
   "devDependencies": {

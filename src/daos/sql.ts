@@ -975,7 +975,7 @@ export const sqlFetchCampaignEntitiesByCampaignId = async (
   const gmOnlyCheck = includeGmOnly ? "" : "AND ce.gm_only = FALSE";
   return parseList(
     await tx.query(
-      `SELECT ce.entity_id, ce.gm_only, e.owner, e.name, e.type, e.attributes, e.other_fields
+      `SELECT ce.entity_id, ce.gm_only, e.owner, e.name, e.type, e.attributes, e.other_fields, e.computed_attributes
       FROM ${CAMPAIGN_ENTITIES_TABLE} ce
       JOIN ${ENTITIES_TABLE} e ON e.id = ce.entity_id
       WHERE ce.campaign_id = $1 ${gmOnlyCheck}
