@@ -35,6 +35,7 @@ export const handleNewChatMessage = (
     ...msg,
     type: CHAT_TYPE,
     sender: accountId,
+    // TODO: https://github.com/JackNolanDev/vennt-server-v2/issues/14
     id: randomUUID(),
     time: new Date().toISOString(),
   };

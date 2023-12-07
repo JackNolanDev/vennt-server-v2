@@ -15,6 +15,7 @@ import { HERO_USES } from "./paths/hero";
 import { HEROIC_ARCANA_USES } from "./paths/heroic_arcana";
 import { INQUISITOR_USES } from "./paths/inquisitor";
 import { KNIGHT_USES } from "./paths/knight";
+import { LEADER_USES } from "./paths/leader";
 import { LEGEND_USES } from "./paths/legend";
 import { LIGHTNING_ARCANA_USES } from "./paths/lightning_arcana";
 import { MAGICIAN_USES } from "./paths/magician";
@@ -58,6 +59,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...HEROIC_ARCANA_USES,
   ...INQUISITOR_USES,
   ...KNIGHT_USES,
+  ...LEADER_USES,
   ...LEGEND_USES,
   ...LIGHTNING_ARCANA_USES,
   ...MAGICIAN_USES,

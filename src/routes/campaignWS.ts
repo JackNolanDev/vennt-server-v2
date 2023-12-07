@@ -54,7 +54,7 @@ export const campaignWSHandler: WebsocketRequestHandler = async (ws, req) => {
       return false;
     }
     try {
-      await validateEditEntityPermission(account, entityId);
+      await validateEditEntityPermission(account, entityId, campaignId);
       validatedEntities.add(entityId);
       return true;
     } catch (err) {
