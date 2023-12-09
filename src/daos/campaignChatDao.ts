@@ -38,7 +38,7 @@ export const dbFetchChatMessages = async (params: {
   const block_gm_only = isGm ? "" : "attribute_not_exists(gm_only) and ";
   const command = new QueryCommand({
     TableName: CAMPAIGN_CHAT_TABLE,
-    IndexName: "time-index",
+    // IndexName: "time-index",
     ExpressionAttributeValues: {
       ":campaignId": { S: campaignId },
       ":accountId": { S: accountId },

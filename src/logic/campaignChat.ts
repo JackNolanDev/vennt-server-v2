@@ -1,4 +1,3 @@
-import { randomUUID } from "crypto";
 import {
   CHAT_TYPE,
   CampaignRole,
@@ -25,6 +24,7 @@ import {
   dbUpdateChatMessage,
 } from "../daos/campaignChatDao";
 import { DiceRoll } from "@dice-roller/rpg-dice-roller";
+import { uuidv7 } from "uuidv7";
 
 export const handleNewChatMessage = (
   accountId: string,
@@ -35,8 +35,7 @@ export const handleNewChatMessage = (
     ...msg,
     type: CHAT_TYPE,
     sender: accountId,
-    // TODO: https://github.com/JackNolanDev/vennt-server-v2/issues/14
-    id: randomUUID(),
+    id: uuidv7(),
     time: new Date().toISOString(),
   };
   broadcastMessage(
@@ -57,7 +56,7 @@ export const handleRequestDiceRoll = (
     ...msg,
     type: DICE_ROLL_RESULT_TYPE,
     sender: accountId,
-    id: randomUUID(),
+    id: uuidv7(),
     time: new Date().toISOString(),
     result,
   };
