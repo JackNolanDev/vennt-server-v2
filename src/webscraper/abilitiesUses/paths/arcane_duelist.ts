@@ -1,6 +1,13 @@
 import { UsesMap } from "vennt-library";
 
 export const ARCANE_DUELIST_USES: Record<string, UsesMap> = {
+  "Ice Blast": {
+    weapons: [
+      { category: "Arcane", dmg: "0", label: "Half cast" },
+      { category: "Arcane", dmg: "1d6", label: "Regular cast" },
+      { category: "Arcane", dmg: "2d6", label: "Double cast" },
+    ],
+  },
   "Rock Blast": {
     weapons: [
       { category: "Arcane", dmg: "0", label: "Half cast" },

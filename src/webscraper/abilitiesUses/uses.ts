@@ -7,7 +7,9 @@ import { BARBARIAN_USES } from "./paths/barbarian";
 import { BEGINNER_USES } from "./paths/beginner";
 import { BLACK_USES } from "./paths/black";
 import { BLACKSMITH_USES } from "./paths/blacksmith";
+import { CANTRIPS_USES } from "./paths/cantrips";
 import { DUELIST_USES } from "./paths/duelist";
+import { ELEMENTALIST_USES } from "./paths/elementalist";
 import { FIGHTER_USES } from "./paths/fighter";
 import { FOCUSED_FIST_USES } from "./paths/focused_fist";
 import { GIFTED_MAGICIAN_USES } from "./paths/gifted_magician";
@@ -26,6 +28,7 @@ import { PROTAGONIST_USES } from "./paths/protagonist";
 import { RECRUIT_USES } from "./paths/recruit";
 import { SAVANT_USES } from "./paths/savant";
 import { SCHOLAR_USES } from "./paths/scholar";
+import { SHADOW_ARCANA_USES } from "./paths/shadow_arcana";
 import { SOLDIER_USES } from "./paths/soldier";
 import { SPELLCASTER_USES } from "./paths/spellcaster";
 import { SPELLSWORD_USES } from "./paths/spellsword";
@@ -51,7 +54,9 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...BEGINNER_USES,
   ...BLACK_USES,
   ...BLACKSMITH_USES,
+  ...CANTRIPS_USES,
   ...DUELIST_USES,
+  ...ELEMENTALIST_USES,
   ...FIGHTER_USES,
   ...FOCUSED_FIST_USES,
   ...GIFTED_MAGICIAN_USES,
@@ -70,6 +75,7 @@ export const ABILITY_USES: Record<string, UsesMap> = {
   ...RECRUIT_USES,
   ...SAVANT_USES,
   ...SCHOLAR_USES,
+  ...SHADOW_ARCANA_USES,
   ...SOLDIER_USES,
   ...SPELLCASTER_USES,
   ...SPELLSWORD_USES,
