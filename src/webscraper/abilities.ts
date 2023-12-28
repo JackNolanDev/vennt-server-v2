@@ -72,7 +72,7 @@ const parseNotReq = (_: string, ability: UncompleteEntityAbility): void => {
   }
 };
 
-const parseTripple = (
+const parseTriple = (
   field: "mp_cost" | "cast_dl"
 ): ((text: string, ability: UncompleteEntityAbility) => void) => {
   return (text: string, ability: UncompleteEntityAbility): void => {
@@ -154,8 +154,8 @@ const parseAbilityLine: Record<
   "Range:": parseSimpleAbilityLine("range"),
   Prereq: parseSimpleAbilityLine("prereq"),
   "This ability is not required for the Path Completion Bonus": parseNotReq,
-  "MP Cost:": parseTripple("mp_cost"),
-  "Casting DL:": parseTripple("cast_dl"),
+  "MP Cost:": parseTriple("mp_cost"),
+  "Casting DL:": parseTriple("cast_dl"),
   "Activation:": parseActivation,
 };
 
