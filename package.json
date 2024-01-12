@@ -27,7 +27,7 @@
     "node-html-markdown": "^1.3.0",
     "pg": "^8.10.0",
     "uuidv7": "^0.6.3",
-    "vennt-library": "https://github.com/JackNolanDev/vennt-library#60eb5aaaff9723b952c2106449b099bc656b735c",
+    "vennt-library": "https://github.com/JackNolanDev/vennt-library#5e43c09ef4e1fe30b8f284c098965dfdd74dfbf9",
     "zod": "^3.21.4"
   },
   "devDependencies": {

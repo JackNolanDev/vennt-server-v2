@@ -91,7 +91,7 @@ const parseTriple = (
   };
 };
 
-const parseActivation = (
+export const parseActivation = (
   text: string,
   ability: UncompleteEntityAbility
 ): void => {
