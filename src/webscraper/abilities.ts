@@ -1,10 +1,9 @@
 import {
-  AbilityCostMapBoolean,
-  AbilityCostMapNumber,
   EntityAbilityFieldsStrings,
   PathDetails,
   PathsAndAbilities as PathsAndAbilities,
   UncompleteEntityAbility,
+  parseActivationCostMap,
 } from "vennt-library";
 import { load } from "cheerio";
 import { NodeHtmlMarkdown } from "node-html-markdown";
@@ -72,34 +71,24 @@ const parseNotReq = (_: string, ability: UncompleteEntityAbility): void => {
   }
 };
 
+const parseTripleText = (text: string): number[] | null => {
+  const tripleRegex = /\[\s(-?\d+)\s\/\s(-?\d+)\s\/\s(-?\d+)\s\]/;
+  const match = text.match(tripleRegex) || [];
+  if (match.length >= 4) {
+    return match.slice(1, 4).map((str) => parseInt(str));
+  }
+  return null;
+};
+
 const parseTriple = (
   field: "mp_cost" | "cast_dl"
 ): ((text: string, ability: UncompleteEntityAbility) => void) => {
   return (text: string, ability: UncompleteEntityAbility): void => {
-    const trippleRegex = /\[\s(-?\d+)\s\/\s(-?\d+)\s\/\s(-?\d+)\s\]/;
-    const match = text.match(trippleRegex) || [];
-    if (match.length >= 4 && ability.custom_fields) {
-      const numbers = match.slice(1, 4).map((str) => parseInt(str));
+    const numbers = parseTripleText(text);
+    if (numbers && ability.custom_fields) {
       ability.custom_fields[field] = numbers;
     }
   };
-};
-
-const baseNumberRegex = "(?<number>-?\\d+(?:-\\d+)?\\*?)\\s";
-const activationNumberRegex: Record<keyof AbilityCostMapNumber, RegExp> = {
-  mp: new RegExp(`${baseNumberRegex}mp`),
-  vim: new RegExp(`${baseNumberRegex}vim`),
-  hp: new RegExp(`${baseNumberRegex}hp`),
-  hero: new RegExp(`${baseNumberRegex}hero point`),
-  actions: new RegExp(`${baseNumberRegex}action`),
-  reactions: new RegExp(`${baseNumberRegex}reaction`),
-};
-const activationBooleanRegex: Record<keyof AbilityCostMapBoolean, RegExp> = {
-  attack: /attack/,
-  passive: /passive/,
-  respite: /respite/,
-  rest: /rest/,
-  intermission: /intermission/,
 };
 
 const parseActivation = (
@@ -107,38 +96,17 @@ const parseActivation = (
   ability: UncompleteEntityAbility
 ): void => {
   parseSimpleAbilityLine("activation")(text, ability);
-  const cleanText = text.toLowerCase();
-  Object.entries(activationNumberRegex).forEach(([keyIn, regex]) => {
-    const key = keyIn as keyof AbilityCostMapNumber;
-    const match = cleanText.match(regex);
-    if (
-      match &&
-      match.length > 0 &&
-      match.groups?.number &&
-      ability.custom_fields
-    ) {
-      if (match.groups.number.match(/^-?\d+$/)) {
-        const val = parseInt(match.groups.number);
-        if (!isNaN(val)) {
-          if (!ability.custom_fields.cost) {
-            ability.custom_fields.cost = {};
-          }
-          ability.custom_fields.cost[key] = val;
-        }
-        // TODO: do something with match.groups.number if its not an integer
-      }
-    }
-  });
-  Object.entries(activationBooleanRegex).forEach(([keyIn, regex]) => {
-    const key = keyIn as keyof AbilityCostMapBoolean;
-    const match = cleanText.match(regex);
-    if (match && match.length > 0 && ability.custom_fields) {
-      if (!ability.custom_fields.cost) {
-        ability.custom_fields.cost = {};
-      }
-      ability.custom_fields.cost[key] = true;
-    }
-  });
+  if (!ability.custom_fields) {
+    ability.custom_fields = {};
+  }
+  const { cost, spellCost } = parseActivationCostMap(text);
+  ability.custom_fields.cost = {
+    ...ability.custom_fields.cost,
+    ...cost,
+  };
+  if (spellCost) {
+    ability.custom_fields.spell_cost = spellCost;
+  }
 };
 
 const parseAbilityLine: Record<
@@ -161,6 +129,18 @@ const parseAbilityLine: Record<
 
 const abilitySecondLines = ["This ability", "Cost", "Prereq", "Unlock"];
 const addToDescTags = new Set(["ul", "ol", "table"]);
+
+const addSpellMaintenanceCost = (
+  ability: UncompleteEntityAbility,
+  lowerCaseEffect: string
+): void => {
+  const regex = /lasts while maintained (?:using|as) (?<cost>.*?)\./i;
+  const match = lowerCaseEffect.match(regex);
+  if (match && match.groups?.cost && ability.custom_fields) {
+    const { cost } = parseActivationCostMap(match.groups?.cost);
+    ability.custom_fields.spell_maintenance_cost = cost;
+  }
+};
 
 const addSpecialAbilityDetails = (
   ability: UncompleteEntityAbility,
@@ -186,6 +166,7 @@ const addSpecialAbilityDetails = (
   ) {
     ability.custom_fields.repeatable = true;
   }
+  addSpellMaintenanceCost(ability, lowerCaseEffect);
   if (ABILITY_USES[ability.name]) {
     ability.uses = ABILITY_USES[ability.name];
   }

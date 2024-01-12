@@ -1,5 +1,14 @@
 import { CheerioAPI, load } from "cheerio";
-import { EntityItemType, ITEM_TYPE_EQUIPMENT, ShopItem } from "vennt-library";
+import {
+  EntityItemType,
+  ITEM_TYPE_ARMOR,
+  ITEM_TYPE_CONSUMABLE,
+  ITEM_TYPE_CONTAINER,
+  ITEM_TYPE_EQUIPMENT,
+  ITEM_TYPE_SHIELD,
+  ITEM_TYPE_WEAPON,
+  ShopItem,
+} from "vennt-library";
 import { SHOP_ITEM_USES } from "./shopItemsUses";
 import { parseBulk, parseSP, sleep } from "./webscraperUtils";
 
@@ -150,8 +159,9 @@ const getContainers = (page: string): ShopItem[] => {
       return;
     }
     const item: ShopItem = {
-      type: "container",
+      type: ITEM_TYPE_CONTAINER,
       section: "Item Containers",
+      uses: { adjust: { time: "permanent", attr: {} } },
       courses: "",
       bulk: 0,
       desc: "",
@@ -169,7 +179,7 @@ const getContainers = (page: string): ShopItem[] => {
           item.sp = parseSP(text);
           break;
         case 2:
-          item.bulk = parseBulk(text);
+          item.uses!.adjust!.attr!.carrying_capacity = parseBulk(text);
           break;
         case 3:
           item.desc = text;
@@ -202,7 +212,7 @@ const getAdvancedWeapons = (
       courses: "Weapons",
     };
     let fullWeapon: ShopItem = {
-      type: "equipment",
+      type: ITEM_TYPE_WEAPON,
       bulk: 0,
       desc: "",
       cost: "",
@@ -335,7 +345,7 @@ const getAdvancedAmmo = (page: string): ShopItem[] => {
       return;
     }
     const item: ShopItem = {
-      type: "consumable",
+      type: ITEM_TYPE_CONSUMABLE,
       section: "Advanced Ammo",
       courses: "weapons",
       bulk: 0,
@@ -376,7 +386,7 @@ const getArmor = (page: string): ShopItem[] => {
           return;
         }
         const item: ShopItem = {
-          type: "armor",
+          type: ITEM_TYPE_ARMOR,
           section: "Armor",
           uses: { adjust: { time: "permanent", attr: {} } },
           bulk: 0,
@@ -426,7 +436,7 @@ const getArmor = (page: string): ShopItem[] => {
           return;
         }
         const item: ShopItem = {
-          type: "shield",
+          type: ITEM_TYPE_SHIELD,
           section: "Shields",
           uses: { adjust: { time: "permanent", attr: {} } },
           bulk: 0,
@@ -496,32 +506,32 @@ export const fetchShopItems = async (
       const mundaneBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(12) > tbody",
-        "equipment",
+        ITEM_TYPE_EQUIPMENT,
         "Mundane Basic Equipment"
       );
       const unusualBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(14) > tbody",
-        "equipment",
+        ITEM_TYPE_EQUIPMENT,
         "Unusual Basic Equipment"
       );
       const rareBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(16) > tbody",
-        "equipment",
+        ITEM_TYPE_EQUIPMENT,
         "Rare Basic Equipment (Cannot be purchased)"
       );
       const mundaneCombat = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(19) > tbody",
-        "equipment",
+        ITEM_TYPE_EQUIPMENT,
         "Mundane Combat Equipment",
         "Combat"
       );
       const unusualCombat = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(20) > tbody",
-        "equipment",
+        ITEM_TYPE_EQUIPMENT,
         "Unusual Combat Equipment",
         "Combat"
       );
@@ -543,53 +553,53 @@ export const fetchShopItems = async (
       const mundaneBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(12) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Mundane Basic Consumables"
       );
       const unusualBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(13) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Unusual Basic Consumables"
       );
       const rareBasic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(14) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Rare Basic Consumables (Cannot be purchased)"
       );
       const mundaneHeroic = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(17) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Mundane Heroic Consumables",
         "Heroism"
       );
       const mundaneDamage = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(20) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Mundane Damage Consumables",
         "Damages"
       );
       const unusualDamage = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(22) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Unusual Damage Consumables",
         "Damages"
       );
       const mundaneBaseCourse = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(27) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Mundane Base Course Consumables",
         "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
       );
       const unusualBaseCourse = parseTable(
         $,
         "#mw-content-text > div > table:nth-child(28) > tbody",
-        "consumable",
+        ITEM_TYPE_CONSUMABLE,
         "Unusual Base Course Consumables",
         "Heroism, Combat, Conditions, Damages, Surroundings, Wounds, Flux, Deltas"
       );

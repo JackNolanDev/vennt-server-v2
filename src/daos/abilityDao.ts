@@ -52,7 +52,6 @@ export const dbInsertAbilities = async (
     cachedEntity.abilities.push(...newFunctionalAbilities);
     updateEntityInCache(entityId, cachedEntity);
     computedAttributes = computeAttributes(cachedEntity);
-    await sqlUpdateEntityComputedAttributes(pool, entityId, computedAttributes);
   }
 
   const [insertedAbilities, updatedAttrs] = await Promise.all([

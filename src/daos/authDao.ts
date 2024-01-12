@@ -14,7 +14,6 @@ export const createAccount = async (
   signupRequest: SignupRequest
 ): Promise<AccountInfo> => {
   // previously used bcrypt.hash(signupRequest.password, SALT_ROUNDS)
-  // @ts-expect-error Bun is defined by Bun runtime
   const hashedPassword = await Bun.password.hash(signupRequest.password, {
     algorithm: "bcrypt",
     cost: SALT_ROUNDS,
@@ -39,7 +38,6 @@ export const verifyPassword = async (
     "Incorrect password entered"
   );
   // previously used bcrypt.compare(loginRequest.password, row.password)
-  // @ts-expect-error Bun is defined by Bun runtime
   const matches = await Bun.password.verify(
     loginRequest.password,
     row.password

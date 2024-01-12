@@ -8,7 +8,7 @@
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
     "lint": "bun x prettier -w .",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "bun test",
     "type-check": "bun x tsc --noEmit"
   },
   "keywords": [],
@@ -27,7 +27,7 @@
     "node-html-markdown": "^1.3.0",
     "pg": "^8.10.0",
     "uuidv7": "^0.6.3",
-    "vennt-library": "https://github.com/JackNolanDev/vennt-library#18d7104e89b22b001edc6f025561c2b9d8f8818b",
+    "vennt-library": "https://github.com/JackNolanDev/vennt-library#60eb5aaaff9723b952c2106449b099bc656b735c",
     "zod": "^3.21.4"
   },
   "devDependencies": {

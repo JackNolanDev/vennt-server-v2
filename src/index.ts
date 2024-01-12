@@ -45,7 +45,6 @@ app.ws("/campaign/:id/ws", campaignWSHandler);
 
 console.log(
   `${isProd ? "Production" : "Local"} server started using bun version: ${
-    // @ts-expect-error Bun is defined by Bun runtime
     Bun.version
   }`
 );
